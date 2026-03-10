@@ -2512,6 +2512,604 @@ function moetOefeningSuggestie(){
   return Math.abs(h % 5) === 0; // ~20% = ~1.4x per week
 }
 
+// ─── P2: TIM'S OEFENINGEN-POOL ──────────────────────────────
+// Tim oefent vaardigheden die de dynamiek ondersteunen
+// Opbouwend per thema, alle gebieden
+const TIM_OEFENING_POOL = [
+
+// ══ CATEGORIE: ONTVANGEN & LOSLATEN ══
+// Leren niet sturen, niet corrigeren, gewoon ontvangen
+{id:'toef01',cat:'ontvangen',thema:1,
+ titel:'Ontvangen zonder commentaar',
+ focus:'Je oefent met iets aannemen zonder er iets van te vinden.',
+ instructie:'Als Lisanne vanavond iets zegt of beslist — reageer alleen met "oké" of "dankjewel." Geen aanvullingen, geen suggesties, geen "misschien kunnen we ook..." Gewoon aannemen.',
+ terugblik:'Hoe was het om alleen te ontvangen?',
+ terugblikOpties:['Moeilijker dan gedacht','Ging prima','Voelde bevrijdend','Ik moest me inhouden']},
+{id:'toef02',cat:'ontvangen',thema:1,
+ titel:'Niet verbeteren',
+ focus:'Je oefent met accepteren hoe Lisanne iets doet — ook als het "anders" is.',
+ instructie:'Lisanne doet dingen op haar manier. Als ze iets doet vanavond dat je anders zou doen — zeg niks. Geen tips, geen correcties, geen "volgende keer kun je ook..." Ze leert door te doen.',
+ terugblik:'Lukte het om niks te zeggen?',
+ terugblikOpties:['Ja','Bijna, maar ik zei toch iets','Het kostte moeite','Ik had niks om te corrigeren']},
+{id:'toef03',cat:'ontvangen',thema:2,
+ titel:'Verrassing accepteren',
+ focus:'Je oefent met niet weten wat er gaat gebeuren.',
+ instructie:'Als Lisanne vanavond iets begint — vraag niet wat ze gaat doen. Vraag niet hoe lang het duurt. Wacht af. Jij hoeft het niet te weten. Zij bepaalt.',
+ terugblik:'Hoe was het om niet te weten?',
+ terugblikOpties:['Spannend','Frustrerend','Bevrijdend','Ik vroeg toch']},
+{id:'toef04',cat:'ontvangen',thema:2,
+ titel:'Loslaten van controle',
+ focus:'Je oefent met echt loslaten — niet in je hoofd de regie houden.',
+ instructie:'Vanavond geef je de avond over. Niet nadenken over wat er zou moeten gebeuren. Niet in je hoofd een programma maken. Als Lisanne niks doet — dan gebeurt er niks. Dat is ook goed.',
+ terugblik:'Lukte het om echt los te laten?',
+ terugblikOpties:['Ja, heerlijk','Half, ik plande toch','Nee, te moeilijk','Lisanne deed juist veel']},
+{id:'toef05',cat:'ontvangen',thema:3,
+ titel:'Effect tonen zonder woorden',
+ focus:'Je oefent met laten zien wat haar actie met je doet — niet met woorden.',
+ instructie:'Als Lisanne vanavond iets doet — laat het effect zien met je lichaam. Ogen dicht. Diep ademen. Stil worden. Geen "dat was fijn" of "dankjewel." Gewoon voelen en het laten zien.',
+ terugblik:'Merkte Lisanne je reactie?',
+ terugblikOpties:['Ja, ze keek','Weet ik niet','Het voelde intens','Het was moeilijk om stil te blijven']},
+{id:'toef06',cat:'ontvangen',thema:4,
+ titel:'Overgave zonder aarzeling',
+ focus:'Je oefent met meteen meegaan — geen moment van twijfel.',
+ instructie:'Als Lisanne vanavond iets zegt of begint — reageer direct. Geen "oh, nu?" of "wacht even." Meteen. Alsof het de normaalste zaak van de wereld is.',
+ terugblik:'Hoe voelde directe overgave?',
+ terugblikOpties:['Natuurlijk','Intens','Lisanne merkte het verschil','Was al mijn standaard']},
+
+// ══ CATEGORIE: GEDULD & WACHTEN ══
+// Leren wachten, niet pushen, ruimte geven
+{id:'toef07',cat:'geduld',thema:1,
+ titel:'Een dag niet initiëren',
+ focus:'Je oefent met niet het eerste gespreksonderwerp zijn over de dynamiek.',
+ instructie:'Praat vandaag niet als eerste over de dynamiek, de app, of jullie seksleven. Als Lisanne erover begint — prima. Maar jij start het niet.',
+ terugblik:'Hoe was een dag zonder zelf te beginnen?',
+ terugblikOpties:['Ging prima','Was moeilijk','Lisanne begon zelf','Er gebeurde niks en dat was oké']},
+{id:'toef08',cat:'geduld',thema:1,
+ titel:'Geen hints sturen',
+ focus:'Je oefent met niet subtiel sturen richting wat je wilt.',
+ instructie:'Geen hints vandaag. Niet "toevallig" de boeien laten liggen. Niet "grappig" iets zeggen dat eigenlijk een verzoek is. Gewoon helemaal niks. Lisanne doet wat ze doet.',
+ terugblik:'Lukte het om geen hints te geven?',
+ terugblikOpties:['Ja','Bijna, ik deed het toch subtiel','Het was zwaar','Ik had geen behoefte aan hints']},
+{id:'toef09',cat:'geduld',thema:2,
+ titel:'Wachten na een goed moment',
+ focus:'Je oefent met niet meteen meer willen na iets goeds.',
+ instructie:'Na het volgende goede moment met Lisanne — verwacht niet direct meer. Geen "kunnen we morgen weer?" Laat het moment bestaan zonder het te willen herhalen.',
+ terugblik:'Lukte het om niet meer te vragen?',
+ terugblikOpties:['Ja','Ik dacht het wel maar zei het niet','Ik vroeg toch','Het moment was genoeg']},
+{id:'toef10',cat:'geduld',thema:2,
+ titel:'Stilte verdragen',
+ focus:'Je oefent met een avond zonder dynamiek — en dat oké vinden.',
+ instructie:'Vanavond is een gewone avond. Geen verwachtingen. Als er niks gebeurt op het gebied van dynamiek — dat is prima. Geniet van samen zijn zonder de extra laag.',
+ terugblik:'Hoe was een avond zonder dynamiek?',
+ terugblikOpties:['Fijn, ontspannen','Moeilijk','Normaal','Ik miste het wel']},
+{id:'toef11',cat:'geduld',thema:3,
+ titel:'Haar tempo volgen',
+ focus:'Je oefent met Lisanne\'s tempo accepteren, ook als het langzamer is dan jij wilt.',
+ instructie:'Als er vanavond iets intiems of spannends gebeurt — volg Lisanne\'s tempo. Niet sneller, niet intenser, niet meer. Zij bepaalt. Jij volgt.',
+ terugblik:'Hoe was het om haar tempo te volgen?',
+ terugblikOpties:['Fijn','Frustrerend','Intenser dan verwacht','Het ging vanzelf']},
+{id:'toef12',cat:'geduld',thema:4,
+ titel:'Een week zonder verwachting',
+ focus:'Je oefent met een hele week zonder iets te verwachten.',
+ instructie:'Deze week verwacht je niks. Geen suggesties in je hoofd, geen teleurstelling als het niet gebeurt. Wat er komt, komt. Wat niet komt, komt later.',
+ terugblik:'Hoe was de week?',
+ terugblikOpties:['Bevrijdend','Moeilijk maar goed','Lisanne deed juist meer','Ik miste de spanning']},
+
+// ══ CATEGORIE: KWETSBAARHEID & EMOTIE ══
+// Leren tonen wat je voelt, niet wat je denkt
+{id:'toef13',cat:'kwetsbaarheid',thema:1,
+ titel:'Zeg wat je voelt, niet wat je denkt',
+ focus:'Je oefent met een gevoel benoemen in plaats van een mening.',
+ instructie:'Zeg vanavond tegen Lisanne hoe je je voelt. Niet "ik vind dat we..." maar "ik voel me..." Eén zin. Het mag over alles gaan — de dag, jullie, het leven.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Ze luisterde','Ze zei iets terug','Ze wist niet wat ze moest zeggen','Het voelde goed']},
+{id:'toef14',cat:'kwetsbaarheid',thema:1,
+ titel:'Dankbaarheid specifiek maken',
+ focus:'Je oefent met specifiek zijn over wat je waardeert.',
+ instructie:'Zeg vanavond tegen Lisanne wat je precies waardeert. Niet "je bent lief" maar: "Ik waardeer dat je [specifiek ding] deed. Dat voelde als [gevoel]."',
+ terugblik:'Hoe voelde het om specifiek te zijn?',
+ terugblikOpties:['Kwetsbaar','Goed','Lisanne glom','Moeilijk om de woorden te vinden']},
+{id:'toef15',cat:'kwetsbaarheid',thema:2,
+ titel:'Iets toegeven',
+ focus:'Je oefent met eerlijk zijn over iets moeilijks.',
+ instructie:'Vertel Lisanne vanavond iets dat je moeilijk vindt. Niet over de dynamiek per se — over jezelf. Iets dat je dwarszit, waar je onzeker over bent, wat je bezighoudt.',
+ terugblik:'Hoe was het om dat te delen?',
+ terugblikOpties:['Opluchting','Eng maar goed','Lisanne reageerde warm','Was moeilijker dan verwacht']},
+{id:'toef16',cat:'kwetsbaarheid',thema:2,
+ titel:'Benoemen wat je mist',
+ focus:'Je oefent met eerlijk zeggen wat je nodig hebt — zonder het te eisen.',
+ instructie:'Zeg tegen Lisanne: "Ik merk dat ik [iets specifieks] mis." Niet als verwijt, niet als vraag. Gewoon delen. Ze hoeft er niks mee te doen.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Ze luisterde','Ze schrok','Ze zei iets liefs','Ze wist niet wat ze moest zeggen']},
+{id:'toef17',cat:'kwetsbaarheid',thema:3,
+ titel:'Laten zien dat het je raakt',
+ focus:'Je oefent met niet stoer doen als iets je raakt.',
+ instructie:'Als er vanavond iets gebeurt dat je raakt — in de dynamiek of daarbuiten — laat het zien. Niet weglachen, niet relativeren. Als je ogen vochtig worden, laat het. Als je stem trilt, laat het.',
+ terugblik:'Hoe was het om het te laten zien?',
+ terugblikOpties:['Bevrijdend','Eng','Lisanne zag het','Het gebeurde niet vanavond']},
+{id:'toef18',cat:'kwetsbaarheid',thema:4,
+ titel:'Vragen om wat je nodig hebt',
+ focus:'Je oefent met recht vragen om iets dat je nodig hebt — kwetsbaar, niet sturend.',
+ instructie:'Vraag Lisanne vanavond om iets specifieks. Niet een suggestie, niet een hint — een eerlijk verzoek. "Ik zou het fijn vinden als je..." Van hart tot hart.',
+ terugblik:'Wat vroeg je en hoe voelde dat?',
+ terugblikOpties:['Ze zei ja','Ze zei nee en dat was oké','Het voelde goed om te vragen','Te moeilijk']},
+
+// ══ CATEGORIE: BESCHIKBAARHEID & AANWEZIG ZIJN ══
+// Leren fysiek en mentaal er zijn
+{id:'toef19',cat:'aanwezig',thema:1,
+ titel:'Telefoon weg',
+ focus:'Je oefent met er echt zijn — niet half.',
+ instructie:'Leg vanavond als Lisanne er is je telefoon in een andere kamer. Niet op stil — weg. Een heel uur. Kijk haar aan als ze praat. Wees er.',
+ terugblik:'Hoe was een uur zonder telefoon?',
+ terugblikOpties:['Fijn','Rustiger dan verwacht','Ik miste mijn telefoon','Lisanne merkte het']},
+{id:'toef20',cat:'aanwezig',thema:1,
+ titel:'Opstaan als ze binnenkomt',
+ focus:'Je oefent met fysiek beschikbaar zijn — niet vanuit de bank.',
+ instructie:'Als Lisanne vanavond de kamer inkomt: sta op. Kijk haar aan. Het hoeft maar een seconde. Niet "hoi" vanuit de bank — sta op.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Ze merkte het','Ze zei er niks over','Het voelde goed','Was al mijn gewoonte']},
+{id:'toef21',cat:'aanwezig',thema:2,
+ titel:'Wachten bij de deur',
+ focus:'Je oefent met beschikbaar zijn nog voor ze er is.',
+ instructie:'Als Lisanne vanavond thuiskomt: sta bij de deur. Niet omdat je iets wilt — omdat je er bent. Thee klaar, of gewoon staan.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Verrast','Blij','Vond het raar','Deed alsof het normaal was']},
+{id:'toef22',cat:'aanwezig',thema:2,
+ titel:'Oogcontact vasthouden',
+ focus:'Je oefent met Lisanne echt aankijken.',
+ instructie:'Houd vanavond een keer bewust oogcontact vast met Lisanne. Langer dan normaal. Niet staren — verbinden. Kijk haar aan alsof je haar echt ziet. Vijf seconden is al veel.',
+ terugblik:'Wat gebeurde er?',
+ terugblikOpties:['Ze keek terug','Ze keek weg','Het was intens','Er gebeurde iets tussen ons']},
+{id:'toef23',cat:'aanwezig',thema:3,
+ titel:'Klaar staan zonder gevraagd te worden',
+ focus:'Je oefent met anticiperen op wat Lisanne nodig heeft.',
+ instructie:'Let vanavond op wat Lisanne nodig heeft — nog voor ze het zegt. Thee bijschenken, kussen goed leggen, dekentje pakken. Niet vragen, gewoon doen. Service zonder woorden.',
+ terugblik:'Merkte Lisanne het?',
+ terugblikOpties:['Ja, ze zei iets','Ja, zonder woorden','Nee maar dat geeft niet','Het voelde goed']},
+{id:'toef24',cat:'aanwezig',thema:4,
+ titel:'Een avond volledig voor haar',
+ focus:'Je oefent met een hele avond 100% in dienst zijn.',
+ instructie:'Vanavond is alles voor Lisanne. Niet voor de dynamiek, niet voor jou — voor haar. Wat ze wil kijken, wat ze wil eten, hoe ze wil zitten. Jij faciliteert. Jij vraagt niks terug.',
+ terugblik:'Hoe was een avond volledig voor haar?',
+ terugblikOpties:['Mooi','Zwaar','Ze genoot','Ze had het niet door']},
+
+// ══ CATEGORIE: FYSIEK & LICHAAM ══
+// Leren je lichaam als communicatiemiddel te gebruiken
+{id:'toef25',cat:'fysiek',thema:1,
+ titel:'Bewust dichtbij zijn',
+ focus:'Je oefent met fysiek dichtbij zijn zonder iets te willen.',
+ instructie:'Ga vanavond dicht bij Lisanne zitten. Niet om iets te starten — gewoon dichtbij. Schouder tegen schouder. Laat haar wennen aan je nabijheid zonder dat het ergens toe leidt.',
+ terugblik:'Hoe reageerde Lisanne op je nabijheid?',
+ terugblikOpties:['Ze leunde tegen me aan','Ze merkte het niet','Ze vond het fijn','Ze schoof iets op']},
+{id:'toef26',cat:'fysiek',thema:2,
+ titel:'Stilstaan als zij iets doet',
+ focus:'Je oefent met fysiek stil zijn wanneer Lisanne iets bij je doet.',
+ instructie:'Als Lisanne vanavond iets bij je doet — een aanraking, iets omdoen, je ergens neerzetten — beweeg niet. Niet meehelpen, niet aanpassen, niet anticiperen. Sta of zit stil. Laat haar doen.',
+ terugblik:'Hoe was stilstaan?',
+ terugblikOpties:['Moeilijk maar goed','Natuurlijk','Lisanne nam meer de tijd','Ik bewoog toch']},
+{id:'toef27',cat:'fysiek',thema:2,
+ titel:'Positie aanbieden',
+ focus:'Je oefent met jezelf in een kwetsbare positie zetten — zonder gevraagd te worden.',
+ instructie:'Ga vanavond op een moment op je knieën zitten bij Lisanne. Niet dramatisch, niet opvallend. Gewoon op de grond, bij haar voeten. Kijk omhoog. Wacht.',
+ terugblik:'Wat deed Lisanne?',
+ terugblikOpties:['Ze keek me aan','Ze raakte mijn hoofd aan','Ze lachte','Ze negeerde het (goed)']},
+{id:'toef28',cat:'fysiek',thema:3,
+ titel:'Haar aanraking anders voelen',
+ focus:'Je oefent met bewust voelen wat Lisanne\'s aanraking doet.',
+ instructie:'Als Lisanne je vanavond aanraakt — sluit je ogen. Voel waar haar hand is. Voel de druk, de warmte. Niet nadenken over wat er daarna komt. Alleen dit moment voelen.',
+ terugblik:'Was het anders met je ogen dicht?',
+ terugblikOpties:['Ja, intenser','Ja, intiemer','Niet echt','Ze raakte me niet aan vanavond']},
+{id:'toef29',cat:'fysiek',thema:3,
+ titel:'Jezelf aanbieden',
+ focus:'Je oefent met je lichaam beschikbaar maken voor Lisanne.',
+ instructie:'Bied vanavond je lichaam aan. Niet seksueel bedoeld — letterlijk. "Mijn handen zijn van jou vanavond." Of ga liggen en zeg: "Doe maar." Ze mag alles of niks. Jij wacht.',
+ terugblik:'Wat deed Lisanne ermee?',
+ terugblikOpties:['Ze deed iets','Ze deed niks (en dat was oké)','Ze lachte','Ze was verrast']},
+{id:'toef30',cat:'fysiek',thema:4,
+ titel:'Pijn als cadeau',
+ focus:'Je oefent met ongemak accepteren als iets dat je geeft, niet dat je ondergaat.',
+ instructie:'Als er vanavond iets is dat ongemakkelijk is — een houding, een item, een situatie — voel het bewust. Niet verdragen. Niet weg willen. Voelen. Dit is iets dat jij haar geeft.',
+ terugblik:'Hoe voelde het om ongemak als cadeau te zien?',
+ terugblikOpties:['Het verschoof iets','Mooi idee maar moeilijk','Het hielp echt','Was niet van toepassing']},
+
+// ══ CATEGORIE: COMMUNICATIE & EERLIJKHEID ══
+// Leren eerlijk zijn over grenzen, behoeftes, en ervaringen
+{id:'toef31',cat:'communicatie',thema:1,
+ titel:'Eerlijk terugkoppelen',
+ focus:'Je oefent met eerlijk zijn na een ervaring.',
+ instructie:'Na het volgende moment met Lisanne: vertel haar eerlijk hoe het was. Niet alleen "fijn" — specifiek. "Het moment dat je [x] deed, voelde ik [y]." Geef haar informatie.',
+ terugblik:'Hoe was eerlijk terugkoppelen?',
+ terugblikOpties:['Ze luisterde goed','Het hielp haar','Het was kwetsbaar','Ze vond het fijn']},
+{id:'toef32',cat:'communicatie',thema:1,
+ titel:'Grenzen benoemen',
+ focus:'Je oefent met eerlijk zijn over wat niet werkt.',
+ instructie:'Is er iets in de dynamiek dat niet helemaal lekker zit? Benoem het vanavond. Rustig, zonder verwijt. "Ik merk dat [x] niet zo goed werkt voor me." Eerlijk zijn is geen afwijzing.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Ze begreep het','Ze schrok','Het luchttte op','Ik had niks te benoemen']},
+{id:'toef33',cat:'communicatie',thema:2,
+ titel:'Bevestigen wat werkt',
+ focus:'Je oefent met Lisanne vertellen wat wél werkt — specifiek en warm.',
+ instructie:'Vertel Lisanne vandaag iets specifieks dat ze deed dat werkte. Niet "je bent goed bezig" maar: "Toen je [dat] deed, voelde ik [dit]." Geef haar een kompas.',
+ terugblik:'Wat vertelde je haar?',
+ terugblikOpties:['Iets over haar toon','Iets over een actie','Iets over een gevoel','Ze bloosde']},
+{id:'toef34',cat:'communicatie',thema:3,
+ titel:'Over fantasieën praten',
+ focus:'Je oefent met eerlijk delen wat je opwindt of intrigeert.',
+ instructie:'Deel vanavond iets met Lisanne over wat je fantasie prikkelt. Niet als verzoek — als informatie. "Ik merk dat ik het spannend vind als..." Ze hoeft er niks mee te doen.',
+ terugblik:'Hoe reageerde Lisanne?',
+ terugblikOpties:['Nieuwsgierig','Verrast','Ze vond het grappig','Ze zei zelf ook iets']},
+{id:'toef35',cat:'communicatie',thema:4,
+ titel:'Het grote gesprek',
+ focus:'Je oefent met praten over waar jullie staan en waar jullie naartoe gaan.',
+ instructie:'Praat vanavond met Lisanne over de dynamiek. Niet over de app, niet over spullen — over jullie. Hoe voelt het? Wat is anders? Waar wil je naartoe? Luister meer dan je praat.',
+ terugblik:'Hoe was het gesprek?',
+ terugblikOpties:['Diep','Verrassend','Moeilijk maar goed','Ze opende zich']},
+
+// ══ CATEGORIE: DIENSTBAARHEID & ZORG ══
+// Leren dienen vanuit liefde, niet vanuit verwachting
+{id:'toef36',cat:'dienstbaarheid',thema:1,
+ titel:'Iets doen zonder dat het gezien wordt',
+ focus:'Je oefent met dienen zonder erkenning te verwachten.',
+ instructie:'Doe vanavond iets voor Lisanne dat ze niet merkt. Iets schoonmaken, iets klaarzetten, iets regelen. Niet zeggen dat je het hebt gedaan. Gewoon doen en laten gaan.',
+ terugblik:'Hoe was het om iets ongezien te doen?',
+ terugblikOpties:['Goed, bevrijdend','Moeilijk, ik wilde het zeggen','Voldoenend','Ze merkte het toch']},
+{id:'toef37',cat:'dienstbaarheid',thema:2,
+ titel:'Dienen als keuze, niet als plicht',
+ focus:'Je oefent met bewust kiezen om iets voor Lisanne te doen — niet omdat het moet.',
+ instructie:'Doe vanavond iets voor Lisanne. Maar voor je het doet: voel even bewust dat je dit kiest. Niet omdat de app het zegt, niet omdat het moet. Omdat je het wilt geven.',
+ terugblik:'Voelde het anders als bewuste keuze?',
+ terugblikOpties:['Ja, waardevoller','Ja, intiemer','Niet echt','Het was al mijn instelling']},
+{id:'toef38',cat:'dienstbaarheid',thema:3,
+ titel:'Service als ritueel',
+ focus:'Je oefent met dagelijkse service omzetten in een bewust ritueel.',
+ instructie:'Kies vanavond één dagelijkse handeling — thee zetten, eten klaarmaken, opruimen — en maak er een bewust ritueel van. Langzamer, mooier, met aandacht. Niet voor efficiency. Voor haar.',
+ terugblik:'Hoe voelde het als ritueel?',
+ terugblikOpties:['Rustgevend','Mooier','Lisanne merkte het verschil','Voelde overdreven']},
+{id:'toef39',cat:'dienstbaarheid',thema:4,
+ titel:'Anticiperen op morgen',
+ focus:'Je oefent met vooruitdenken — wat heeft Lisanne morgen nodig?',
+ instructie:'Denk vanavond na: wat heeft Lisanne morgen nodig? Kleding klaar, lunch voorbereid, spullen voor Milou? Regel het nu. Niet vragen, niet aankondigen. Gewoon klaar.',
+ terugblik:'Hoe reageerde Lisanne toen ze het merkte?',
+ terugblikOpties:['Ze was verrast','Ze zei dankjewel','Ze had het niet door','Het voelde goed']},
+
+// ══ CATEGORIE: SEKSUALITEIT & INTIMITEIT ══
+// Leren ontvangen, afwachten, kwetsbaar zijn in seks
+{id:'toef40',cat:'intimiteit',thema:2,
+ titel:'Haar tempo bij intimiteit',
+ focus:'Je oefent met afwachten in plaats van initiatief nemen bij seks.',
+ instructie:'Als er vanavond iets intiems gebeurt: neem geen initiatief. Geen handen die richting geven, geen heup die beweegt. Wacht. Zij bepaalt.',
+ terugblik:'Hoe was het om af te wachten?',
+ terugblikOpties:['Spannend','Frustrerend','Ze nam de leiding','Er gebeurde niks']},
+{id:'toef41',cat:'intimiteit',thema:3,
+ titel:'Opwinding tonen, niet sturen',
+ focus:'Je oefent met je opwinding laten zien zonder het over te nemen.',
+ instructie:'Als je opgewonden bent vanavond — laat het merken. Adem, geluiden, lichaam. Maar pak niet de regie. Laat Lisanne zien wat ze met je doet, zonder zelf te gaan sturen.',
+ terugblik:'Hoe reageerde Lisanne op je opwinding?',
+ terugblikOpties:['Ze genoot ervan','Ze werd zekerder','Ze merkte het niet','Het was intens']},
+{id:'toef42',cat:'intimiteit',thema:3,
+ titel:'Nee accepteren bij seks',
+ focus:'Je oefent met een "nee" van Lisanne accepteren — echt accepteren.',
+ instructie:'Als Lisanne vanavond "nee" zegt tegen iets intiems — accepteer het volledig. Geen teleurgesteld gezicht, geen zucht, geen "jammer." Gewoon: "oké." En dan door met de avond.',
+ terugblik:'Lukte het om echt te accepteren?',
+ terugblikOpties:['Ja, ging goed','Ja, maar het deed pijn','Ze zei geen nee','Het voelde als groei']},
+{id:'toef43',cat:'intimiteit',thema:4,
+ titel:'Haar plezier centraal',
+ focus:'Je oefent met jouw opwinding parkeren en alleen op haar te focussen.',
+ instructie:'Als er vanavond iets intiems gebeurt — focus 100% op Lisanne. Niet op jouw gevoel, niet op jouw opwinding. Wat heeft zij nodig? Wat vindt zij fijn? Jij komt later.',
+ terugblik:'Hoe was het om helemaal op haar te focussen?',
+ terugblikOpties:['Intiem','Anders dan normaal','Ze merkte het','Moeilijk maar mooi']},
+{id:'toef44',cat:'intimiteit',thema:5,
+ titel:'Seks als dienst',
+ focus:'Je oefent met seks zien als iets dat je geeft, niet dat je krijgt.',
+ instructie:'Herkader vanavond alles wat er gebeurt als iets dat jij aan Lisanne geeft. Jouw lichaam, jouw reacties, jouw overgave — het is allemaal voor haar. Niet voor jou. Voel het verschil.',
+ terugblik:'Veranderde die herkadeling iets?',
+ terugblikOpties:['Ja, fundamenteel','Een beetje','Niet echt','Het was heel intens']}
+];
+
+// ─── P2: SAMEN-OEFENINGEN POOL ──────────────────────────────
+// Oefeningen die beiden zien, beiden accepteren, samen doen
+const SAMEN_OEFENING_POOL = [
+
+// ══ THEMA 1: BASAAL — samen beginnen ══
+{id:'soef01',thema:1,
+ titel:'Samen stil',
+ focus:'Jullie oefenen met samen zijn zonder vulling.',
+ instructieLisanne:'Ga vanavond 5 minuten naast Tim zitten. Geen tv, geen telefoon. Gewoon samen stil zijn.',
+ instructieTim:'Ga vanavond 5 minuten naast Lisanne zitten. Geen tv, geen telefoon. Gewoon samen stil zijn.',
+ terugblikVraag:'Hoe waren de 5 minuten?',
+ terugblikOpties:['Warm','Ongemakkelijk','Te kort','Fijn']},
+{id:'soef02',thema:1,
+ titel:'Eén vraag, twee antwoorden',
+ focus:'Jullie delen allebei iets persoonlijks over dezelfde vraag.',
+ vraagVanDeDag:['Wat was het mooiste moment van vandaag?','Waar maak je je druk om deze week?','Wat zou je doen als je een dag vrij had?','Waar ben je dankbaar voor vandaag?','Wat wil je deze maand graag doen?','Wanneer voelde je je het meest jezelf vandaag?'],
+ instructieLisanne:'De app heeft Tim dezelfde vraag gesteld. Beantwoord hem voor jezelf — daarna delen jullie.',
+ instructieTim:'De app heeft Lisanne dezelfde vraag gesteld. Beantwoord hem voor jezelf — daarna delen jullie.',
+ terugblikVraag:'Hoe was het om elkaars antwoord te horen?',
+ terugblikOpties:['Verrassend','Herkenbaar','Het bracht ons dichter','Leuk']},
+{id:'soef03',thema:1,
+ titel:'Een herinnering delen',
+ focus:'Jullie verbinden door samen terug te kijken.',
+ instructieLisanne:'Vertel Tim vanavond een herinnering aan jullie begin. Iets dat je nog weet. Iets dat je bijbleef.',
+ instructieTim:'Vertel Lisanne vanavond een herinnering aan jullie begin. Iets dat je nog weet. Iets dat je bijbleef.',
+ terugblikVraag:'Hoe was het om herinneringen te delen?',
+ terugblikOpties:['Ontroerend','Grappig','We herinnerden ons andere dingen','Warm']},
+{id:'soef04',thema:1,
+ titel:'Compliment uitwisselen',
+ focus:'Jullie oefenen met iets specifieks positiefs zeggen.',
+ instructieLisanne:'Zeg vanavond tegen Tim één specifiek ding dat je aan hem waardeert. Niet "je bent lief" maar precies wat je bedoelt.',
+ instructieTim:'Zeg vanavond tegen Lisanne één specifiek ding dat je aan haar waardeert. Niet "je bent lief" maar precies wat je bedoelt.',
+ terugblikVraag:'Hoe voelde het om specifiek te zijn?',
+ terugblikOpties:['Kwetsbaar','Goed','De ander glom','Was makkelijk']},
+
+// ══ THEMA 2: VERDIEPEND — meer durven ══
+{id:'soef05',thema:2,
+ titel:'Wie leidt, wie volgt',
+ focus:'Jullie oefenen bewust met rollen.',
+ instructieLisanne:'Jullie doen vanavond een experiment: 15 minuten lang bepaal jij alles. Wat jullie doen, waar jullie zitten, wanneer jullie praten. Tim volgt.',
+ instructieTim:'Jullie doen vanavond een experiment: 15 minuten lang bepaalt Lisanne alles. Wat jullie doen, waar jullie zitten, wanneer jullie praten. Jij volgt.',
+ terugblikVraag:'Hoe waren de 15 minuten?',
+ terugblikOpties:['Spannend','Onwennig','Grappig','Krachtiger dan verwacht']},
+{id:'soef06',thema:2,
+ titel:'Eerlijk over de dynamiek',
+ focus:'Jullie praten open over hoe de dynamiek voelt.',
+ instructieLisanne:'Vertel Tim vanavond eerlijk: hoe voelt de dynamiek voor jou? Niet wat je denkt dat hij wil horen — wat je echt voelt.',
+ instructieTim:'Luister vanavond naar Lisanne over hoe ze de dynamiek ervaart. Niet reageren, niet verdedigen, niet uitleggen. Alleen luisteren.',
+ terugblikVraag:'Hoe was het gesprek?',
+ terugblikOpties:['Verrassend eerlijk','Moeilijk maar goed','Dichter bij elkaar','Er viel een stilte']},
+{id:'soef07',thema:2,
+ titel:'Samen iets nieuws bekijken',
+ focus:'Jullie verkennen samen iets in de dynamiek.',
+ instructieLisanne:'Pak vanavond samen met Tim een item uit de kast dat jullie nog niet (vaak) gebruikt hebben. Bekijk het samen. Hoe voelt het? Wat zou je ermee kunnen? Geen druk om het te gebruiken.',
+ instructieTim:'Pak vanavond samen met Lisanne een item uit de kast dat jullie nog niet (vaak) gebruikt hebben. Bekijk het samen. Laat Lisanne het vasthouden. Geen druk.',
+ terugblikVraag:'Hoe was het om samen te verkennen?',
+ terugblikOpties:['Leuk','Spannend','Ze/hij vond het grappig','We gaan het proberen']},
+{id:'soef08',thema:2,
+ titel:'Grenzen verkennen — in woorden',
+ focus:'Jullie praten over wat wel en niet oké is.',
+ instructieLisanne:'Praat vanavond met Tim over grenzen. Niet zwaar — gewoon: wat vind je oké? Wat niet? Is er iets veranderd sinds jullie begonnen?',
+ instructieTim:'Praat vanavond met Lisanne over grenzen. Niet zwaar — luister vooral. Wat is voor haar oké? Wat niet? Respecteer alles wat ze zegt.',
+ terugblikVraag:'Hoe was het grenzen-gesprek?',
+ terugblikOpties:['Open en eerlijk','Er waren verrassingen','Fijn om te doen','Moeilijk maar waardevol']},
+
+// ══ THEMA 3: INTIEM — dichter bij de kern ══
+{id:'soef09',thema:3,
+ titel:'Aanraken zonder doel',
+ focus:'Jullie oefenen met aanraking die nergens toe leidt.',
+ instructieLisanne:'Raak Tim vanavond 10 minuten aan. Waar je wilt, hoe je wilt. Maar het leidt nergens toe. Geen seks, geen opbouw. Alleen aanraking. Jij bepaalt.',
+ instructieTim:'Lisanne raakt je vanavond 10 minuten aan. Het leidt nergens toe. Niet sturen, niet meer willen. Alleen ontvangen.',
+ terugblikVraag:'Hoe voelde aanraken zonder doel?',
+ terugblikOpties:['Intiemer dan verwacht','Frustrerend','Heel fijn','Anders dan seks']},
+{id:'soef10',thema:3,
+ titel:'Tim in een positie, samen voelen',
+ focus:'Jullie ervaren samen hoe een positie voelt.',
+ instructieLisanne:'Zet Tim vanavond in een positie — op zijn knieën, vastgemaakt, blinddoek om. Laat hem 10 minuten zo. Blijf erbij. Kijk naar hem. Voel wat het met jullie doet.',
+ instructieTim:'Lisanne zet je vanavond in een positie. Blijf erin. Voel. Niet nadenken over wat er komt. Gewoon zijn.',
+ terugblikVraag:'Hoe waren die 10 minuten?',
+ terugblikOpties:['Intens','Rustig','Verbindend','Anders dan verwacht']},
+{id:'soef11',thema:3,
+ titel:'Samen terugkijken',
+ focus:'Jullie praten samen over een recent moment.',
+ instructieLisanne:'Praat vanavond met Tim over het laatste intense moment dat jullie hadden. Wat herinner je je? Wat viel je op?',
+ instructieTim:'Praat vanavond met Lisanne over het laatste intense moment. Vertel wat je voelde — niet wat je dacht. Luister naar wat zij ervoer.',
+ terugblikVraag:'Wat leerden jullie van terugkijken?',
+ terugblikOpties:['We beleefden het anders','We voelden hetzelfde','Er kwamen nieuwe dingen','Het bracht ons dichter']},
+
+// ══ THEMA 4: VERDIEPT — samen groeien ══
+{id:'soef12',thema:4,
+ titel:'Een moment samen bouwen',
+ focus:'Jullie bouwen samen een intiem moment — bewust, van begin tot eind.',
+ instructieLisanne:'Bouw vanavond samen met Tim een moment. Jij bepaalt het begin en het eind. Tim mag tussendoor zeggen wat hij voelt. Samen, maar jij leidt.',
+ instructieTim:'Jullie bouwen vanavond samen een moment. Lisanne leidt. Jij mag tussendoor zeggen wat je voelt. Niet sturen — delen.',
+ terugblikVraag:'Hoe was het samen bouwen?',
+ terugblikOpties:['Mooier dan alleen','Ze/hij verraste me','Het was niet perfect en dat was goed','Willen we vaker']},
+{id:'soef13',thema:4,
+ titel:'Wensen delen',
+ focus:'Jullie delen allebei iets dat je graag zou willen proberen.',
+ instructieLisanne:'Deel vanavond met Tim iets dat je zou willen proberen. Iets dat je intrigeert, benieuwd maakt, of waar je nieuwsgierig naar bent. Geen beloftes — alleen delen.',
+ instructieTim:'Deel vanavond met Lisanne iets dat je zou willen proberen. Niet als verzoek — als informatie. Luister ook naar wat zij deelt.',
+ terugblikVraag:'Hoe was het om wensen te delen?',
+ terugblikOpties:['Spannend','Kwetsbaar','Verrassend','We willen hetzelfde']},
+{id:'soef14',thema:4,
+ titel:'Dankbaar voor de reis',
+ focus:'Jullie staan samen stil bij hoe ver jullie zijn gekomen.',
+ instructieLisanne:'Praat vanavond met Tim over hoe jullie zijn veranderd sinds jullie hiermee begonnen. Niet wat er beter moet — wat er al is.',
+ instructieTim:'Praat vanavond met Lisanne over hoe jullie zijn veranderd. Focus op wat er al is, niet op wat je nog wilt. Wees dankbaar.',
+ terugblikVraag:'Hoe was het om terug te kijken?',
+ terugblikOpties:['Ontroerend','We zijn ver gekomen','Er is nog zo veel','Het voelde als een mijlpaal']},
+
+// ══ THEMA 5: EIGEN STIJL — jullie manier ══
+{id:'soef15',thema:5,
+ titel:'Vrije avond — jullie regels',
+ focus:'Jullie vullen samen een avond in vanuit jullie eigen dynamiek.',
+ instructieLisanne:'Vanavond is er geen app, geen suggestie, geen structuur. Jullie doen wat jullie willen. Jij bepaalt — of niet. Jullie eigen stijl.',
+ instructieTim:'Vanavond is er geen app. Jullie doen wat jullie willen. Volg Lisanne — of wacht. Jullie weten inmiddels hoe het werkt.',
+ terugblikVraag:'Hoe was een avond zonder app?',
+ terugblikOpties:['We hadden de app niet nodig','We misten de structuur','Het was onze beste avond','We vonden onze eigen stijl']}
+];
+
+// ─── P2: TIM'S OEFENINGEN SYSTEEM ───────────────────────────
+function getTimOefeningState(){
+  return LS.get('t_oefening', {
+    actief: null,
+    geschiedenis: [],
+    laatsteKeer: null
+  });
+}
+
+function kiesTimOefening(){
+  const state = getTimOefeningState();
+  const ts = getThemaState();
+  const thema = ts.actiefThema || 1;
+  const pool = TIM_OEFENING_POOL.filter(o => o.thema <= thema);
+  const recentIds = state.geschiedenis.slice(-8).map(g => g.id);
+  const filtered = pool.filter(o => !recentIds.includes(o.id));
+  const finalPool = filtered.length > 0 ? filtered : pool;
+  const seed = today() + 'timoef';
+  let h = 0; for(let i=0;i<seed.length;i++){h=((h<<5)-h)+seed.charCodeAt(i);h|=0;}
+  return finalPool[Math.abs(h) % finalPool.length];
+}
+
+function startTimOefening(){
+  const state = getTimOefeningState();
+  const oef = kiesTimOefening();
+  state.actief = {id:oef.id, titel:oef.titel, datum:today()};
+  state.laatsteKeer = today();
+  LS.set('t_oefening', state);
+  renderApp();
+}
+
+function beantwoordTimOefeningTerugblik(antwoord){
+  const state = getTimOefeningState();
+  if(!state.actief) return;
+  state.geschiedenis.push({id:state.actief.id, datum:state.actief.datum, terugblik:antwoord});
+  state.actief = null;
+  LS.set('t_oefening', state);
+  toonBevestiging('Elke keer een beetje meer. Goed bezig.');
+  renderApp();
+}
+
+function heeftTimActieveOefening(){
+  const state = getTimOefeningState();
+  return state.actief && state.actief.datum === today();
+}
+
+function moetTimOefeningSuggestie(){
+  const state = getTimOefeningState();
+  if(state.actief) return false;
+  if(state.laatsteKeer && daysSince(state.laatsteKeer) < 5) return false;
+  const seed = today() + 'moettimoef';
+  let h = 0; for(let i=0;i<seed.length;i++){h=((h<<5)-h)+seed.charCodeAt(i);h|=0;}
+  return Math.abs(h % 5) === 0;
+}
+
+// ─── P2: SAMEN-OEFENINGEN SYSTEEM ───────────────────────────
+function getSamenOefeningState(){
+  return LS.get('samen_oefening', {
+    actief: null,         // {id, titel, datum, lisanneAccepted:bool, timAccepted:bool, lisanneTerugblik:null, timTerugblik:null}
+    geschiedenis: [],
+    laatsteKeer: null
+  });
+}
+
+function kiesSamenOefening(){
+  const state = getSamenOefeningState();
+  const ts = getThemaState();
+  const thema = ts.actiefThema || 1;
+  const pool = SAMEN_OEFENING_POOL.filter(o => o.thema <= thema);
+  const recentIds = state.geschiedenis.slice(-5).map(g => g.id);
+  const filtered = pool.filter(o => !recentIds.includes(o.id));
+  const finalPool = filtered.length > 0 ? filtered : pool;
+  const seed = today() + 'samenoef';
+  let h = 0; for(let i=0;i<seed.length;i++){h=((h<<5)-h)+seed.charCodeAt(i);h|=0;}
+  return finalPool[Math.abs(h) % finalPool.length];
+}
+
+function startSamenOefening(){
+  const state = getSamenOefeningState();
+  const oef = kiesSamenOefening();
+  state.actief = {id:oef.id, titel:oef.titel, datum:today(), lisanneAccepted:false, timAccepted:false, lisanneTerugblik:null, timTerugblik:null};
+  state.laatsteKeer = today();
+  LS.set('samen_oefening', state);
+  renderApp();
+}
+
+function accepteerSamenOefening(wie){
+  const state = getSamenOefeningState();
+  if(!state.actief) return;
+  if(wie === 'lisanne') state.actief.lisanneAccepted = true;
+  if(wie === 'tim') state.actief.timAccepted = true;
+  LS.set('samen_oefening', state);
+  if(state.actief.lisanneAccepted && state.actief.timAccepted){
+    toonBevestiging('Jullie doen het samen vanavond.');
+  } else {
+    toonBevestiging(wie === 'lisanne' ? 'Tim ziet dat je meedoet.' : 'Lisanne ziet dat je meedoet.');
+  }
+  renderApp();
+}
+
+function beantwoordSamenTerugblik(wie, antwoord){
+  const state = getSamenOefeningState();
+  if(!state.actief) return;
+  if(wie === 'lisanne') state.actief.lisanneTerugblik = antwoord;
+  if(wie === 'tim') state.actief.timTerugblik = antwoord;
+  // Als beiden hebben gereageerd, archiveer
+  if(state.actief.lisanneTerugblik && state.actief.timTerugblik){
+    state.geschiedenis.push({
+      id:state.actief.id, datum:state.actief.datum,
+      lisanne:state.actief.lisanneTerugblik, tim:state.actief.timTerugblik
+    });
+    state.actief = null;
+    toonBevestiging('Jullie hebben allebei gereageerd. Mooi.');
+  } else {
+    toonBevestiging('Opgeslagen. Wachten op de ander.');
+  }
+  LS.set('samen_oefening', state);
+  renderApp();
+}
+
+function heeftSamenOefening(){
+  const state = getSamenOefeningState();
+  return state.actief && state.actief.datum === today();
+}
+
+function moetSamenOefeningSuggestie(){
+  const state = getSamenOefeningState();
+  if(state.actief) return false;
+  if(state.laatsteKeer && daysSince(state.laatsteKeer) < 6) return false;
+  const seed = today() + 'moetsamen';
+  let h = 0; for(let i=0;i<seed.length;i++){h=((h<<5)-h)+seed.charCodeAt(i);h|=0;}
+  return Math.abs(h % 6) === 0; // ~1x per week
+}
+
+// Helper: render samen-oefening kaart voor een specifieke view
+function renderSamenOefeningKaart(wie){
+  const state = getSamenOefeningState();
+  if(!state.actief) return '';
+  const oef = SAMEN_OEFENING_POOL.find(o => o.id === state.actief.id);
+  if(!oef) return '';
+  const accepted = wie === 'lisanne' ? state.actief.lisanneAccepted : state.actief.timAccepted;
+  const otherAccepted = wie === 'lisanne' ? state.actief.timAccepted : state.actief.lisanneAccepted;
+  const terugblik = wie === 'lisanne' ? state.actief.lisanneTerugblik : state.actief.timTerugblik;
+  const otherTerugblik = wie === 'lisanne' ? state.actief.timTerugblik : state.actief.lisanneTerugblik;
+  const instructie = wie === 'lisanne' ? oef.instructieLisanne : oef.instructieTim;
+  // Speciale handling voor "Eén vraag" type
+  let vraagTekst = '';
+  if(oef.vraagVanDeDag){
+    const seed = today() + 'samenvraag';
+    let h = 0; for(let i=0;i<seed.length;i++){h=((h<<5)-h)+seed.charCodeAt(i);h|=0;}
+    vraagTekst = oef.vraagVanDeDag[Math.abs(h) % oef.vraagVanDeDag.length];
+  }
+
+  let html = `<div class="card" style="border-color:rgba(196,138,138,.25);background:rgba(196,138,138,.04)">
+    <p style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem">Samen-oefening</p>
+    <p style="font-size:.95rem;color:var(--text1);font-weight:500;margin-bottom:.3rem">${oef.titel}</p>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.5rem">${oef.focus}</p>`;
+  if(vraagTekst){
+    html += `<p style="font-size:.95rem;color:var(--text1);font-style:italic;margin-bottom:.5rem;padding:.5rem;background:rgba(196,138,138,.06);border-radius:var(--radius-sm)">"${vraagTekst}"</p>`;
+  }
+  html += `<p style="font-size:.9rem;color:var(--text2);line-height:1.5;margin-bottom:.6rem">${instructie}</p>`;
+
+  if(!accepted){
+    html += `<div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary" style="flex:1;font-size:.85rem" onclick="accepteerSamenOefening('${wie}')">Ik doe mee</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:.85rem" onclick="renderApp()">Niet vanavond</button>
+    </div>`;
+    if(otherAccepted) html += `<p style="font-size:.75rem;color:var(--success);text-align:center;margin-top:.4rem">✓ ${wie==='lisanne'?'Tim':'Lisanne'} doet al mee</p>`;
+  } else if(!terugblik){
+    html += `<p style="font-size:.8rem;color:var(--success);margin-bottom:.5rem">✓ Je doet mee${otherAccepted ? ' — '+( wie==='lisanne'?'Tim':'Lisanne')+' ook!' : ''}</p>`;
+    html += `<p style="font-size:.85rem;color:var(--text2);margin-bottom:.4rem">${oef.terugblikVraag}</p>
+    <div style="display:flex;flex-direction:column;gap:.3rem">
+      ${oef.terugblikOpties.map(opt => `<button class="btn btn-ghost" style="text-align:left;font-size:.85rem;padding:.5rem .7rem" onclick="beantwoordSamenTerugblik('${wie}','${opt.replace(/'/g,"\\'")}')">${opt}</button>`).join('')}
+    </div>`;
+  } else {
+    html += `<p style="font-size:.8rem;color:var(--success)">✓ Jouw reactie: "${terugblik}"</p>`;
+    if(otherTerugblik) html += `<p style="font-size:.8rem;color:var(--text2);margin-top:.3rem">${wie==='lisanne'?'Tim':'Lisanne'}: "${otherTerugblik}"</p>`;
+    else html += `<p style="font-size:.75rem;color:var(--text3);margin-top:.3rem">Wachten op ${wie==='lisanne'?'Tim':'Lisanne'}...</p>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
 // ─── P1: RUZIE-MODUS + VEILIGHEIDSKLEP ─────────────────────
 function getRuzieModus(){
   return LS.get('l_ruzie_modus', null);
@@ -5662,6 +6260,44 @@ function renderTimVandaag(){
     </div>`;
   }
 
+  // ── P2: TIM'S OEFENING ──
+  if(heeftTimActieveOefening()){
+    const toState = getTimOefeningState();
+    const toef = TIM_OEFENING_POOL.find(o => o.id === toState.actief.id);
+    if(toef){
+      html += `<div class="card" style="border-color:rgba(214,179,106,.25);background:rgba(214,179,106,.04)">
+        <p style="font-size:.7rem;color:var(--warm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem">Jouw oefening</p>
+        <p style="font-size:.95rem;color:var(--text1);font-weight:500;margin-bottom:.3rem">${toef.titel}</p>
+        <p style="font-size:.8rem;color:var(--text3);margin-bottom:.5rem">${toef.focus}</p>
+        <p style="font-size:.9rem;color:var(--text2);line-height:1.5;margin-bottom:.7rem">${toef.instructie}</p>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:.4rem">${toef.terugblik}</p>
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          ${toef.terugblikOpties.map(opt => `<button class="btn btn-ghost" style="text-align:left;font-size:.85rem;padding:.5rem .7rem" onclick="beantwoordTimOefeningTerugblik('${opt.replace(/'/g,"\\'")}')">${opt}</button>`).join('')}
+        </div>
+      </div>`;
+    }
+  } else if(moetTimOefeningSuggestie()){
+    const toef = kiesTimOefening();
+    if(toef){
+      html += `<div class="card" style="border-color:rgba(214,179,106,.15);text-align:center">
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Er is een oefening voor je vandaag.</p>
+        <p style="font-size:.8rem;color:var(--text3);margin-bottom:.6rem">${toef.titel}</p>
+        <div style="display:flex;gap:.5rem;justify-content:center">
+          <button class="btn btn-primary" style="font-size:.85rem" onclick="startTimOefening()">Bekijken</button>
+          <button class="btn btn-ghost" style="font-size:.85rem" onclick="LS.set('t_oef_skip',today());renderApp()">Niet vandaag</button>
+        </div>
+      </div>`;
+    }
+  }
+
+  // ── P2: SAMEN-OEFENING (Tim's view) ──
+  if(heeftSamenOefening()){
+    html += renderSamenOefeningKaart('tim');
+  } else if(moetSamenOefeningSuggestie()){
+    startSamenOefening();
+    html += renderSamenOefeningKaart('tim');
+  }
+
   // ── TIM'S EIGEN INITIATIEF ──
   if(faseActief(2)){
     const eigenInit = getEigenInitiatieven();
@@ -6355,6 +6991,14 @@ function renderVandaag(state){
         </div>
       </div>`;
     }
+  }
+
+  // ── P2: Samen-oefening (Lisanne's view) ──
+  if(heeftSamenOefening()){
+    momentHtml += renderSamenOefeningKaart('lisanne');
+  } else if(!momentHtml && moetSamenOefeningSuggestie()){
+    startSamenOefening();
+    momentHtml += renderSamenOefeningKaart('lisanne');
   }
 
   // Render moment-blok als er inhoud is
