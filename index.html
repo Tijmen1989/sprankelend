@@ -3123,10 +3123,10 @@ const SAMEN_ERUIT = [
    tekst:'Doe dit weekend iets als gezin buiten de deur. Jij kiest wat — Tim en Milou komen gewoon mee.',
    zegSubtiel:null,zegPrive:null,actieType:'relationeel'}
 ];
-SAMEN_ERUIT.forEach(s => SUGGESTIE_POOL.push(s));
+SAMEN_ERUIT.forEach(s => { s.leerpad = 0; SUGGESTIE_POOL.push(s); });
 
-// Voeg "Gewoon jullie" toe aan de pool
-GEWOON_JULLIE.forEach(s => SUGGESTIE_POOL.push(s));
+// Voeg "Gewoon jullie" toe aan de pool — tag met leerpad:0
+GEWOON_JULLIE.forEach(s => { s.leerpad = 0; SUGGESTIE_POOL.push(s); });
 
 // ═══════════════════════════════════════════════════════════════
 // LICHAMELIJKE ACTIVITEITEN — spanning en lichamelijk bewustzijn
@@ -6362,7 +6362,7 @@ const PRESENCE_POOL = [
    tekst:'Ga vanavond gewoon naast Tim zitten. Niks bijzonders. Samen zijn is ook goed.',
    zegSubtiel:null,zegPrive:null,actieType:'relationeel'}
 ];
-PRESENCE_POOL.forEach(s => SUGGESTIE_POOL.push(s));
+PRESENCE_POOL.forEach(s => { if(s.leerpad === undefined) s.leerpad = 0; SUGGESTIE_POOL.push(s); });
 
 // ─── FASE 0: GEWOON SAMEN (dag 1-5) ───
 // Puur warmte. Geen dynamiek, geen hints. Lisanne landt in de app als relatie-app.
@@ -6409,7 +6409,7 @@ const KERN_LP1 = [
   // LP1: Kleine Signalen — kleine gebaren die laten merken dat jij de toon zet
   {id:'ks01',cat:'micro',spoor:'A',zwaarte:1,type:'op_afstand',items:[],subtiel:true,opbouw:false,minDagen:0,vibe:'speels',
    spoor4:2,leerpad:1,stap:1,core:true,actieType:'stem',
-   tekst:"Stuur Tim een berichtje welk shirt hij vandaag aan moet doen. Gewoon omdat jij het leuk vindt.",
+   tekst:"Stuur Tim een berichtje met wat hij moet doen voordat jij er bent. 'Zet alvast water klaar' of 'ruim de tafel af.' Gewoon omdat jij het zegt.",
    inzicht:"Een klein gebaar als dit laat Tim voelen dat jij betrokken bent bij zijn dag. Het hoeft niet groots te zijn — juist het kleine maakt het bijzonder.",
    reflectieVraag:"Hoe reageerde Tim? Vond je het leuk om te kiezen?",
    zegSubtiel:null,zegPrive:null},
@@ -6439,7 +6439,7 @@ const KERN_LP1 = [
    zegSubtiel:null,zegPrive:null},
   {id:'ks06',cat:'micro',spoor:'A',zwaarte:1,type:'op_afstand',items:[],subtiel:true,opbouw:false,minDagen:0,vibe:'speels',
    spoor4:2,leerpad:1,stap:3,core:true,actieType:'stem',
-   tekst:"Stuur Tim een berichtje met wat je wilt dat hij doet voordat je thuiskomt. Iets simpels: 'Zorg dat de was gevouwen is als ik er ben.'",
+   tekst:"Stuur Tim een berichtje met iets dat je wilt dat hij doet. Iets simpels: 'Zorg dat de was gevouwen is.' Niet vragen — gewoon zeggen.",
    inzicht:"Een concrete verwachting uitspreken geeft structuur aan jullie dag. Het kan voor jullie allebei fijn zijn om te weten wat er verwacht wordt.",
    reflectieVraag:"Vond je het raar om zo direct te zijn, of ging het makkelijker dan verwacht?",
    zegSubtiel:null,zegPrive:null},
@@ -6497,7 +6497,7 @@ const KERN_LP2 = [
    zegSubtiel:null,zegPrive:null},
   {id:'jk05',cat:'micro',spoor:'A',zwaarte:1,type:'face_to_face',items:[],subtiel:true,opbouw:false,minDagen:0,vibe:'warm',
    spoor4:2,leerpad:2,stap:3,core:true,actieType:'beslissing',
-   tekst:"Bepaal wat jullie vanavond eten. Bestellen? Ergens heen? Zelf maken? Zeg: 'Vanavond wordt het dit.' Geen overleg — jij kiest.",
+   tekst:"Bepaal wat jullie vanavond eten. Bestellen? Ergens heen? Zeg: 'Vanavond wordt het dit.' Geen overleg — jij kiest.",
    inzicht:"Kiezen voor twee is een subtiele vorm van de leiding nemen. Het gaat niet om wat — het gaat erom dat jij beslist.",
    reflectieVraag:"Hoe voelde het om te kiezen zonder te overleggen?",
    zegSubtiel:null,zegPrive:null},
@@ -6543,7 +6543,7 @@ const KERN_LP3 = [
    zegSubtiel:null,zegPrive:null},
   {id:'db04',cat:'relationeel',spoor:'A',zwaarte:1,type:'face_to_face',items:[],subtiel:true,opbouw:false,minDagen:0,vibe:'warm',
    spoor4:2,leerpad:3,stap:2,core:true,actieType:'relationeel',
-   tekst:"Ga met je hand door Tim's haar terwijl jullie een serie kijken. Langzaam, ontspannen. Gewoon omdat het lekker is.",
+   tekst:"Leg je hand in Tim's nek terwijl jullie een serie kijken. Laat je duim langzaam over zijn huid gaan. Gewoon omdat het lekker is.",
    inzicht:"Terloops aanraken terwijl je iets anders doet zegt meer dan woorden. Het is een manier om dichtbij te zijn zonder er iets van te hoeven maken.",
    reflectieVraag:"Hoe reageerde Tim? Voelde het ontspannen?",
    zegSubtiel:null,zegPrive:null},
