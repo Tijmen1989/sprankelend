@@ -2640,7 +2640,7 @@ const LESSEN_INHOUD = [
   {id:1, titel:'Waarom dit werkt voor Tim', subtitel:'Hij ontspant als jij soms beslist', domein:'verbinding', fase:0,
    zichtbaar:{
      uitleg:'Hij reageert waarschijnlijk anders op keuzes dan je verwacht.\nWanneer jij iets beslist \u2014 zelfs iets kleins \u2014 ontspant hij vaak. Niet omdat hij het niet zelf kan, maar omdat het prettig is om even niet te hoeven kiezen.\nHoe duidelijker jij bent, hoe rustiger hij vaak wordt.\nJe kunt dit niet fout doen. Te zacht is niet fout. Te kort is niet fout.\nHet gaat niet om alle beslissingen \u2014 alleen om de momenten waarop jij het even overneemt.\nMisschien merk je dat niet hoeven overleggen ook voor jou rust geeft.',
-     voorbeeld:'Jullie zitten op de bank. Tim vraagt wat jullie gaan kijken. In plaats van te overleggen zeg jij: \u201cDie serie die ik gisteren zag. Zet maar op.\u201d Kijk naar zijn schouders. Die zakken.',
+     voorbeeld:'Hij zit op zijn telefoon. Jij zegt: \u201cTelefoon weg.\u201d Hij legt hem neer. Geen discussie.\n\nHij vraagt: \u201cWat doen we vanavond?\u201d Jij zegt: \u201cNachtmarkt. Schoenen aan.\u201d Hij staat op.\n\nJullie moeten weg. Jij zegt: \u201cJij rijdt.\u201d Of: \u201cIk rijd.\u201d Maakt niet uit wat \u2014 jij kiest.',
      oefening:'Beslis vandaag \u00e9\u00e9n klein ding zonder overleg. Kijk naar zijn lichaam, niet naar zijn woorden.',
      vandaag:'Beslis vandaag \u00e9\u00e9n klein ding.'
    },
@@ -3528,8 +3528,7 @@ function getLesStappen(les){
   const stappen = [
     { label:'Uitleg', tekst: z.uitleg, type:'uitleg' },
     { label:'Voorbeeld', tekst: z.voorbeeld, type:'voorbeeld' },
-    { label:'Oefening', tekst: z.oefening, type:'oefening' },
-    { label:'Vandaag', tekst: z.vandaag, type:'vandaag' }
+    { label:'Oefening', tekst: z.oefening, type:'oefening' }
   ];
   return stappen;
 }
@@ -3599,7 +3598,6 @@ function toonLes(lesNr, startStap){
   function renderHuidigeStap(){
     const stap = stappen[huidigStap];
     const isLaatste = huidigStap === stappen.length - 1;
-    const isVandaag = stap.type === 'vandaag';
 
     // Stap-indicator bolletjes
     let dots = '';
@@ -3616,10 +3614,6 @@ function toonLes(lesNr, startStap){
     if(stap.type === 'voorbeeld'){
       contentHtml = `<div style="padding:.8rem 1rem;background:rgba(${kleur},.04);border-radius:var(--radius-sm);border-left:3px solid rgba(${kleur},.25)">
         <p style="font-size:.9rem;color:var(--text2);line-height:1.65;font-style:italic">${tekst}</p>
-      </div>`;
-    } else if(stap.type === 'vandaag'){
-      contentHtml = `<div style="padding:1rem;background:rgba(${kleur},.06);border-radius:var(--radius);text-align:center">
-        <p style="font-size:.95rem;color:var(--text1);line-height:1.6;font-weight:500">${tekst}</p>
       </div>`;
     } else {
       contentHtml = `<p style="font-size:.9rem;color:var(--text1);line-height:1.7">${tekst}</p>`;
@@ -11478,10 +11472,10 @@ function renderVandaag(state){
       const _lk = DOMEIN_KLEUREN[_laatsteLes.domein] || '196,168,138';
 
       if(_dagenSinds === 0){
-        // Dag 0: toon "actie vandaag" uit de les — klik opent les op stap 4 (vandaag = index 3)
-        html += `<div onclick="toonLes(${_laatsteLes.id},3)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.06);border:1px solid rgba(${_lk},.15);border-radius:var(--radius);text-align:center;cursor:pointer">
-          <p style="font-size:.68rem;color:rgba(${_lk},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Les ${_laatsteLes.id} — actie vandaag</p>
-          <p style="font-size:.88rem;color:var(--text1);line-height:1.5;font-weight:500">${_laatsteLes.zichtbaar.vandaag}</p>
+        // Dag 0: toon oefening uit de les — klik opent les op stap 3 (oefening = index 2)
+        html += `<div onclick="toonLes(${_laatsteLes.id},2)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.06);border:1px solid rgba(${_lk},.15);border-radius:var(--radius);text-align:center;cursor:pointer">
+          <p style="font-size:.68rem;color:rgba(${_lk},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Les ${_laatsteLes.id} — oefening</p>
+          <p style="font-size:.88rem;color:var(--text1);line-height:1.5;font-weight:500">${_laatsteLes.zichtbaar.oefening}</p>
           <p style="font-size:.7rem;color:rgba(${_lk},.4);margin-top:.3rem">Tik om les te openen</p>
         </div>`;
       } else if(_dagenSinds <= 5 && _laatsteLes.meerLezen.herhaling){
