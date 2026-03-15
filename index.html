@@ -3505,7 +3505,18 @@ function getLesGate(lesId){
   if(!les) return false;
   const s4 = getSpoor4State();
   const fase = Math.max(getEffectieveLesjesFase(), s4.fase || 0);
-  return fase >= les.fase;
+  if(fase < les.fase) return false;
+
+  // Les 1 is altijd beschikbaar
+  if(lesId <= 1) return true;
+
+  // Vorige les moet minstens 3 dagen geleden gelezen zijn
+  const v = getLesVoortgang();
+  const vorigeLesId = lesId - 1;
+  if(!v.gelezen.includes(vorigeLesId)) return false;
+  const gelezenDatum = v.gelezenOp[vorigeLesId];
+  if(!gelezenDatum) return true; // migratie: geen datum = oude data, laat door
+  return daysSince(gelezenDatum) >= 3;
 }
 
 // ── Stap-voor-stap lessen-systeem ──
@@ -3633,13 +3644,10 @@ function toonLes(lesNr, startStap){
         Gelezen ✓
       </button>`;
     } else if(isLaatste && alGelezen){
-      // Volgende les knop als beschikbaar
-      const volgendeGate = lesNr < 12 && getLesGate(lesNr + 1);
-      if(volgendeGate){
-        actieHtml = `<button onclick="window._lesGaNaar(${lesNr+1})" style="all:unset;display:block;width:100%;padding:.7rem;margin-top:1rem;background:rgba(${kleur},.08);border:1px solid rgba(${kleur},.15);border-radius:var(--radius);text-align:center;font-size:.88rem;color:var(--accent);cursor:pointer">
-          Les ${lesNr+1} →
-        </button>`;
-      }
+      // CTA: "Oefenen!" knop — sluit les, terug naar Vandaag
+      actieHtml = `<button onclick="window._lesSluit()" style="all:unset;display:block;width:100%;padding:.7rem;margin-top:1rem;background:rgba(${kleur},.12);border:1px solid rgba(${kleur},.2);border-radius:var(--radius);text-align:center;font-size:.88rem;color:var(--text1);font-weight:500;cursor:pointer">
+        Oefenen!
+      </button>`;
     }
 
     overlay.innerHTML = `<div style="width:100%;max-width:480px;display:flex;flex-direction:column;height:100%;overflow:hidden">
@@ -3727,6 +3735,36 @@ function toonLes(lesNr, startStap){
     toonLes(nr);
   };
   // _lesToggleMeerLezen verwijderd — meer lezen is nu altijd zichtbaar
+
+  // ── Swipe-navigatie ──
+  let _swipeStartX = 0;
+  let _swipeStartY = 0;
+  let _swiping = false;
+  overlay.addEventListener('touchstart', function(e){
+    const t = e.touches[0];
+    _swipeStartX = t.clientX;
+    _swipeStartY = t.clientY;
+    _swiping = true;
+  }, {passive: true});
+  overlay.addEventListener('touchend', function(e){
+    if(!_swiping) return;
+    _swiping = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - _swipeStartX;
+    const dy = t.clientY - _swipeStartY;
+    // Alleen horizontale swipes (dx groter dan dy, minimaal 50px)
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      if(dx < 0 && huidigStap < stappen.length - 1){
+        // Swipe links → volgende stap
+        huidigStap++;
+        renderHuidigeStap();
+      } else if(dx > 0 && huidigStap > 0){
+        // Swipe rechts → vorige stap
+        huidigStap--;
+        renderHuidigeStap();
+      }
+    }
+  }, {passive: true});
 
   renderHuidigeStap();
   document.body.appendChild(overlay);
