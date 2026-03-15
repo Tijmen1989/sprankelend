@@ -2639,10 +2639,10 @@ const MINI_LESJES = [
 const LESSEN_INHOUD = [
   {id:1, titel:'Waarom dit werkt voor Tim', subtitel:'Hoe duidelijkheid hem rust geeft', domein:'verbinding', fase:0,
    zichtbaar:{
-     uitleg:'Tim reageert anders dan je misschien verwacht. Als jij iets beslist voor hem \u2014 iets kleins, iets groots, maakt niet uit \u2014 dan wordt hij rustiger. Niet omdat hij het niet zelf kan, maar omdat het heerlijk is om even niet te hoeven kiezen. Hoe duidelijker jij bent, hoe meer hij ontspant.\n\nJe kunt dit niet fout doen. Te zacht is niet fout. Te kort is niet fout. De enige fout is niks proberen.',
-     voorbeeld:'Jullie zitten op de bank. Tim vraagt: "wat zullen we kijken?" Normaal overleggen jullie. In plaats daarvan zeg jij: "Die serie die ik gisteren zag. Zet maar op." Klaar. Kijk naar zijn schouders \u2014 ze zakken. Dat is het.',
-     oefening:'Let vandaag \u00e9\u00e9n keer bewust op Tim als je iets beslist. Kijk naar zijn lichaam. Ontspant hij? Wordt hij rustiger?',
-     vandaag:'Beslis vandaag \u00e9\u00e9n klein ding.'
+     uitleg:'Als jij beslist, wordt Tim rustiger. Niet omdat hij het niet zelf kan \u2014 maar omdat het fijn is om even niet te hoeven kiezen. Dat geldt voor kleine dingen: wat jullie eten, waar hij zit, wanneer de tv uit gaat. Hoe duidelijker jij bent, hoe meer hij ontspant. Je kunt dit niet fout doen. Te zacht is niet fout. Te kort is niet fout. De enige fout is niks proberen.',
+     voorbeeld:'Tim vraagt wat jullie vanavond doen. Normaal overleggen jullie. Nu zeg jij: \u201cWe bestellen Thais. Ik neem pad thai.\u201d Klaar. Of: Tim pakt zijn telefoon. Jij zegt: \u201cLeg neer, we gaan iets kijken.\u201d Of: jullie staan in de keuken. \u201cJij ruimt af, ik ga alvast zitten.\u201d Steeds hetzelfde idee: jij kiest, hij doet.',
+     oefening:'Let vandaag \u00e9\u00e9n keer bewust op Tim als je iets beslist. Kijk naar zijn schouders en zijn gezicht. Ontspant hij? Wordt hij rustiger? Je hoeft niks te zeggen \u2014 alleen kijken.',
+     vandaag:'Beslis vandaag \u00e9\u00e9n klein ding voor Tim. Wat jullie eten, wat hij doet, of waar hij zit.'
    },
    meerLezen:{
      herhaling:'Probeer het deze week drie keer. Gewoon momenten opmerken waar jij iets kunt beslissen in plaats van overleggen.',
@@ -3526,10 +3526,10 @@ const DOMEIN_KLEUREN = {verbinding:'140,160,100', controle:'196,168,138', fysiek
 function getLesStappen(les){
   const z = les.zichtbaar;
   const stappen = [
-    { label:'Wat is dit?', tekst: z.uitleg, type:'uitleg' },
-    { label:'Hoe ziet dat eruit?', tekst: z.voorbeeld, type:'voorbeeld' },
-    { label:'Probeer dit', tekst: z.oefening, type:'oefening' },
-    { label:'Jouw actie vandaag', tekst: z.vandaag, type:'vandaag' }
+    { label:'Uitleg', tekst: z.uitleg, type:'uitleg' },
+    { label:'Voorbeeld', tekst: z.voorbeeld, type:'voorbeeld' },
+    { label:'Jouw actie vandaag', tekst: z.vandaag, type:'vandaag' },
+    { label:'Waar je op kunt letten', tekst: z.oefening, type:'oefening' }
   ];
   return stappen;
 }
@@ -10967,11 +10967,11 @@ function renderVandaag(state){
   });
 
   html += `<div style="position:relative;margin-bottom:.6rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface);border:1px solid var(--card-border);border-radius:var(--radius-sm);min-height:44px">
-      <button onclick="toggleStatusEnergie()" style="all:unset;cursor:pointer;font-size:.82rem;color:var(--text1);display:flex;align-items:center;gap:.3rem">
-        <span>${_ds.icon}</span> <span>${_ds.label}</span> <span style="color:var(--text3);font-size:.78rem">&middot; ${_ds.context}</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border:1px solid var(--card-border);border-radius:var(--radius-sm);min-height:44px;gap:.6rem">
+      <button onclick="toggleStatusEnergie()" style="all:unset;cursor:pointer;font-size:.82rem;color:var(--text1);display:flex;align-items:center;gap:.3rem;flex-shrink:1;min-width:0">
+        <span>${_ds.icon}</span> <span>${_ds.label}</span> <span style="color:var(--text3);font-size:.75rem">&middot; ${_ds.context}</span>
       </button>
-      <button id="statusAgendaBtn" onclick="toggleStatusAgenda()" style="all:unset;cursor:pointer;font-size:.78rem;color:var(--text3);white-space:nowrap">${_agPreview}</button>
+      <button id="statusAgendaBtn" onclick="toggleStatusAgenda()" style="all:unset;cursor:pointer;font-size:.72rem;color:var(--text3);white-space:nowrap;flex-shrink:0">${_agPreview}</button>
     </div>
     <div id="statusAgendaExpand" style="max-height:0px;opacity:0;overflow:hidden;transition:max-height .18s ease,opacity .12s ease;padding:0 10px;background:var(--surface);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);margin-top:-1px">
       <div style="padding:.4rem 0;border-top:1px solid var(--card-border)">
@@ -11462,15 +11462,15 @@ function renderVandaag(state){
       const _lk = DOMEIN_KLEUREN[_laatsteLes.domein] || '196,168,138';
 
       if(_dagenSinds === 0){
-        // Dag 0: toon "actie vandaag" uit de les — klik opent les op stap 4
-        html += `<div onclick="toonLes(${_laatsteLes.id},3)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.06);border:1px solid rgba(${_lk},.15);border-radius:var(--radius);text-align:center;cursor:pointer">
+        // Dag 0: toon "actie vandaag" uit de les — klik opent les op stap 3 (vandaag = index 2)
+        html += `<div onclick="toonLes(${_laatsteLes.id},2)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.06);border:1px solid rgba(${_lk},.15);border-radius:var(--radius);text-align:center;cursor:pointer">
           <p style="font-size:.68rem;color:rgba(${_lk},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Les ${_laatsteLes.id} — actie vandaag</p>
           <p style="font-size:.88rem;color:var(--text1);line-height:1.5;font-weight:500">${_laatsteLes.zichtbaar.vandaag}</p>
           <p style="font-size:.7rem;color:rgba(${_lk},.4);margin-top:.3rem">Tik om les te openen</p>
         </div>`;
       } else if(_dagenSinds <= 5 && _laatsteLes.meerLezen.herhaling){
-        // Dag 1-5: toon oefenkaart (herhaling) — klik opent les op stap 3 (oefening)
-        html += `<div onclick="toonLes(${_laatsteLes.id},2)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.04);border:1px solid rgba(${_lk},.1);border-radius:var(--radius-sm);cursor:pointer">
+        // Dag 1-5: toon oefenkaart (herhaling) — klik opent les op stap 4 (oefening = index 3)
+        html += `<div onclick="toonLes(${_laatsteLes.id},3)" style="margin-top:.6rem;padding:.6rem .8rem;background:rgba(${_lk},.04);border:1px solid rgba(${_lk},.1);border-radius:var(--radius-sm);cursor:pointer">
           <p style="font-size:.68rem;color:rgba(${_lk},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">📝 Les ${_laatsteLes.id} oefenen</p>
           <p style="font-size:.82rem;color:var(--text2);line-height:1.5">${_laatsteLes.meerLezen.herhaling}</p>
           <p style="font-size:.7rem;color:rgba(${_lk},.35);margin-top:.3rem">Tik om les te openen</p>
