@@ -2654,9 +2654,9 @@ const LESSEN_INHOUD = [
 
   {id:2, titel:'Zeggen, niet vragen', subtitel:'Zeg het. Vraag het niet.', domein:'controle', fase:0,
    zichtbaar:{
-     uitleg:'Het verschil tussen een vraag en een mededeling is voor Tim groot.\n\u201cWil je de afwas doen?\u201d vraagt iets van hem.\n\u201cAfwas\u201d geeft richting.\nJe hoeft niet streng te klinken. Kort en duidelijk is genoeg.\nVoor hem voelt volgen niet als minder zijn, maar als iets goed doen voor jou.\nEn voor jou kan kort en duidelijk zijn makkelijker voelen dan steeds overleggen.',
-     voorbeeld:'Tim zit nog achter zijn laptop. Jij zegt: \u201cLaptop dicht.\u201d Twee woorden. Geen uitleg. Hij klapt hem dicht.',
-     oefening:'Zeg vandaag \u00e9\u00e9n ding als mededeling. Bijvoorbeeld: \u201cLaptop dicht.\u201d \u201cKom hier.\u201d \u201cSchouders.\u201d',
+     uitleg:'Je hoeft niet streng te klinken om duidelijk te zijn. Het verschil zit niet in volume \u2014 het zit in het vraagteken dat je weglaat.\nEr zijn drie manieren om hetzelfde te zeggen:\n\u2022 Vraag: \u201cWil je water voor me pakken?\u201d\n\u2022 Mededeling: \u201cPak even water voor me.\u201d\n\u2022 Kort: \u201cWater.\u201d\nAlle drie zijn prima. Maar voor hem voelen de laatste twee anders. Niet als opdracht \u2014 als richting. En richting geeft hem rust.\nDe middelste is vaak het makkelijkst om mee te beginnen. Duidelijk, maar niet hard.\nEn voor jou kan het ook opluchten. Gewoon zeggen wat je wilt, in plaats van steeds overleggen.',
+     voorbeeld:'Hij vraagt: \u201cZullen we Thais bestellen?\u201d Jij zegt: \u201cWe bestellen Thais. Ik neem pad thai.\u201d\nGeen discussie. Gewoon duidelijk.',
+     oefening:'Zeg vandaag \u00e9\u00e9n ding als mededeling. Bijvoorbeeld: \u201cWe bestellen Thais.\u201d \u201cKom hier.\u201d \u201cLaptop dicht.\u201d',
      vandaag:'Zeg \u00e9\u00e9n ding als mededeling.'
    },
    meerLezen:{
@@ -10934,9 +10934,9 @@ function renderVandaag(state){
     html += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:2rem">
       <p style="font-size:1rem;color:var(--text1);margin-bottom:.3rem">Hoe voelde de afgelopen weken?</p>
       <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:.8rem;width:100%;max-width:280px">
+        <button class="experience-btn" onclick="logEvaluatie('meer')"><span class="experience-btn-emoji">&#x1f535;</span><span>Mag iets meer</span></button>
         <button class="experience-btn" onclick="logEvaluatie('goed')"><span class="experience-btn-emoji">&#x1f7e2;</span><span>Zo is het goed</span></button>
-        <button class="experience-btn" onclick="logEvaluatie('meer')"><span class="experience-btn-emoji">&#x1f7e1;</span><span>Mag iets meer</span></button>
-        <button class="experience-btn" onclick="logEvaluatie('veel')"><span class="experience-btn-emoji">&#x1f7e0;</span><span>Was best veel</span></button>
+        <button class="experience-btn" onclick="logEvaluatie('veel')"><span class="experience-btn-emoji">&#x1f7e0;</span><span>Dat was best veel</span></button>
         <button class="experience-btn" onclick="logEvaluatie('pauze')"><span class="experience-btn-emoji">&#x1f534;</span><span>Even pauze</span></button>
       </div>
     </div>`;
