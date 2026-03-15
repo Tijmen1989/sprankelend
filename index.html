@@ -3533,41 +3533,36 @@ function renderMeerLezen(les){
   const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
   let html = '';
 
-  // Herhaling zit niet meer in "meer lezen" — verschijnt als oefenkaart op Vandaag
-  if(m.stapeling){
-    html += `<div style="margin-bottom:.7rem">
-      <p style="font-size:.72rem;color:rgba(${kleur},.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Stapeling</p>
-      <p style="font-size:.84rem;color:var(--text2);line-height:1.55">${m.stapeling.replace(/\n/g,'<br><br>')}</p>
+  // Alle items in dezelfde stijl: label + tekst
+  const items = [
+    { label:'Stapeling', tekst: m.stapeling },
+    { label:'Let op', tekst: m.letOp },
+    { label:'Normalisatie', tekst: m.normalisatie },
+    { label:'Variatie', tekst: m.variatie },
+    { label:'Meer proberen', tekst: m.meerProberen }
+  ];
+
+  for(const item of items){
+    if(!item.tekst) continue;
+    html += `<div style="margin-bottom:1rem">
+      <p style="font-size:.72rem;color:rgba(${kleur},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">${item.label}</p>
+      <p style="font-size:.84rem;color:var(--text2);line-height:1.6">${item.tekst.replace(/\n/g,'<br><br>')}</p>
     </div>`;
   }
-  if(m.meerProberen){
-    html += `<div style="margin-bottom:.7rem;padding:.6rem .8rem;background:rgba(180,100,120,.04);border-radius:var(--radius-sm)">
-      <p style="font-size:.72rem;color:rgba(180,100,120,.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Meer proberen</p>
-      <p style="font-size:.84rem;color:var(--text2);line-height:1.55">${m.meerProberen.replace(/\n/g,'<br><br>')}</p>
-    </div>`;
-  }
-  if(m.variatie){
-    html += `<div style="margin-bottom:.7rem">
-      <p style="font-size:.72rem;color:rgba(${kleur},.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Variatie</p>
-      <p style="font-size:.84rem;color:var(--text2);line-height:1.55">${m.variatie}</p>
-    </div>`;
-  }
-  if(m.letOp){
-    html += `<div style="margin-bottom:.7rem">
-      <p style="font-size:.84rem;color:var(--text2);line-height:1.55;font-style:italic">💡 ${m.letOp}</p>
-    </div>`;
-  }
-  if(m.normalisatie){
-    html += `<div style="margin-bottom:.7rem">
-      <p style="font-size:.84rem;color:var(--text3);line-height:1.55">${m.normalisatie}</p>
-    </div>`;
-  }
-  if(m.preview){
-    html += `<div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--card-border)">
-      <p style="font-size:.82rem;color:var(--text3);font-style:italic">→ ${m.preview}</p>
-    </div>`;
-  }
+
   return html;
+}
+
+// Preview wordt apart gerenderd als navigatie-knop
+function renderPreviewKnop(les){
+  const m = les.meerLezen;
+  if(!m.preview) return '';
+  const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
+  const volgendeLes = LESSEN_INHOUD.find(l => l.id === les.id + 1);
+  if(!volgendeLes) return '';
+  return `<button onclick="window._lesGaNaar(${volgendeLes.id})" style="all:unset;display:block;width:100%;padding:.7rem;margin-top:.8rem;background:rgba(${kleur},.06);border:1px solid rgba(${kleur},.12);border-radius:var(--radius);text-align:center;font-size:.84rem;color:var(--text2);cursor:pointer">
+    ${m.preview} →
+  </button>`;
 }
 
 function toonLes(lesNr, startStap){
@@ -3663,6 +3658,7 @@ function toonLes(lesNr, startStap){
               </div>`
         }
         ${actieHtml}
+        ${stap.type === 'verdieping' ? renderPreviewKnop(les) : ''}
       </div>
 
       <div style="padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--card-border);flex-shrink:0;background:var(--bg)">
