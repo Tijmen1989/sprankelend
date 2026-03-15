@@ -2646,9 +2646,8 @@ const LESSEN_INHOUD = [
    },
    meerLezen:{
      herhaling:'Probeer het deze week elke dag \u00e9\u00e9n keer. Gewoon \u00e9\u00e9n moment per dag waar jij beslist.',
-     stapeling:'Combineer richting geven met de toon uit les 2. Hoe korter je het zegt, hoe sterker het voor hem voelt.',
-     letOp:'Let op zijn lichaam, niet op zijn woorden. Ontspanning, stilte, aandacht \u2014 vaak zie je daar het effect.\nAls jij kiest, gaat hij vanzelf dingen doen. Drinken halen, dingen klaarzetten. Niet omdat je het vraagt \u2014 maar omdat jouw duidelijkheid dat bij hem losmaakt. Voor hem voelt dat als dicht bij je zijn.',
-     normalisatie:'Dit betekent niet dat jij altijd moet beslissen. Het gaat om af en toe. Dit voelt misschien raar de eerste keer, alsof je bot bent. Dat ben je niet \u2014 hij hoort dat jij weet wat je wilt.\nSoms twijfelt hij lang over iets. Niet omdat hij het niet weet, maar omdat hij te veel opties ziet. Dat kost energie. Jouw richting helpt dan: maak het kleiner. Twee opties, of gewoon kiezen. Voor hem voelt dat als opluchting.',
+     letOp:'Let op zijn lichaam, niet op zijn woorden. Als hij rustiger wordt, stiller, of sneller doet wat je zegt \u2014 dan werkt het. Soms reageert hij niet zichtbaar. Dat is ook goed. Het effect zit vaak in wat je niet ziet.',
+     normalisatie:'Je hoeft niet altijd te beslissen. Het gaat om af en toe \u2014 \u00e9\u00e9n moment op een dag.\nSoms twijfelt hij lang over iets. Niet omdat hij niet weet wat hij wil, maar omdat er te veel opties zijn. Dat kost hem energie. Jouw richting helpt dan: maak het kleiner. Twee opties, of gewoon kiezen. Voor hem voelt dat als opluchting.\nDe eerste keer voelt misschien onwennig, alsof je bot bent. Dat ben je niet. Hij hoort geen botheid \u2014 hij hoort dat jij weet wat je wilt. En dat geeft hem rust.',
      preview:'Volgende les: hoe de manier waarop je iets zegt verschil maakt.'
    }},
 
@@ -3605,9 +3604,16 @@ function toonLes(lesNr, startStap){
     if(stap.type === 'intro'){
       contentHtml = `<p style="font-size:.95rem;color:var(--text1);line-height:1.75;font-family:'Playfair Display',serif">${tekst}</p>`;
     } else if(stap.type === 'oefening'){
-      contentHtml = `<div style="padding:1rem 1.1rem;background:rgba(${kleur},.10);border-radius:var(--radius-sm);border:1px solid rgba(${kleur},.20)">
-        <p style="font-size:.95rem;color:var(--text1);line-height:1.65;font-weight:500">${tekst}</p>
-      </div>`;
+      const herhalingTekst = les.meerLezen && les.meerLezen.herhaling ? les.meerLezen.herhaling.replace(/\n/g,'<br><br>') : '';
+      contentHtml = `<div style="margin-bottom:1rem">
+        <p style="font-size:.72rem;color:rgba(${kleur},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.4rem">Vandaag</p>
+        <div style="padding:1rem 1.1rem;background:rgba(${kleur},.10);border-radius:var(--radius-sm);border:1px solid rgba(${kleur},.20)">
+          <p style="font-size:.95rem;color:var(--text1);line-height:1.65;font-weight:500">${tekst}</p>
+        </div>
+      </div>${herhalingTekst ? `<div>
+        <p style="font-size:.72rem;color:rgba(${kleur},.6);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.4rem">Deze week</p>
+        <p style="font-size:.88rem;color:var(--text2);line-height:1.6">${herhalingTekst}</p>
+      </div>` : ''}`;
     } else if(stap.type === 'voorbeeld'){
       contentHtml = `<div style="padding:.8rem 1rem;background:rgba(${kleur},.04);border-radius:var(--radius-sm);border-left:3px solid rgba(${kleur},.25)">
         <p style="font-size:.92rem;color:var(--text2);line-height:1.65;font-style:italic">${tekst}</p>
