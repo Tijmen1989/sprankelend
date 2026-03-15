@@ -3580,22 +3580,33 @@ function toonLes(lesNr, startStap){
     let contentHtml = '';
     const tekst = stap.tekst.replace(/\n/g,'<br><br>');
 
-    if(stap.type === 'voorbeeld'){
+    if(stap.type === 'oefening'){
+      contentHtml = `<div style="padding:1rem 1.1rem;background:rgba(${kleur},.10);border-radius:var(--radius-sm);border:1px solid rgba(${kleur},.20)">
+        <p style="font-size:.95rem;color:var(--text1);line-height:1.65;font-weight:500">${tekst}</p>
+      </div>`;
+    } else if(stap.type === 'voorbeeld'){
       contentHtml = `<div style="padding:.8rem 1rem;background:rgba(${kleur},.04);border-radius:var(--radius-sm);border-left:3px solid rgba(${kleur},.25)">
-        <p style="font-size:.9rem;color:var(--text2);line-height:1.65;font-style:italic">${tekst}</p>
+        <p style="font-size:.92rem;color:var(--text2);line-height:1.65;font-style:italic">${tekst}</p>
       </div>`;
     } else {
-      contentHtml = `<p style="font-size:.9rem;color:var(--text1);line-height:1.7">${tekst}</p>`;
+      contentHtml = `<p style="font-size:.95rem;color:var(--text1);line-height:1.7">${tekst}</p>`;
     }
 
-    // Meer lezen sectie (alleen op laatste stap) — altijd zichtbaar, geen toggle
+    // Meer lezen sectie (alleen op laatste stap) — inklapbaar, standaard dicht
     let meerLezenHtml = '';
     if(isLaatste){
       const meerContent = renderMeerLezen(les);
       if(meerContent){
+        const meerLezenId = 'meerLezen_' + les.id;
         meerLezenHtml = `
           <div style="margin-top:1.2rem;padding-top:.8rem;border-top:1px solid var(--card-border)">
-            ${meerContent}
+            <button onclick="var el=document.getElementById('${meerLezenId}');var arr=this.querySelector('.ml-arrow');if(el.style.display==='none'){el.style.display='block';arr.style.transform='rotate(90deg)'}else{el.style.display='none';arr.style.transform='rotate(0deg)'}" style="all:unset;display:flex;align-items:center;gap:.4rem;cursor:pointer;width:100%;padding:.3rem 0">
+              <span class="ml-arrow" style="font-size:.7rem;color:rgba(${kleur},.6);transition:transform .2s;display:inline-block">▶</span>
+              <span style="font-size:.78rem;color:rgba(${kleur},.6);text-transform:uppercase;letter-spacing:.4px">Goed om te weten</span>
+            </button>
+            <div id="${meerLezenId}" style="display:none;margin-top:.6rem">
+              ${meerContent}
+            </div>
           </div>`;
       }
     }
