@@ -4053,21 +4053,21 @@ function toonLes(lesNr, startStap){
       const _minLeestijd = _veiligheidsLes ? 45 : 20; // seconden
       actieHtml = `<div id="les-gelezen-gate" style="margin-top:1rem;text-align:center">
         <p style="font-size:.78rem;color:var(--text3);opacity:.6" id="les-leestijd-hint">Even lezen...</p>
-      </div>
-      <script>
-        (function(){
-          var _t = ${_minLeestijd};
-          var _iv = setInterval(function(){
-            _t--;
-            var hint = document.getElementById('les-leestijd-hint');
-            if(!hint){ clearInterval(_iv); return; }
-            if(_t <= 0){
-              clearInterval(_iv);
-              document.getElementById('les-gelezen-gate').innerHTML = '<button onclick="window._lesMarkeerGelezen()" style="all:unset;display:block;width:100%;padding:.7rem;background:rgba(${kleur},.12);border:1px solid rgba(${kleur},.2);border-radius:var(--radius);text-align:center;font-size:.88rem;color:var(--text1);font-weight:500;cursor:pointer">Gelezen ✓</button>';
-            }
-          }, 1000);
-        })();
-      </script>`;
+      </div>`;
+      // Leestijd-timer: start na render via setTimeout (geen inline script nodig)
+      setTimeout(function(){
+        var _t = _minLeestijd;
+        var _iv = setInterval(function(){
+          _t--;
+          var hint = document.getElementById('les-leestijd-hint');
+          if(!hint){ clearInterval(_iv); return; }
+          if(_t <= 0){
+            clearInterval(_iv);
+            var gate = document.getElementById('les-gelezen-gate');
+            if(gate) gate.innerHTML = '<button onclick="window._lesMarkeerGelezen()" style="all:unset;display:block;width:100%;padding:.7rem;background:rgba('+kleur+',.12);border:1px solid rgba('+kleur+',.2);border-radius:var(--radius);text-align:center;font-size:.88rem;color:var(--text1);font-weight:500;cursor:pointer">Gelezen ✓<\/button>';
+          }
+        }, 1000);
+      }, 100);
     } else if(isLaatste && alGelezen){
       // CTA: "Oefenen!" knop — sluit les, terug naar Vandaag
       actieHtml = `<button onclick="window._lesSluit()" style="all:unset;display:block;width:100%;padding:.7rem;margin-top:1rem;background:rgba(${kleur},.12);border:1px solid rgba(${kleur},.2);border-radius:var(--radius);text-align:center;font-size:.88rem;color:var(--text1);font-weight:500;cursor:pointer">
