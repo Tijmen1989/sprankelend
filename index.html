@@ -6,9 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Souffleur">
-<meta name="theme-color" content="#1e1a1a">
+<meta name="theme-color" content="#1B1F27">
 <title>Sprankelend Souffleur</title>
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU3ByYW5rZWxlbmQgU291ZmZsZXVyIiwic2hvcnRfbmFtZSI6IlNvdWZmbGV1ciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMWUxYTFhIiwidGhlbWVfY29sb3IiOiIjMWUxYTFhIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCJ9">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU3ByYW5rZWxlbmQgU291ZmZsZXVyIiwic2hvcnRfbmFtZSI6IlNvdWZmbGV1ciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMUIxRjI3IiwidGhlbWVfY29sb3IiOiIjMUIxRjI3Iiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCJ9Cg==">
 <style>
 /* ═══════════════════════════════════════════════════
    SPRANKELEND SOUFFLEUR — CSS
@@ -16,34 +16,36 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600&display=swap');
 
 :root {
-  --bg: #1e1a1a;
-  --bg2: #272121;
-  --bg3: #332b2b;
+  /* Schema A — Soft Midnight Blue */
+  --bg: #1B1F27;
+  --bg2: #242A34;
+  --bg3: #2B3240;
   --surface: rgba(255,255,255,.06);
   --surface2: rgba(255,255,255,.10);
   --surface3: rgba(255,255,255,.15);
-  --text: #e8ddd6;
-  --text2: #bda99b;
-  --text3: #8a7b72;
-  --accent: #c48a8a;
-  --accent2: #b07a7a;
-  --warm: #d6b36a;
-  --warm2: #c4a35a;
-  --success: #6abf8a;
-  --danger: #bf6a6a;
-  --purple: #a88a9b;
-  --card: rgba(255,255,255,.03);
-  --card-border: rgba(255,255,255,.06);
+  --text: #F3F6FA;
+  --text2: #C9D1DC;
+  --text3: #8B97A8;
+  --accent: #7EA7FF;
+  --accent2: #98BAFF;
+  --warm: #7EA7FF;
+  --warm2: #6B96F0;
+  --success: #70C4A9;
+  --danger: #FF7878;
+  --purple: #A4B0FF;
+  --card: rgba(255,255,255,.04);
+  --card-border: rgba(255,255,255,.08);
   --radius: 18px;
-  --radius-sm: 12px;
-  --shadow: 0 2px 16px rgba(0,0,0,.15);
+  --radius-sm: 14px;
+  --shadow: 0 12px 30px rgba(0,0,0,.22);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 html,body { height:100%; overflow:hidden; }
 body {
   font-family:'DM Sans',sans-serif;
-  background: var(--bg);
+  background: radial-gradient(circle at top, rgba(126,167,255,0.10), transparent 34%), linear-gradient(180deg, #232934 0%, #1B1F27 100%);
+  background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
@@ -133,8 +135,8 @@ body {
 
 /* ── Suggestie Card ── */
 .suggestie-card {
-  background: linear-gradient(135deg, rgba(196,138,138,.10), rgba(196,138,138,.03));
-  border:1px solid rgba(196,138,138,.14);
+  background: linear-gradient(135deg, rgba(126,167,255,.10), rgba(126,167,255,.03));
+  border:1px solid rgba(126,167,255,.14);
   border-radius:var(--radius); padding:1.5rem 1.4rem;
   margin-bottom:1rem;
 }
@@ -147,7 +149,7 @@ body {
   color:var(--text);
 }
 .zeg-voorbeeld {
-  background:rgba(196,138,138,.08); border-left:3px solid var(--accent);
+  background:rgba(126,167,255,.08); border-left:3px solid var(--accent);
   padding:.7rem .9rem; border-radius:var(--radius-sm);
   margin-bottom:1rem; display:flex; gap:.6rem; align-items:flex-start;
 }
@@ -216,11 +218,11 @@ body {
 .initiatief-btn {
   width:100%; padding:1rem; border-radius:var(--radius);
   border:1px solid var(--accent);
-  background:rgba(196,138,138,.08); color:var(--accent);
+  background:rgba(126,167,255,.08); color:var(--accent);
   font-family:inherit; font-size:1rem; font-weight:600;
   cursor:pointer; margin-bottom:1rem; transition:all .2s;
 }
-.initiatief-btn:hover { background:rgba(196,138,138,.15); }
+.initiatief-btn:hover { background:rgba(126,167,255,.15); }
 
 /* ── Handleiding Items ── */
 .handleiding-groep {
@@ -252,7 +254,7 @@ body {
 }
 .item-body-inner p { margin-bottom:.5rem; }
 .item-tip {
-  background:rgba(196,138,138,.1); border-radius:6px;
+  background:rgba(126,167,255,.1); border-radius:6px;
   padding:.5rem .7rem; font-size:.82rem; margin-top:.5rem;
 }
 .item-warning {
@@ -370,9 +372,9 @@ body {
   padding:.5rem .8rem; margin-bottom:.4rem; cursor:pointer;
   border:1px solid var(--card-border); transition:all .2s;
 }
-.signal-card-accent { border-color:rgba(196,138,138,.15); }
+.signal-card-accent { border-color:rgba(126,167,255,.15); }
 .signal-card-warm { border-color:rgba(214,179,106,.15); }
-.signal-card-purple { border-color:rgba(168,138,155,.15); }
+.signal-card-purple { border-color:rgba(144,166,255,.15); }
 .signal-title { font-size:.85rem; }
 .signal-body {
   display:none; margin-top:.5rem; border-top:1px solid var(--card-border);
@@ -403,7 +405,7 @@ body {
 
 /* ── Info Panel ── */
 .info-panel {
-  background:rgba(196,138,138,.03); border:1px solid rgba(196,138,138,.06);
+  background:rgba(126,167,255,.03); border:1px solid rgba(126,167,255,.06);
   border-radius:var(--radius); padding:.8rem 1rem; margin-bottom:.6rem;
 }
 
@@ -416,9 +418,9 @@ body {
   display:inline-block; padding:.15rem .5rem;
   border-radius:20px; font-size:.72rem; font-weight:600;
 }
-.badge-micro { background:rgba(196,138,138,.15); color:var(--accent); }
+.badge-micro { background:rgba(126,167,255,.15); color:var(--accent); }
 .badge-vastmaak { background:rgba(214,179,106,.15); color:var(--warm); }
-.badge-sessie { background:rgba(168,138,155,.15); color:var(--purple); }
+.badge-sessie { background:rgba(144,166,255,.15); color:var(--purple); }
 .badge-opdracht { background:rgba(106,191,138,.15); color:var(--success); }
 .badge-rel { background:rgba(191,106,106,.1); color:var(--danger); }
 
@@ -465,7 +467,7 @@ body {
 /* ── Visual Hierarchy: Moment Cards ── */
 .moment-card-primary {
   border-left: 3px solid var(--accent);
-  background: linear-gradient(135deg, rgba(196,138,138,.08), rgba(196,138,138,.02));
+  background: linear-gradient(135deg, rgba(126,167,255,.08), rgba(126,167,255,.02));
   padding: 1.2rem 1.3rem;
   border-radius: var(--radius);
   margin-bottom: .6rem;
@@ -585,24 +587,24 @@ body {
   color:var(--text2); font-family:inherit; font-size:.85rem;
   cursor:pointer; transition:all .15s;
 }
-.afspraak-type-btn.active { border-color:var(--purple); color:var(--purple); background:rgba(168,138,155,.1); }
+.afspraak-type-btn.active { border-color:var(--purple); color:var(--purple); background:rgba(144,166,255,.1); }
 .afspraak-cat-btn {
   padding:.45rem .7rem; border-radius:var(--radius-sm);
   border:1px solid var(--card-border); background:var(--surface);
   color:var(--text2); font-family:inherit; font-size:.82rem;
   cursor:pointer; transition:all .15s;
 }
-.afspraak-cat-btn.active { border-color:var(--purple); color:var(--purple); background:rgba(168,138,155,.1); }
+.afspraak-cat-btn.active { border-color:var(--purple); color:var(--purple); background:rgba(144,166,255,.1); }
 .voorb-chip {
   padding:.3rem .6rem; border-radius:12px;
-  border:1px solid rgba(168,138,155,.3); background:rgba(168,138,155,.06);
+  border:1px solid rgba(144,166,255,.3); background:rgba(144,166,255,.06);
   color:var(--purple); font-family:inherit; font-size:.8rem;
   cursor:pointer; transition:all .15s;
 }
-.voorb-chip:hover { background:rgba(168,138,155,.15); }
+.voorb-chip:hover { background:rgba(144,166,255,.15); }
 .voorb-item {
   display:flex; align-items:center; justify-content:space-between;
-  padding:.35rem .6rem; background:rgba(168,138,155,.06);
+  padding:.35rem .6rem; background:rgba(144,166,255,.06);
   border-radius:var(--radius-sm); margin-bottom:.3rem; font-size:.85rem; color:var(--text1);
 }
 .voorb-item button {
@@ -613,7 +615,7 @@ body {
 /* ── Afspraak balkjes ── */
 .afspraak-balk {
   display:flex; align-items:center; justify-content:space-between;
-  background:rgba(168,138,155,.08); border:1px solid rgba(168,138,155,.2);
+  background:rgba(144,166,255,.08); border:1px solid rgba(144,166,255,.2);
   border-radius:var(--radius-sm); padding:.5rem .8rem;
   margin-bottom:.4rem; font-size:.85rem;
 }
@@ -626,7 +628,7 @@ body {
 .afspraak-balk .afspraak-verwijder:hover { color:var(--danger); }
 
 .afspraak-tim {
-  background:rgba(168,138,155,.06); border:1px solid rgba(168,138,155,.15);
+  background:rgba(144,166,255,.06); border:1px solid rgba(144,166,255,.15);
   border-radius:var(--radius-sm); padding:.6rem .8rem;
   margin-bottom:.4rem; font-size:.85rem; color:var(--text2);
 }
@@ -660,9 +662,9 @@ body {
 
 /* ── P0: Info actief bij suggestie ── */
 .suggestie-info-actief {
-  background:rgba(196,138,138,.06); border-radius:var(--radius-sm);
+  background:rgba(126,167,255,.06); border-radius:var(--radius-sm);
   padding:.8rem 1rem; margin-bottom:.8rem; font-size:.85rem;
-  color:var(--text2); line-height:1.5; border-left:3px solid rgba(196,138,138,.25);
+  color:var(--text2); line-height:1.5; border-left:3px solid rgba(126,167,255,.25);
 }
 .suggestie-info-actief strong { color:var(--text); font-weight:500; }
 
@@ -678,19 +680,19 @@ body {
 /* ── Week-thema kaart (optie C: streepjes-balk) ── */
 .week-thema-kaart {
   padding:.5rem .7rem; margin-bottom:.5rem;
-  background:linear-gradient(135deg, rgba(196,168,138,.06), rgba(196,168,138,.02));
-  border:1px solid rgba(196,168,138,.1); border-radius:var(--radius-sm);
+  background:linear-gradient(135deg, rgba(126,167,255,.06), rgba(126,167,255,.02));
+  border:1px solid rgba(126,167,255,.1); border-radius:var(--radius-sm);
 }
 .week-thema-kaart .wtk-naam { font-size:.82rem; color:var(--text1); font-weight:500; line-height:1.3; }
 .week-thema-kaart .wtk-balk { display:flex; gap:3px; margin:.3rem 0; }
-.week-thema-kaart .wtk-seg { flex:1; height:2px; border-radius:1px; background:rgba(196,168,138,.15); }
+.week-thema-kaart .wtk-seg { flex:1; height:2px; border-radius:1px; background:rgba(126,167,255,.15); }
 .week-thema-kaart .wtk-seg.actief { background:var(--warm); }
 .week-thema-kaart .wtk-beschrijving { font-size:.75rem; color:var(--text3); line-height:1.3; }
 
 /* ── Periodieke leerpad-terugblik ── */
 .leerpad-terugblik-card {
-  background:linear-gradient(135deg, rgba(196,168,138,.08), rgba(196,168,138,.02));
-  border:1px solid rgba(196,168,138,.15); border-radius:var(--radius);
+  background:linear-gradient(135deg, rgba(126,167,255,.08), rgba(126,167,255,.02));
+  border:1px solid rgba(126,167,255,.15); border-radius:var(--radius);
   padding:1rem 1.2rem; margin-bottom:.6rem;
 }
 .leerpad-terugblik-card .ltb-titel { font-size:.7rem; color:var(--warm); text-transform:uppercase; letter-spacing:.5px; margin-bottom:.6rem; }
@@ -2759,11 +2761,11 @@ const MINI_LESJES = [
 const LESSEN_INHOUD = [
   {id:1, titel:'Gewoon zeggen', subtitel:'Soms is \u00e9\u00e9n zin genoeg.', domein:'verbinding', fase:0, type:'story',
    scroll:[
-     {type:'scene', tekst:'Je komt thuis nadat je Milou naar school hebt gebracht.\nTim ligt op bed met zijn laptop.\nHij kijkt op.\n\u201cWat gaan we zo doen?\u201d\nZo\u2019n vraag laat alles open. En vaak gebeurt er dan even niks.\nAls jij gewoon zegt wat er gebeurt, hoeft hij niet meer te twijfelen.\nGeen overleg. Geen vraagteken. Gewoon een zin.'},
-     {type:'inzicht', tekst:'Het gaat meestal niet om wat je kiest.\nHet moment verandert al als jij gewoon zegt wat er gebeurt.\nDan hoeft hij niet meer te twijfelen.\nHij kan gewoon volgen.'},
+     {type:'scene', tekst:'Je hebt Milou naar school gebracht.\nJe komt thuis. Tim ligt op bed met zijn laptop.\nHij kijkt niet op.\nJij loopt naar hem toe.\n\u201cLaptop dicht.\u201d\nHij klapt hem dicht.\nGeen overleg. Geen vraag. Jij zag het moment en pakte het.\nEn als hij straks vraagt \u201cwat gaan we doen?\u201d \u2014 dan is het antwoord geen overleg.\n\u201cWe gaan wandelen.\u201d\nNiet omdat hij het vroeg. Maar omdat jij het besloot.'},
+     {type:'inzicht', tekst:'Jij kiest de momenten.\nSoms omdat je iets ziet. Soms zomaar.\nNiet als reactie op zijn vraag \u2014 maar omdat jij besluit dat het nu zo is.\nDat is het hele verschil.'},
      {type:'voorbeeld', tekst:'\u201cLaptop dicht.\u201d \u2014 hij klapt hem dicht.\n\u201cKom. We gaan wandelen.\u201d\n\u201cKom even hier.\u201d'},
-     {type:'noot', tekst:'De eerste keer voelt dat misschien een beetje vreemd.\nDat is normaal.\nVeel mensen moeten er zelfs even om lachen als ze het proberen.\nJe merkt het vaak meteen. Hij wordt stiller. Of hij doet gewoon wat je zegt.\nVeel vrouwen merken dat het ook voor henzelf rustiger voelt. Niet steeds overleggen. Gewoon zeggen wat er gebeurt.\nNa een paar keer voelt het vaak verrassend vanzelfsprekend.'},
-     {type:'probeer', tekst:'Zeg vandaag \u00e9\u00e9n keer wat jij wilt.\nE\u00e9n zin.\nGeen vraag.\nKijk wat er gebeurt.'}
+     {type:'noot', tekst:'De eerste keer voelt dat misschien een beetje vreemd.\nDat is normaal. Veel mensen moeten er zelfs even om lachen.\nJe merkt het vaak meteen \u2014 hij wordt stiller. Of hij doet gewoon wat je zegt.\nHet gaat niet om de hele dag sturen. Het gaat om de momenten dat jij kiest om de leiding te nemen. Eén moment is al genoeg.\nEn het werkt twee kanten op: veel vrouwen merken dat het ook voor henzelf rustiger voelt. Niet steeds overleggen. Gewoon zeggen wat er gebeurt.\nNa een paar keer voelt het vaak verrassend vanzelfsprekend.'},
+     {type:'probeer', tekst:'Kies vandaag zelf een moment.\nE\u00e9n zin. Geen vraag.\nKijk wat er gebeurt.'}
    ],
    zichtbaar:{
      intro:'', uitleg:'', voorbeeld:'',
@@ -3803,7 +3805,7 @@ function renderLesjeHtml(les, modus){
 
     // Voorbeeld
     if(les.verdieping.voorbeeld){
-      html += '<p style="font-size:.82rem;color:var(--text2);line-height:1.5;margin-bottom:.4rem;padding-left:.5rem;border-left:2px solid rgba(196,168,138,.2);font-style:italic">' + les.verdieping.voorbeeld + '</p>';
+      html += '<p style="font-size:.82rem;color:var(--text2);line-height:1.5;margin-bottom:.4rem;padding-left:.5rem;border-left:2px solid rgba(126,167,255,.2);font-style:italic">' + les.verdieping.voorbeeld + '</p>';
     }
 
     // Praktijk
@@ -3932,7 +3934,7 @@ function getLesGate(lesId){
 
 // ── Stap-voor-stap lessen-systeem ──
 
-const DOMEIN_KLEUREN = {verbinding:'140,160,100', controle:'196,168,138', fysiek:'100,140,180', psychologisch:'160,120,180', sensorisch:'180,140,100', intimiteit:'180,100,120', service:'100,160,140'};
+const DOMEIN_KLEUREN = {verbinding:'112,196,169', controle:'126,167,255', fysiek:'120,160,210', psychologisch:'164,176,255', sensorisch:'140,180,230', intimiteit:'160,140,220', service:'100,180,170'};
 
 function getLesStappen(les){
   const z = les.zichtbaar;
@@ -3953,7 +3955,7 @@ function getLesStappen(les){
 
 function renderMeerLezen(les){
   const m = les.meerLezen;
-  const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
+  const kleur = DOMEIN_KLEUREN[les.domein] || '126,167,255';
   let html = '';
 
   // Alle items in dezelfde stijl: label + tekst
@@ -3980,7 +3982,7 @@ function renderMeerLezen(les){
 function renderPreviewKnop(les){
   const m = les.meerLezen;
   if(!m.preview) return '';
-  const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
+  const kleur = DOMEIN_KLEUREN[les.domein] || '126,167,255';
   const volgendeLes = LESSEN_INHOUD.find(l => l.id === les.id + 1);
   if(!volgendeLes) return '';
   return `<button onclick="window._lesGaNaar(${volgendeLes.id})" style="all:unset;display:block;width:100%;padding:.7rem;margin-top:.8rem;background:rgba(${kleur},.06);border:1px solid rgba(${kleur},.12);border-radius:var(--radius);text-align:center;font-size:.84rem;color:var(--text2);cursor:pointer">
@@ -4007,58 +4009,72 @@ function toonScrollLes(les, kleur){
     var css = document.createElement('style');
     css.id = 'lesson-css';
     css.textContent = [
-      // ── Design tokens: warm, zacht, veilig ──
+      // ── Design tokens: Schema A — Soft Midnight Blue ──
       ':root{'+
-        '--les-bg:#1f1b19;--les-bg-soft:#26211f;--les-bg-elevated:#2c2623;'+
-        '--les-text:#f3ece6;--les-text-secondary:#c9bdb5;--les-text-muted:#9e8f86;'+
-        '--les-soft:#d8cbc4;'+
+        '--les-bg:#1B1F27;--les-bg-soft:#242A34;--les-bg-elevated:#2B3240;'+
+        '--les-text:#F3F6FA;--les-text-secondary:#C9D1DC;--les-text-muted:#8B97A8;'+
+        '--les-soft:#C9D1DC;'+
         '--les-line:rgba(255,255,255,0.06);--les-line-card:rgba(255,255,255,0.08);'+
-        '--les-insight-bg:rgba(168,185,140,0.15);--les-insight-border:rgba(168,185,140,0.30);--les-insight-accent:#a8b98c;'+
+        '--les-insight-bg:rgba(126,167,255,0.13);--les-insight-border:rgba(126,167,255,0.28);--les-insight-accent:#7EA7FF;'+
         '--les-example-bg:rgba(255,255,255,0.04);--les-example-border:rgba(255,255,255,0.08);'+
-        '--les-try-bg:rgba(240,200,120,0.16);--les-try-border:rgba(240,200,120,0.30);--les-try-accent:#f0c878;'+
-        '--les-radius-lg:22px;--les-radius-md:18px'+
+        '--les-try-bg:rgba(126,167,255,0.17);--les-try-border:rgba(126,167,255,0.34);--les-try-accent:#98BAFF;'+
+        '--les-radius:18px'+
       '}',
 
-      // ── Overlay: warme blur ──
-      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(255,220,170,0.06),transparent 40%),rgba(14,12,11,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
+      // ── Overlay: zachte blauwe blur ──
+      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(126,167,255,0.08),transparent 40%),rgba(10,14,20,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
 
-      // ── Sheet: warme gradient, niet zwart ──
-      '.lesson-sheet{position:relative;width:min(100%,560px);min-height:100%;margin:0 auto;padding:28px 20px 56px;background:radial-gradient(circle at top,rgba(255,210,150,0.08),transparent 50%),linear-gradient(180deg,#26211f 0%,#1f1b19 60%,#1a1614 100%);color:var(--les-text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}',
+      // ── Sheet: premium reading container ──
+      '.lesson-sheet{position:relative;width:min(100%,520px);min-height:100%;margin:0 auto;padding:28px 20px 48px;'+
+        'background:radial-gradient(circle at top,rgba(126,167,255,0.10),transparent 50%),linear-gradient(180deg,#242A34 0%,#1B1F27 60%,#171B22 100%);'+
+        'color:var(--les-text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif}',
 
       // ── Close button ──
       '.lesson-close{position:absolute;top:18px;right:16px;width:36px;height:36px;border:0;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--les-text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}',
       '.lesson-close:active{background:rgba(255,255,255,0.08)}',
 
-      // ── Header ──
-      '.lesson-header{padding-top:10px;margin-bottom:28px}',
+      // ── Header: title + subtitle ──
+      '.lesson-header{padding-top:10px;margin-bottom:32px}',
       '.lesson-kicker{margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--les-insight-accent)}',
-      '.lesson-title{margin:0;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-0.02em;color:var(--les-text)}',
+      '.lesson-title{margin:0;font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-0.02em;color:var(--les-text)}',
       '.lesson-subtitle{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--les-text-muted)}',
 
-      // ── Scene & Note: gewone tekst ──
-      '.lesson-scene,.lesson-note{margin:0 0 28px}',
-      '.lesson-scene p,.lesson-note p,.lesson-card p{margin:0 0 14px;font-size:18px;line-height:1.72;letter-spacing:-0.01em}',
+      // ── Fade-in animatie per blok ──
+      '@keyframes lessonFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}',
+      '.lesson-block{animation:lessonFadeIn .3s ease both}',
+      '.lesson-block:nth-child(1){animation-delay:0s}',
+      '.lesson-block:nth-child(2){animation-delay:.06s}',
+      '.lesson-block:nth-child(3){animation-delay:.12s}',
+      '.lesson-block:nth-child(4){animation-delay:.18s}',
+      '.lesson-block:nth-child(5){animation-delay:.24s}',
+      '.lesson-block:nth-child(6){animation-delay:.30s}',
+      '.lesson-block:nth-child(7){animation-delay:.36s}',
+
+      // ── Scene & Note: gewone tekst, veel ademruimte ──
+      '.lesson-scene{margin:0 0 24px}',
+      '.lesson-note{margin:0 0 24px}',
+      '.lesson-scene p,.lesson-note p,.lesson-card p{margin:0 0 18px;font-size:18px;line-height:1.75;letter-spacing:-0.01em}',
       '.lesson-scene p:last-child,.lesson-note p:last-child,.lesson-card p:last-child{margin-bottom:0}',
       '.lesson-note p{color:var(--les-soft)}',
 
       // ── Cards: gedeelde basis ──
-      '.lesson-card{margin:0 0 24px;padding:18px 18px 20px;border-radius:var(--les-radius-lg);box-shadow:0 10px 25px rgba(0,0,0,0.25)}',
-      '.lesson-card-label{margin:0 0 12px!important;font-size:11px!important;line-height:1.2!important;letter-spacing:0.14em;text-transform:uppercase;color:var(--les-text-muted)}',
+      '.lesson-card{margin:0 0 24px;padding:18px;border-radius:var(--les-radius);border:1px solid var(--les-line-card)}',
+      '.lesson-card-label{margin:0 0 10px!important;font-size:11px!important;line-height:1.2!important;letter-spacing:0.12em;text-transform:uppercase;color:var(--les-text-muted)}',
 
-      // ── Insight card: olijfgroen ──
-      '.lesson-card--insight{background:var(--les-insight-bg);border:1px solid var(--les-insight-border)}',
+      // ── Insight card ──
+      '.lesson-card--insight{background:var(--les-insight-bg);border-color:var(--les-insight-border)}',
       '.lesson-card--insight::before{content:"";display:block;width:28px;height:2px;background:var(--les-insight-accent);margin-bottom:10px;border-radius:2px}',
 
-      // ── Example card: neutraal warm ──
-      '.lesson-card--example{background:var(--les-example-bg);border:1px solid var(--les-example-border)}',
+      // ── Example card ──
+      '.lesson-card--example{background:var(--les-example-bg);border-color:var(--les-example-border)}',
 
-      // ── Try card: warm goud ──
-      '.lesson-card--try{background:var(--les-try-bg);border:1px solid var(--les-try-border)}',
+      // ── Try card ──
+      '.lesson-card--try{background:var(--les-try-bg);border-color:var(--les-try-border)}',
       '.lesson-card--try .lesson-card-label{color:var(--les-try-accent)}',
 
       // ── Buttons ──
-      '.lesson-primary{margin-top:18px;width:100%;min-height:52px;border:0;border-radius:16px;background:rgba(255,255,255,0.08);color:var(--les-text);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}',
-      '.lesson-primary:active{background:rgba(255,255,255,0.14)}',
+      '.lesson-primary{margin-top:18px;width:100%;min-height:52px;border:0;border-radius:16px;background:rgba(126,167,255,0.22);color:var(--les-text);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}',
+      '.lesson-primary:active{background:rgba(126,167,255,0.30)}',
 
       // ── Gate ──
       '.lesson-gate{margin-top:18px;text-align:center}',
@@ -4076,8 +4092,8 @@ function toonScrollLes(les, kleur){
       '.lesson-slide{min-width:100%;box-sizing:border-box;padding:0 18px;scroll-snap-align:start}',
       '.lesson-carousel-dots{display:flex;gap:4px;justify-content:center;padding-top:12px}',
       '.lesson-dot{height:3px;border-radius:2px;transition:all .3s ease}',
-      '.lesson-dot--on{width:16px;background:rgba(168,185,140,0.5)}',
-      '.lesson-dot--off{width:6px;background:rgba(168,185,140,0.18)}',
+      '.lesson-dot--on{width:16px;background:rgba(126,167,255,0.5)}',
+      '.lesson-dot--off{width:6px;background:rgba(126,167,255,0.18)}',
 
       '@media(min-width:768px){.lesson-sheet{padding-left:32px;padding-right:32px}}'
     ].join('\n');
@@ -4166,7 +4182,8 @@ function toonScrollLes(les, kleur){
 
   var contentHtml = '';
   for(var i=0;i<les.scroll.length;i++){
-    contentHtml += renderBlock(les.scroll[i], i);
+    var blockHtml = renderBlock(les.scroll[i], i);
+    contentHtml += '<div class="lesson-block">' + blockHtml + '</div>';
   }
 
   // ── Footer: volgende les link ──
@@ -4275,7 +4292,7 @@ function toonLes(lesNr, startStap){
   const bestaand = document.getElementById('lesOverlay');
   if(bestaand) bestaand.remove();
 
-  const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
+  const kleur = DOMEIN_KLEUREN[les.domein] || '126,167,255';
 
   // ── SCROLL FORMAT: als les een scroll array heeft, render als één pagina ──
   if(les.scroll && les.scroll.length > 0){
@@ -4303,7 +4320,7 @@ function toonLes(lesNr, startStap){
     for(let i = 0; i < stappen.length; i++){
       const active = i === huidigStap;
       const done = i < huidigStap;
-      dots += `<div style="width:${active?'1.5rem':'.5rem'};height:.35rem;border-radius:.2rem;background:${active?`rgba(${kleur},.8)`:done?`rgba(${kleur},.4)`:'rgba(196,168,138,.15)'};transition:all .3s"></div>`;
+      dots += `<div style="width:${active?'1.5rem':'.5rem'};height:.35rem;border-radius:.2rem;background:${active?`rgba(${kleur},.8)`:done?`rgba(${kleur},.4)`:'rgba(126,167,255,.15)'};transition:all .3s"></div>`;
     }
 
     // Content styling per type
@@ -4518,7 +4535,7 @@ function renderLessenOverzicht(){
 
   // Volgende les prominenter tonen
   if(volgendeLes){
-    const kleur = DOMEIN_KLEUREN[volgendeLes.domein] || '196,168,138';
+    const kleur = DOMEIN_KLEUREN[volgendeLes.domein] || '126,167,255';
     html += `<div onclick="toonLes(${volgendeLes.id})" style="margin-bottom:.8rem;padding:.7rem .9rem;background:rgba(${kleur},.08);border:1px solid rgba(${kleur},.2);border-radius:var(--radius);cursor:pointer">
       <p style="font-size:.7rem;color:rgba(${kleur},.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.25rem">Volgende</p>
       <p style="font-size:.9rem;color:var(--text1);font-weight:500;margin-bottom:.2rem">Les ${volgendeLes.id} — ${volgendeLes.titel}</p>
@@ -4534,7 +4551,7 @@ function renderLessenOverzicht(){
     const gelezen = v.gelezen.includes(les.id);
     const beschikbaar = true; // TIJDELIJK: alle lessen open voor review
     const isVolgende = volgendeLes && les.id === volgendeLes.id;
-    const kleur = DOMEIN_KLEUREN[les.domein] || '196,168,138';
+    const kleur = DOMEIN_KLEUREN[les.domein] || '126,167,255';
 
     // Skip de "volgende" les — die is al prominent getoond
     if(isVolgende) return;
@@ -6255,12 +6272,12 @@ function renderSamenOefeningKaart(wie){
     vraagTekst = oef.vraagVanDeDag[Math.abs(h) % oef.vraagVanDeDag.length];
   }
 
-  let html = `<div class="card" style="border-color:rgba(196,138,138,.25);background:rgba(196,138,138,.04)">
+  let html = `<div class="card" style="border-color:rgba(126,167,255,.25);background:rgba(126,167,255,.04)">
     <p style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem">Samen-oefening</p>
     <p style="font-size:.95rem;color:var(--text1);font-weight:500;margin-bottom:.3rem">${oef.titel}</p>
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:.5rem">${oef.focus}</p>`;
   if(vraagTekst){
-    html += `<p style="font-size:.95rem;color:var(--text1);font-style:italic;margin-bottom:.5rem;padding:.5rem;background:rgba(196,138,138,.06);border-radius:var(--radius-sm)">"${vraagTekst}"</p>`;
+    html += `<p style="font-size:.95rem;color:var(--text1);font-style:italic;margin-bottom:.5rem;padding:.5rem;background:rgba(126,167,255,.06);border-radius:var(--radius-sm)">"${vraagTekst}"</p>`;
   }
   html += `<p style="font-size:.9rem;color:var(--text2);line-height:1.5;margin-bottom:.6rem">${instructie}</p>`;
 
@@ -9768,7 +9785,7 @@ function renderGeleendeAutoriteitToggle(directeTekst, wie){
   const id = 'ga_' + Math.random().toString(36).substr(2,6);
   return `<div style="margin-top:.5rem">
     <button onclick="document.getElementById('${id}').style.display=document.getElementById('${id}').style.display==='none'?'block':'none'" style="all:unset;font-size:.8rem;color:var(--text3);cursor:pointer;padding:.3rem 0;display:block">💡 Hoe zeg je dit?</button>
-    <div id="${id}" style="display:none;margin-top:.4rem;padding:.6rem .8rem;background:rgba(168,138,155,.06);border-radius:var(--radius-sm);border-left:2px solid var(--purple)">
+    <div id="${id}" style="display:none;margin-top:.4rem;padding:.6rem .8rem;background:rgba(144,166,255,.06);border-radius:var(--radius-sm);border-left:2px solid var(--purple)">
       <p style="font-size:.75rem;color:var(--purple);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Zelf zeggen</p>
       <p style="font-size:.85rem;color:var(--text1);font-style:italic;margin-bottom:.6rem">"${directeTekst}"</p>
       <p style="font-size:.75rem;color:var(--purple);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem">Of via de app</p>
@@ -10283,7 +10300,7 @@ function renderAgenda(){
     const isActive = datum === activeDag;
     const isVandaag = idx === 0;
 
-    html += `<button onclick="selectAgendaDag('${datum}')" style="all:unset;flex:1;text-align:center;cursor:pointer;padding:.4rem .1rem;border-radius:var(--radius-sm);transition:all .2s;${isActive ? 'background:var(--purple);color:white' : isVandaag ? 'background:rgba(168,138,155,.1);color:var(--text1)' : 'color:var(--text3)'}">
+    html += `<button onclick="selectAgendaDag('${datum}')" style="all:unset;flex:1;text-align:center;cursor:pointer;padding:.4rem .1rem;border-radius:var(--radius-sm);transition:all .2s;${isActive ? 'background:var(--purple);color:white' : isVandaag ? 'background:rgba(144,166,255,.1);color:var(--text1)' : 'color:var(--text3)'}">
       <span style="display:block;font-size:.72rem;font-weight:${isActive || isVandaag ? '600' : '400'}">${naam}</span>
       ${gevuld > 0 ? `<span style="display:block;margin-top:.15rem;font-size:.5rem;color:${isActive ? 'rgba(255,255,255,.8)' : 'var(--purple)'}">${'●'.repeat(gevuld)}</span>` : `<span style="display:block;margin-top:.15rem;font-size:.5rem;opacity:.2">·</span>`}
     </button>`;
@@ -10295,7 +10312,7 @@ function renderAgenda(){
   const datumKort = dagDatumKort(activeDag);
   const dagLabel = dagNaam(activeDag);
 
-  html += `<div class="card" style="border-color:rgba(168,138,155,.2)">
+  html += `<div class="card" style="border-color:rgba(144,166,255,.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
       <span style="font-size:.85rem;font-weight:600;color:var(--purple)">${dagLabel}</span>
       <span style="font-size:.75rem;color:var(--text3)">${datumKort}</span>
@@ -10310,7 +10327,7 @@ function renderAgenda(){
 
     if(isEdit){
       const picks = getAgendaQuickPicks(dd, activeDag);
-      html += `<div style="padding:.5rem 0;border-top:1px solid rgba(168,138,155,.08)">
+      html += `<div style="padding:.5rem 0;border-top:1px solid rgba(144,166,255,.08)">
         <div style="display:flex;align-items:center;gap:.3rem;margin-bottom:.4rem">
           <span style="font-size:.75rem">${milouIcon}</span>
           <span style="font-size:.78rem;color:var(--text2);font-weight:500">${ddLabel}</span>
@@ -10318,7 +10335,7 @@ function renderAgenda(){
       if(picks.length > 0){
         html += `<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.4rem">`;
         picks.forEach(p => {
-          html += `<button onclick="selectAgendaQuickPick('${activeDag}','${dd}','${p.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.8rem;color:var(--purple);cursor:pointer;padding:.35rem .5rem;border-radius:var(--radius-sm);background:rgba(168,138,155,.06);border:1px solid rgba(168,138,155,.15);min-height:36px">${p.tekst}</button>`;
+          html += `<button onclick="selectAgendaQuickPick('${activeDag}','${dd}','${p.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.8rem;color:var(--purple);cursor:pointer;padding:.35rem .5rem;border-radius:var(--radius-sm);background:rgba(144,166,255,.06);border:1px solid rgba(144,166,255,.15);min-height:36px">${p.tekst}</button>`;
         });
         html += `</div>`;
       }
@@ -10331,14 +10348,14 @@ function renderAgenda(){
         </div>
       </div>`;
     } else if(slot){
-      html += `<div style="padding:.35rem 0;border-top:1px solid rgba(168,138,155,.08);display:flex;align-items:center;gap:.4rem;cursor:pointer;min-height:36px" onclick="openAgendaEdit('${activeDag}','${dd}')">
+      html += `<div style="padding:.35rem 0;border-top:1px solid rgba(144,166,255,.08);display:flex;align-items:center;gap:.4rem;cursor:pointer;min-height:36px" onclick="openAgendaEdit('${activeDag}','${dd}')">
         <span style="font-size:.75rem;min-width:1.1rem">${milouIcon}</span>
         <span style="font-size:.75rem;color:var(--text3);min-width:3rem">${ddLabel}</span>
         <span style="font-size:.85rem;color:var(--text1);flex:1">${slot.tekst}</span>
         <span style="font-size:.65rem;color:var(--text3)">✏️</span>
       </div>`;
     } else {
-      html += `<div style="padding:.35rem 0;border-top:1px solid rgba(168,138,155,.08);display:flex;align-items:center;gap:.4rem;cursor:pointer;opacity:.45;min-height:36px" onclick="openAgendaEdit('${activeDag}','${dd}')">
+      html += `<div style="padding:.35rem 0;border-top:1px solid rgba(144,166,255,.08);display:flex;align-items:center;gap:.4rem;cursor:pointer;opacity:.45;min-height:36px" onclick="openAgendaEdit('${activeDag}','${dd}')">
         <span style="font-size:.75rem;min-width:1.1rem">${milouIcon}</span>
         <span style="font-size:.75rem;color:var(--text3);min-width:3rem">${ddLabel}</span>
         <span style="font-size:.78rem;color:var(--text3);flex:1">+ toevoegen</span>
@@ -10375,7 +10392,7 @@ function renderTimAgenda(){
   let html = '';
 
   // ── Horizontale weekbalk ──
-  html += `<div class="card" style="border-color:rgba(168,138,155,.15);margin-bottom:.5rem">
+  html += `<div class="card" style="border-color:rgba(144,166,255,.15);margin-bottom:.5rem">
     <p style="font-size:.75rem;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Lisanne's planning</p>
     <div style="display:flex;gap:.2rem;justify-content:space-between;margin-bottom:.3rem">`;
 
@@ -10392,7 +10409,7 @@ function renderTimAgenda(){
         : `<span style="font-size:.6rem">👀</span>`)
       : `<span style="font-size:.5rem;opacity:.2">·</span>`;
 
-    html += `<button onclick="selectTimAgendaDag('${datum}')" style="all:unset;flex:1;text-align:center;cursor:pointer;padding:.4rem .1rem;border-radius:var(--radius-sm);transition:all .2s;${isActive ? 'background:var(--purple);color:white' : isVandaag ? 'background:rgba(168,138,155,.1);color:var(--text1)' : 'color:var(--text3)'}">
+    html += `<button onclick="selectTimAgendaDag('${datum}')" style="all:unset;flex:1;text-align:center;cursor:pointer;padding:.4rem .1rem;border-radius:var(--radius-sm);transition:all .2s;${isActive ? 'background:var(--purple);color:white' : isVandaag ? 'background:rgba(144,166,255,.1);color:var(--text1)' : 'color:var(--text3)'}">
       <span style="display:block;font-size:.72rem;font-weight:${isActive || isVandaag ? '600' : '400'}">${naam}</span>
       <span style="display:block;margin-top:.15rem">${indicator}</span>
     </button>`;
@@ -10414,7 +10431,7 @@ function renderTimAgenda(){
         const ddLabel = dd.charAt(0).toUpperCase() + dd.slice(1);
         const isNu = (dd === 'ochtend' && uurNu < 12) || (dd === 'middag' && uurNu >= 12 && uurNu < 19) || (dd === 'avond' && uurNu >= 19);
 
-        html += `<div style="padding:.3rem .4rem;margin-top:.2rem;${isNu ? 'background:rgba(168,138,155,.06);border-radius:var(--radius-sm)' : ''}">
+        html += `<div style="padding:.3rem .4rem;margin-top:.2rem;${isNu ? 'background:rgba(144,166,255,.06);border-radius:var(--radius-sm)' : ''}">
           <span style="font-size:.72rem;color:${isNu ? 'var(--purple)' : 'var(--text3)'};font-weight:${isNu ? '600' : '400'}">${ddLabel}${isNu ? ' ← nu' : ''}</span>
           <p style="font-size:.88rem;color:var(--text1);margin-top:.1rem;line-height:1.4">${slot.tekst}</p>
         </div>`;
@@ -11177,7 +11194,7 @@ function renderTimJullie(){
   const pzInfo = getPauzeInfo();
   if(pzInfo && pzInfo.door === 'lisanne' && pzInfo.type !== 'vandaag'){
     const pzLabel = pzInfo.totDatum ? `tot ${pzInfo.totDatum}` : 'even';
-    html += `<div style="text-align:center;padding:.8rem 1rem;margin-bottom:.6rem;background:rgba(196,138,138,.04);border-radius:var(--radius);border:1px solid rgba(196,138,138,.08)">
+    html += `<div style="text-align:center;padding:.8rem 1rem;margin-bottom:.6rem;background:rgba(126,167,255,.04);border-radius:var(--radius);border:1px solid rgba(126,167,255,.08)">
       <p style="font-size:.85rem;color:var(--text2)">Vandaag is een rustige dag.</p>
       <p style="font-size:.8rem;color:var(--text3)">Lisanne heeft de app gepauzeerd ${pzLabel}.</p>
     </div>`;
@@ -11197,7 +11214,7 @@ function renderTimJullie(){
   // ── P2: MICRO-KEUZE RESULTAAT ──
   const mkResultaat = getMicroKeuzeResultaat();
   if(mkResultaat){
-    html += `<div class="card" style="border-color:rgba(168,138,155,.25);background:rgba(168,138,155,.04)">
+    html += `<div class="card" style="border-color:rgba(144,166,255,.25);background:rgba(144,166,255,.04)">
       <p style="font-size:.7rem;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem">Lisanne heeft gekozen</p>
       <p style="font-size:.95rem;color:var(--text1);font-weight:500">${mkResultaat}</p>
     </div>`;
@@ -11208,7 +11225,7 @@ function renderTimJullie(){
     const berichtjesVoorTim = getOngelezenBerichtjes('tim');
     if(berichtjesVoorTim.length > 0){
       const b = berichtjesVoorTim[berichtjesVoorTim.length - 1];
-      html += `<div class="card" style="border-color:rgba(168,138,155,.25);background:rgba(168,138,155,.04)">
+      html += `<div class="card" style="border-color:rgba(144,166,255,.25);background:rgba(144,166,255,.04)">
         <p style="font-size:.75rem;color:var(--purple);margin-bottom:.3rem">💌 Van Lisanne</p>
         <p style="font-size:.9rem;color:var(--text1);font-style:italic;line-height:1.5">"${b.tekst}"</p>
         <button onclick="markeerBerichtjesGelezen('tim');renderApp()" style="all:unset;font-size:.8rem;color:var(--text3);cursor:pointer;margin-top:.4rem;display:block;padding:.3rem 0;min-height:44px">Gelezen</button>
@@ -11234,7 +11251,7 @@ function renderTimJullie(){
     const mis = recenteMis[0];
     const misLabels = {te_snel:'iets te snel ging',ongemak:'iets ongemakkelijk voelde',reactie_tim:'jouw reactie anders was dan ze verwachtte',anders:'iets anders was dan verwacht'};
     const misLabel = misLabels[mis.reden] || 'iets anders voelde dan verwacht';
-    html += `<div class="card" style="border-color:rgba(196,138,138,.2);background:rgba(196,138,138,.04)">
+    html += `<div class="card" style="border-color:rgba(126,167,255,.2);background:rgba(126,167,255,.04)">
       <p style="font-size:.9rem;color:var(--text2);line-height:1.5">Lisanne gaf aan dat ${misLabel}. Dat is niet erg — het hoort erbij. Even bewust van zijn.</p>
       <button onclick="markeerIetsMisGezien('${mis.datum}')" style="all:unset;font-size:.8rem;color:var(--text3);cursor:pointer;margin-top:.4rem;display:block;padding:.3rem 0;min-height:44px">Begrepen</button>
     </div>`;
@@ -11285,7 +11302,7 @@ function renderTimJullie(){
   // ── WEEKREFLECTIE ──
   if(faseActief(4) && heeftWeekReflectieNodig('tim')){
     const weekVraag = getWeekReflectieVraag();
-    html += `<div class="card" style="border-color:rgba(196,138,138,.15)">
+    html += `<div class="card" style="border-color:rgba(126,167,255,.15)">
       <p style="font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Weekvraag</p>
       <p style="font-size:.9rem;color:var(--text1);margin-bottom:.5rem;line-height:1.5">${weekVraag}</p>
       <textarea id="timWeekReflectie" placeholder="Je antwoord..." maxlength="200"
@@ -11296,7 +11313,7 @@ function renderTimJullie(){
   } else {
     const wr = beidenhebbenWeekReflectieIngevuld();
     if(wr.beide && wr.lisanne){
-      html += `<div class="card" style="border-color:rgba(168,138,155,.15)">
+      html += `<div class="card" style="border-color:rgba(144,166,255,.15)">
         <p style="font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem">Weekvraag — Lisanne's antwoord</p>
         <p style="font-size:.8rem;color:var(--text3);margin-bottom:.3rem;font-style:italic">${getWeekReflectieVraag()}</p>
         <p style="font-size:.9rem;color:var(--text1);line-height:1.5">"${wr.lisanne.tekst || wr.lisanne.antwoord}"</p>
@@ -11330,7 +11347,7 @@ function renderTimJullie(){
       if(oef){
         const catLabel = oef.cat === 'verbinding' ? 'Verbinding' : 'Dynamiek';
         const catKleur = oef.cat === 'verbinding' ? 'var(--accent)' : 'var(--purple)';
-        html += `<div class="card" style="border-color:${oef.cat==='verbinding' ? 'rgba(196,138,138,.2)' : 'rgba(168,138,155,.2)'}">
+        html += `<div class="card" style="border-color:${oef.cat==='verbinding' ? 'rgba(126,167,255,.2)' : 'rgba(144,166,255,.2)'}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
             <p style="font-size:.7rem;color:${catKleur};text-transform:uppercase;letter-spacing:.5px">${catLabel} · ${oef.duur}</p>
             <p style="font-size:.7rem;color:var(--text3)">Tip van de week</p>
@@ -11363,7 +11380,7 @@ function renderTimJullie(){
   const moments = getDisciplineState().momentLog;
   const recentMoment = moments.find(m => daysSince(m.datum) < 2);
   if(!recentMoment && new Date(debugNow()).getHours() >= 18){
-    html += `<div class="card" style="border-color:rgba(196,138,138,.15)">
+    html += `<div class="card" style="border-color:rgba(126,167,255,.15)">
       <div class="card-text" style="font-style:italic">${pickStabiel(STILLE_AVOND_PROMPTS, today()+'stille')}</div>
     </div>`;
   }
@@ -11387,7 +11404,7 @@ function renderTimJullie(){
   html += `<div id="timWensKanaal" style="display:none;margin-bottom:.8rem">`;
   if(huidigeWens){
     const omgezet = isWensOmgezet();
-    html += `<div class="card" style="border-color:rgba(196,138,138,.15)">
+    html += `<div class="card" style="border-color:rgba(126,167,255,.15)">
       <p style="font-size:.85rem;color:var(--text2)">Je wens: <strong>${huidigeWens.type}</strong></p>
       ${huidigeWens.tekst ? `<p style="font-size:.82rem;color:var(--text3);margin-top:.2rem">"${huidigeWens.tekst}"</p>` : ''}
       <p style="font-size:.8rem;color:var(--text3);margin-top:.3rem">${omgezet ? '✓ Je wens is meegenomen.' : 'Je wens is meegenomen. Timing komt als het past.'}</p>
@@ -11579,7 +11596,7 @@ function renderTimVandaag(){
       timHoofdContext = 'Lisanne wil iets';
       const overrideTaken = bs.override.text.split(' + ');
       const isMulti = overrideTaken.length > 1;
-      timHoofdHtml = `<div style="background:rgba(168,138,155,.06);border-radius:var(--radius-sm);padding:.7rem;margin-bottom:.3rem">
+      timHoofdHtml = `<div style="background:rgba(144,166,255,.06);border-radius:var(--radius-sm);padding:.7rem;margin-bottom:.3rem">
         ${isMulti
           ? overrideTaken.map(function(t){ return '<p style="font-size:.9rem;color:var(--text1);padding:.15rem 0">\u2022 ' + t.trim() + '</p>'; }).join('')
           : '<p style="font-size:.95rem;color:var(--text1)">' + bs.override.text + '</p>'}
@@ -11650,7 +11667,7 @@ function renderTimVandaag(){
       timHoofdHtml = `<p style="font-size:.85rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Vandaag pak je niet zelf \u2014 je vraagt het aan Lisanne.</p>`;
       let vmOptHtml = '';
       openSituaties.forEach(function(s){
-        vmOptHtml += `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;padding:.5rem .6rem;background:rgba(168,138,155,.06);border-radius:var(--radius-sm)">
+        vmOptHtml += `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;padding:.5rem .6rem;background:rgba(144,166,255,.06);border-radius:var(--radius-sm)">
           <span style="flex:1;font-size:.9rem;color:var(--text1)">"${s.tekst}"</span>
           <button class="btn btn-primary" style="font-size:.8rem;padding:.3rem .7rem;white-space:nowrap" onclick="markeerGevraagd('${s.id}')">Gevraagd</button>
         </div>`;
@@ -11773,7 +11790,7 @@ function renderTimVandaag(){
     _lisSignaalVandaag.forEach(function(sig){
       const _sigKleur = sig.type === 'was_fijn' ? 'var(--success)' : sig.type === 'wil_proberen' ? 'var(--accent)' : 'var(--text3)';
       const _sigIcon = sig.type === 'was_fijn' ? '\u2764' : sig.type === 'wil_proberen' ? '\u2728' : '\ud83d\udcac';
-      html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.4rem;background:rgba(168,138,155,.06);border-radius:var(--radius-sm)">
+      html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.4rem;background:rgba(144,166,255,.06);border-radius:var(--radius-sm)">
         <p style="font-size:.85rem;color:${_sigKleur}">${_sigIcon} ${sig.tekst}</p>
       </div>`;
     });
@@ -11790,7 +11807,7 @@ function renderTimVandaag(){
     const _houdHash = Math.abs([..._houdSeed].reduce(function(h,c){ return (h*31 + c.charCodeAt(0))|0; }, 0));
     const _houdIdx = _houdHash % TIM_HOUDING_POOL.length;
     const _houdTekst = TIM_HOUDING_POOL[_houdIdx].tekst;
-    html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.4rem;background:rgba(168,138,155,.04);border-radius:var(--radius-sm)">
+    html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.4rem;background:rgba(144,166,255,.04);border-radius:var(--radius-sm)">
       <p style="font-size:.82rem;color:var(--text2);line-height:1.4">${_houdTekst}</p>
       <button onclick="LS.set('t_houding_dismiss',today());renderApp()" style="all:unset;font-size:.7rem;color:var(--text3);cursor:pointer;opacity:.4;margin-top:.2rem;display:inline-block">\u2715</button>
     </div>`;
@@ -11878,7 +11895,7 @@ function renderTimVandaag(){
         : '';
       const timItemsNamen = (a.items && a.items.length > 0 && a.voorbereidingenZichtbaar) ? a.items.map(function(k){ return SPULLEN_DB[k] ? SPULLEN_DB[k].naam : k; }) : [];
       const timItemsHtml = timItemsNamen.length > 0 ? '<p style="font-size:.82rem;color:var(--text1);margin-top:.3rem">\ud83d\udd17 Leg klaar: ' + timItemsNamen.join(', ').toLowerCase() + '</p>' : '';
-      html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.3rem;background:rgba(168,138,155,.04);border-radius:var(--radius-sm)">
+      html += `<div style="text-align:center;padding:.5rem .8rem;margin-bottom:.3rem;background:rgba(144,166,255,.04);border-radius:var(--radius-sm)">
         <p style="font-size:.85rem;color:var(--text2);font-style:italic">${pickStabiel(TIM_HERINNERING_ZINNEN, today()+a.id)}</p>
         ${timVoorbHtml}${timItemsHtml}
       </div>`;
@@ -12052,7 +12069,7 @@ function renderVandaag(state){
         const ic = v === 'goed' ? '&#x1f60a;' : v === 'laag' ? '&#x1f634;' : '&#x1f33f;';
         const lb = v === 'goed' ? 'Goed' : v === 'laag' ? 'Moe' : 'Normaal';
         const act = _energieNu === v;
-        return `<button onclick="setEnergieVandaag('${v}')" style="all:unset;flex:1;text-align:center;padding:.4rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;${act ? 'background:rgba(196,168,138,.15);color:var(--text1);font-weight:500' : 'color:var(--text3);opacity:.6'}">${ic} ${lb}</button>`;
+        return `<button onclick="setEnergieVandaag('${v}')" style="all:unset;flex:1;text-align:center;padding:.4rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;${act ? 'background:rgba(126,167,255,.15);color:var(--text1);font-weight:500' : 'color:var(--text3);opacity:.6'}">${ic} ${lb}</button>`;
       }).join('')}
     </div>
   </div>`;
@@ -12233,13 +12250,13 @@ function renderVandaag(state){
     if(s.disclaimer) _meerInfoHtml += `<p style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.5rem;line-height:1.4">${s.disclaimer}</p>`;
     const _inzicht = getInzichtVoorSuggestie(s);
     if(_inzicht){
-      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(196,138,138,.04);border-radius:var(--radius-sm);border-left:2px solid rgba(196,138,138,.2)">
+      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(126,167,255,.04);border-radius:var(--radius-sm);border-left:2px solid rgba(126,167,255,.2)">
         <p style="font-size:.75rem;color:var(--text3);margin-bottom:.2rem">Waarom dit werkt</p>
         <p style="font-size:.85rem;color:var(--text2);line-height:1.5">${_inzicht.tekst}</p>
         ${_inzicht.uitleg ? `<p style="font-size:.8rem;color:var(--text3);line-height:1.4;margin-top:.3rem">${_inzicht.uitleg}</p>` : ''}
       </div>`;
     } else if(s.waarom){
-      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(196,138,138,.04);border-radius:var(--radius-sm);border-left:2px solid rgba(196,138,138,.2)">
+      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(126,167,255,.04);border-radius:var(--radius-sm);border-left:2px solid rgba(126,167,255,.2)">
         <p style="font-size:.85rem;color:var(--text2);line-height:1.5">${s.waarom}</p>
       </div>`;
     }
@@ -12258,7 +12275,7 @@ function renderVandaag(state){
       </div>`;
     }
     if(s.handleidingKeys && s.handleidingKeys.length > 0){
-      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(196,168,138,.06);border-radius:var(--radius-sm);border-left:2px solid rgba(196,168,138,.25)">`;
+      _meerInfoHtml += `<div style="margin-bottom:.5rem;padding:.5rem .7rem;background:rgba(126,167,255,.06);border-radius:var(--radius-sm);border-left:2px solid rgba(126,167,255,.25)">`;
       s.handleidingKeys.forEach(key => {
         const item = SPULLEN_DB[key];
         if(item){
@@ -12299,7 +12316,7 @@ function renderVandaag(state){
     if(_miniLesje){
       hoofdkaartHtml += `<div style="margin-top:.3rem">
         <button onclick="var d=document.getElementById('miniLesjeContent');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'&#x25b8; Goed om te weten':'&#x25be; Goed om te weten'" style="all:unset;font-size:.8rem;color:var(--text3);cursor:pointer;display:block;padding:.3rem 0">&#x25b8; Goed om te weten</button>
-        <div id="miniLesjeContent" style="display:none;margin-top:.3rem;padding:.5rem .7rem;background:rgba(196,168,138,.05);border-radius:var(--radius-sm);border-left:2px solid rgba(196,168,138,.2)">
+        <div id="miniLesjeContent" style="display:none;margin-top:.3rem;padding:.5rem .7rem;background:rgba(126,167,255,.05);border-radius:var(--radius-sm);border-left:2px solid rgba(126,167,255,.2)">
           ${renderLesjeHtml(_miniLesje, 'kaart')}
         </div>
       </div>`;
@@ -12584,7 +12601,7 @@ function renderVandaag(state){
 
     if(_laatsteLes && _lesDatum){
       const _dagenSinds = daysSince(_lesDatum);
-      const _lk = DOMEIN_KLEUREN[_laatsteLes.domein] || '196,168,138';
+      const _lk = DOMEIN_KLEUREN[_laatsteLes.domein] || '126,167,255';
 
       if(_dagenSinds === 0){
         // Dag 0: toon oefening uit de les — klik opent les op stap 3 (oefening = index 2)
@@ -12620,7 +12637,7 @@ function renderVandaag(state){
   // ── LES-NUDGE ──
   const _volgendeLes = LESSEN_INHOUD.find(l => !_lesV.gelezen.includes(l.id) && getLesGate(l.id));
   if(_volgendeLes){
-    const _lk = DOMEIN_KLEUREN[_volgendeLes.domein] || '196,168,138';
+    const _lk = DOMEIN_KLEUREN[_volgendeLes.domein] || '126,167,255';
     _meerVandaagHtml += `<div onclick="toonLes(${_volgendeLes.id})" style="margin-top:.4rem;padding:.5rem .7rem;background:rgba(${_lk},.04);border:1px solid rgba(${_lk},.1);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;gap:.5rem">
       <span style="font-size:.9rem">📖</span>
       <div>
@@ -12768,7 +12785,7 @@ function renderRegelen(state){
     const idSug = SUGGESTIE_POOL.find(s => s.id === ideeState.huidig);
     if(idSug){
       const sfeerLabels = {sexy:'Sexy',romantisch:'Romantisch',speels:'Speels',spanning:'Spanning'};
-      html += `<div class="card moment-card-primary" style="border-color:rgba(196,138,138,.25)">
+      html += `<div class="card moment-card-primary" style="border-color:rgba(126,167,255,.25)">
         <p style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">${sfeerLabels[ideeState.sfeer] || 'Idee'}</p>
         <p style="font-size:.95rem;color:var(--text1);line-height:1.5;margin-bottom:.6rem">${idSug.tekst}</p>`;
       if(idSug.zegPrive){
@@ -12847,7 +12864,7 @@ function renderGids(){
     <p class="section-label">Waar Tim aan werkt</p>
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:.6rem;line-height:1.4">Tim heeft de app gevraagd om hem hierbij te helpen. Je mag hem hier gerust op aanspreken.</p>`;
   TIM_WERKPUNTEN.forEach(wp => {
-    html += `<div style="margin-bottom:.6rem;padding:.5rem .7rem;background:rgba(196,138,138,.04);border-radius:var(--radius-sm)">
+    html += `<div style="margin-bottom:.6rem;padding:.5rem .7rem;background:rgba(126,167,255,.04);border-radius:var(--radius-sm)">
       <p style="font-size:.85rem;color:var(--text1);font-weight:500;margin-bottom:.2rem">${wp.label}</p>
       <p style="font-size:.8rem;color:var(--text3);margin-bottom:.3rem">${wp.beschrijving}</p>
       ${wp.spreektekst.length > 0 ? `<button onclick="document.getElementById('wp_${wp.id}').style.display=document.getElementById('wp_${wp.id}').style.display==='none'?'block':'none'" style="all:unset;font-size:.78rem;color:var(--accent);cursor:pointer">Wat kun je zeggen? ▼</button>
@@ -12992,10 +13009,10 @@ function renderBondageSetups(){
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:.6rem;line-height:1.4">Kant-en-klare recepten. Alle stappen staan erbij. Van simpel naar uitgebreid.</p>`;
 
   const niveauLabels = {1:'⭐ Simpel', 2:'⭐⭐ Gemiddeld', 3:'⭐⭐⭐ Uitgebreid'};
-  const sfeerKleuren = {rustig:'140,160,100', speels:'196,168,138', intens:'180,100,120'};
+  const sfeerKleuren = {rustig:'112,196,169', speels:'126,167,255', intens:'164,176,255'};
 
   setups.forEach(setup => {
-    const kleur = sfeerKleuren[setup.sfeer] || '196,168,138';
+    const kleur = sfeerKleuren[setup.sfeer] || '126,167,255';
     const itemNamen = setup.items.map(k => SPULLEN_DB[k] ? SPULLEN_DB[k].naam : k);
     const toggleId = 'setup_' + setup.id;
 
@@ -13101,7 +13118,7 @@ function renderDagplanAccordion(blokken, blocks, uur, actiefDef){
     const canClick = interact !== 'locked' && isActionable(def, bst);
     const isOpenRow = uiState.dagplanOpenRow === def.id;
 
-    html += `<div class="dagplan-row" data-blokid="${def.id}" style="padding:.7rem .8rem;border-radius:var(--radius-sm);margin-bottom:.2rem;min-height:44px;display:flex;align-items:center;${!canClick?'opacity:.4;':'cursor:pointer;'}${isActive?'background:rgba(168,138,155,.06);':''}" ${canClick?`onclick="openDagplanBlok('${def.id}')"`:''}>
+    html += `<div class="dagplan-row" data-blokid="${def.id}" style="padding:.7rem .8rem;border-radius:var(--radius-sm);margin-bottom:.2rem;min-height:44px;display:flex;align-items:center;${!canClick?'opacity:.4;':'cursor:pointer;'}${isActive?'background:rgba(144,166,255,.06);':''}" ${canClick?`onclick="openDagplanBlok('${def.id}')"`:''}>
       <span style="color:${kleur};font-size:.85rem">${icoon} ${def.label}${infoHtml}</span>
     </div>`;
 
@@ -13110,7 +13127,7 @@ function renderDagplanAccordion(blokken, blocks, uur, actiefDef){
     if(!canClick){
       html += `<p style="font-size:.8rem;color:var(--text3)">${def.kind==='fixed'?def.framing:'Nog niet aan de beurt'}</p>`;
     } else if(interact === 'readOnly' && overrideAct){
-      html += `<div style="background:rgba(168,138,155,.06);border-radius:var(--radius-sm);padding:.5rem;margin-bottom:.3rem">
+      html += `<div style="background:rgba(144,166,255,.06);border-radius:var(--radius-sm);padding:.5rem;margin-bottom:.3rem">
         <p style="font-size:.8rem;color:var(--purple);font-weight:600">Lisanne heeft iets voor je klaar.</p>
         <p style="font-size:.85rem;color:var(--text1)">${bst.override.text}</p>
       </div>
@@ -13119,7 +13136,7 @@ function renderDagplanAccordion(blokken, blocks, uur, actiefDef){
       const doneLabel = overrideAct ? bst.override.text : (bst.choiceLabel || 'Gedaan');
       html += `<p style="font-size:.85rem;color:var(--success)">✓ ${doneLabel}</p>`;
     } else if(overrideAct){
-      html += `<div style="background:rgba(168,138,155,.06);border-radius:var(--radius-sm);padding:.5rem;margin-bottom:.4rem">
+      html += `<div style="background:rgba(144,166,255,.06);border-radius:var(--radius-sm);padding:.5rem;margin-bottom:.4rem">
         <p style="font-size:.8rem;color:var(--purple);font-weight:600">Lisanne heeft iets voor je klaar.</p>
         <p style="font-size:.85rem;color:var(--text1)">${bst.override.text}</p>
       </div>
@@ -13221,7 +13238,7 @@ function renderTimWarmte(){
   </div>`;
 
   if(dagScore.total > 0 && dagScore.gedaan === dagScore.total){
-    html += `<div class="card" style="border-color:rgba(196,138,138,.15)">
+    html += `<div class="card" style="border-color:rgba(126,167,255,.15)">
       <div class="card-text" style="font-size:.85rem;color:var(--success)">
         Je discipline is zichtbaar. Lisanne ziet wat je doet, ook als ze het niet zegt.
       </div>
@@ -13287,7 +13304,7 @@ function renderSettings(){
         <div style="display:flex;flex-wrap:wrap;gap:.3rem">
           ${[{k:'samen',l:'🛋️ Samen'},{k:'dagmoment',l:'💬 Dagmoment'},{k:'contact',l:'🤝 Contact'},{k:'geen',l:'Spontaan'}].map(r => {
             const actief = LS.get('l_ritueel_voorkeur','geen') === r.k;
-            return `<button onclick="LS.set('l_ritueel_voorkeur','${r.k}');renderApp();setTimeout(()=>{const m=document.getElementById('settingsOverlay');if(m)m.classList.add('show')},50)" style="all:unset;flex:1;min-width:45%;text-align:center;padding:.4rem .2rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;${actief?'background:rgba(196,168,138,.15);color:var(--text1);font-weight:500':'color:var(--text3);opacity:.7'}">${r.l}</button>`;
+            return `<button onclick="LS.set('l_ritueel_voorkeur','${r.k}');renderApp();setTimeout(()=>{const m=document.getElementById('settingsOverlay');if(m)m.classList.add('show')},50)" style="all:unset;flex:1;min-width:45%;text-align:center;padding:.4rem .2rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;${actief?'background:rgba(126,167,255,.15);color:var(--text1);font-weight:500':'color:var(--text3);opacity:.7'}">${r.l}</button>`;
           }).join('')}
         </div>
       </div>
@@ -13296,7 +13313,7 @@ function renderSettings(){
         <div style="display:flex;gap:.3rem">
           ${[{n:1,l:'Rustig wennen'},{n:2,l:'Geef me ideeën'},{n:3,l:'Ik bepaal'}].map(t => {
             const actief = LS.get('l_vertrouwensniveau',1) === t.n;
-            return `<button onclick="LS.set('l_vertrouwensniveau',${t.n});renderApp();setTimeout(()=>{const m=document.getElementById('settingsOverlay');if(m)m.classList.add('show')},50)" style="all:unset;flex:1;text-align:center;padding:.4rem .2rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;${actief?'background:rgba(196,168,138,.15);color:var(--text1);font-weight:500':'color:var(--text3);opacity:.7'}">${t.l}</button>`;
+            return `<button onclick="LS.set('l_vertrouwensniveau',${t.n});renderApp();setTimeout(()=>{const m=document.getElementById('settingsOverlay');if(m)m.classList.add('show')},50)" style="all:unset;flex:1;text-align:center;padding:.4rem .2rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;${actief?'background:rgba(126,167,255,.15);color:var(--text1);font-weight:500':'color:var(--text3);opacity:.7'}">${t.l}</button>`;
           }).join('')}
         </div>
       </div>
@@ -13364,11 +13381,11 @@ function renderBlokInModal(b, blocks){
           html += `<p style="font-size:.7rem;color:var(--text3);margin-bottom:.3rem">Kies één of meerdere:</p>
           <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.4rem">`;
           quickOpties.forEach(o => {
-            html += `<button data-override-optie="${o.tekst.replace(/"/g,'&quot;')}" onclick="toggleOverrideOptie('${b.id}','${o.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.85rem;color:var(--text1);cursor:pointer;padding:.5rem .7rem;border-radius:var(--radius-sm);background:rgba(168,138,155,.06);border:1px solid rgba(168,138,155,.15);transition:all .15s;min-height:44px;display:flex;align-items:center">${o.tekst}</button>`;
+            html += `<button data-override-optie="${o.tekst.replace(/"/g,'&quot;')}" onclick="toggleOverrideOptie('${b.id}','${o.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.85rem;color:var(--text1);cursor:pointer;padding:.5rem .7rem;border-radius:var(--radius-sm);background:rgba(144,166,255,.06);border:1px solid rgba(144,166,255,.15);transition:all .15s;min-height:44px;display:flex;align-items:center">${o.tekst}</button>`;
           });
           // Lisanne's eigen opties (andere stijl: accent border)
           eigenNietInStandaard.forEach(c => {
-            html += `<button data-override-optie="${c.tekst.replace(/"/g,'&quot;')}" onclick="toggleOverrideOptie('${b.id}','${c.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.85rem;color:var(--purple);cursor:pointer;padding:.5rem .7rem;border-radius:var(--radius-sm);background:rgba(168,138,155,.04);border:1px dashed rgba(168,138,155,.3);transition:all .15s;min-height:44px;display:flex;align-items:center">${c.tekst}</button>`;
+            html += `<button data-override-optie="${c.tekst.replace(/"/g,'&quot;')}" onclick="toggleOverrideOptie('${b.id}','${c.tekst.replace(/'/g,"&#39;")}')" style="all:unset;font-size:.85rem;color:var(--purple);cursor:pointer;padding:.5rem .7rem;border-radius:var(--radius-sm);background:rgba(144,166,255,.04);border:1px dashed rgba(144,166,255,.3);transition:all .15s;min-height:44px;display:flex;align-items:center">${c.tekst}</button>`;
           });
           html += `</div>
           <div id="overrideSummary_${b.id}" style="display:none;flex-wrap:wrap;align-items:center;margin-bottom:.4rem"></div>
@@ -13399,9 +13416,9 @@ function renderDagritmeOverrideModal(){
 
   const dagToggle = `<div style="display:flex;gap:.5rem;margin-bottom:1rem">
     <button onclick="dagritmeModalDag='vandaag';renderApp();setTimeout(()=>{const m=document.getElementById('dagritmeModal');if(m)m.classList.add('show')},50)"
-      style="all:unset;padding:.3rem .8rem;font-size:.82rem;border-radius:var(--radius-sm);cursor:pointer;${!isMorgen?'background:var(--purple);color:white':'color:var(--purple);border:1px solid rgba(168,138,155,.3)'}">Vandaag</button>
+      style="all:unset;padding:.3rem .8rem;font-size:.82rem;border-radius:var(--radius-sm);cursor:pointer;${!isMorgen?'background:var(--purple);color:white':'color:var(--purple);border:1px solid rgba(144,166,255,.3)'}">Vandaag</button>
     <button onclick="dagritmeModalDag='morgen';renderApp();setTimeout(()=>{const m=document.getElementById('dagritmeModal');if(m)m.classList.add('show')},50)"
-      style="all:unset;padding:.3rem .8rem;font-size:.82rem;border-radius:var(--radius-sm);cursor:pointer;${isMorgen?'background:var(--purple);color:white':'color:var(--purple);border:1px solid rgba(168,138,155,.3)'}">Morgen</button>
+      style="all:unset;padding:.3rem .8rem;font-size:.82rem;border-radius:var(--radius-sm);cursor:pointer;${isMorgen?'background:var(--purple);color:white':'color:var(--purple);border:1px solid rgba(144,166,255,.3)'}">Morgen</button>
   </div>`;
 
   let html = `<div class="modal-overlay" id="dagritmeModal">
@@ -13510,12 +13527,12 @@ function renderOverrideSelectie(blokId){
   buttons.forEach(btn => {
     const t = btn.getAttribute('data-override-optie');
     if(sel.includes(t)){
-      btn.style.background = 'rgba(168,138,155,.25)';
+      btn.style.background = 'rgba(144,166,255,.25)';
       btn.style.borderColor = 'var(--purple)';
       btn.style.fontWeight = '600';
     } else {
-      btn.style.background = 'rgba(168,138,155,.06)';
-      btn.style.borderColor = 'rgba(168,138,155,.15)';
+      btn.style.background = 'rgba(144,166,255,.06)';
+      btn.style.borderColor = 'rgba(144,166,255,.15)';
       btn.style.fontWeight = 'normal';
     }
   });
@@ -13523,7 +13540,7 @@ function renderOverrideSelectie(blokId){
   const summary = $('#overrideSummary_'+blokId);
   if(summary){
     if(sel.length > 0){
-      summary.innerHTML = sel.map((s, i) => `<span style="display:inline-block;font-size:.75rem;background:rgba(168,138,155,.15);color:var(--purple);padding:.15rem .4rem;border-radius:8px;margin:.1rem .15rem .1rem 0">${s} <span onclick="removeOverrideOptie('${blokId}',${i})" style="cursor:pointer;opacity:.7">✕</span></span>`).join('');
+      summary.innerHTML = sel.map((s, i) => `<span style="display:inline-block;font-size:.75rem;background:rgba(144,166,255,.15);color:var(--purple);padding:.15rem .4rem;border-radius:8px;margin:.1rem .15rem .1rem 0">${s} <span onclick="removeOverrideOptie('${blokId}',${i})" style="cursor:pointer;opacity:.7">✕</span></span>`).join('');
       summary.style.display = 'flex';
     } else {
       summary.innerHTML = '';
@@ -13748,7 +13765,7 @@ function renderModal(){
       <button class="modal-option" onclick="startInitiatief('klein')">🌱 Iets kleins</button>
       <button class="modal-option" onclick="startInitiatief('groter')">🔥 Iets groters</button>
       <button class="modal-option" onclick="startInitiatief('avond')">✨ Een hele avond</button>
-      <button class="modal-option" onclick="openAfspraakModal()" style="border-color:rgba(168,138,155,.25)">📌 Iets afspreken</button>
+      <button class="modal-option" onclick="openAfspraakModal()" style="border-color:rgba(144,166,255,.25)">📌 Iets afspreken</button>
       <button class="modal-close" onclick="closeModal()">Niet nu</button>
     </div>
   </div>`;
@@ -14016,7 +14033,7 @@ function renderItemsKlaarChips(cat){
     html += `<div style="display:flex;gap:.4rem;flex-wrap:wrap">`;
     g.items.forEach(item => {
       const active = _itemsKlaarSelectie.includes(item.key);
-      html += `<button class="voorb-chip${active?' item-chip-active':''}" onclick="toggleItemChip('${item.key}')" style="${active?'background:rgba(168,138,155,.2);border-color:var(--purple);color:var(--purple)':''}">${active?'✓ ':''}${item.label}</button>`;
+      html += `<button class="voorb-chip${active?' item-chip-active':''}" onclick="toggleItemChip('${item.key}')" style="${active?'background:rgba(144,166,255,.2);border-color:var(--purple);color:var(--purple)':''}">${active?'✓ ':''}${item.label}</button>`;
     });
     html += `</div>`;
   });
@@ -14234,7 +14251,7 @@ function logEvaluatie(keuze){
   else if(keuze === 'meer'){
     const content = $('#app').querySelector('.content');
     if(content){
-      content.innerHTML = `<div class="card" style="border-color:rgba(196,138,138,.25)">
+      content.innerHTML = `<div class="card" style="border-color:rgba(126,167,255,.25)">
         <div class="card-title">Wat mag er meer?</div>
         <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:.8rem">
           <button class="experience-btn" onclick="logEvaluatieDetail('vaker')"><span>Vaker</span></button>
