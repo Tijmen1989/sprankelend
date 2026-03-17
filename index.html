@@ -14559,10 +14559,25 @@ function debugSimuleerWeek(){
 })();
 
 // ═══════════════════════════════════════════════════════════════
+// DEEP LINK: #slug opent les direct (bijv. #gewoon-zeggen)
+// ═══════════════════════════════════════════════════════════════
+function toSlug(titel){
+  return titel.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+function openLesViaHash(){
+  var hash = location.hash.replace('#','').toLowerCase();
+  if(!hash) return;
+  var les = LESSEN_INHOUD.find(function(l){return toSlug(l.titel) === hash;});
+  if(les) setTimeout(function(){toonLes(les.id);},100);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 renderApp();
 initNotificaties();
+openLesViaHash();
+window.addEventListener('hashchange', openLesViaHash);
 
 // Service Worker registratie
 if('serviceWorker' in navigator){
