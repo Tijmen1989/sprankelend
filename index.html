@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Souffleur">
 <meta name="theme-color" content="#1B1F27">
+<meta name="description" content="Sprankelend Souffleur — ontdek samen jullie dynamiek, stap voor stap.">
+<meta property="og:title" content="Sprankelend Souffleur">
+<meta property="og:description" content="Ontdek samen jullie dynamiek, stap voor stap.">
+<meta property="og:type" content="website">
 <title>Sprankelend Souffleur</title>
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU3ByYW5rZWxlbmQgU291ZmZsZXVyIiwic2hvcnRfbmFtZSI6IlNvdWZmbGV1ciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMUIxRjI3IiwidGhlbWVfY29sb3IiOiIjMUIxRjI3Iiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCJ9Cg==">
 <style>
@@ -2761,16 +2765,22 @@ const MINI_LESJES = [
 const LESSEN_INHOUD = [
   {id:1, titel:'Gewoon zeggen', subtitel:'Soms is \u00e9\u00e9n zin genoeg.', domein:'verbinding', fase:0, type:'story',
    scroll:[
-     {type:'scene', tekst:'Je hebt Milou naar school gebracht.\nJe komt thuis. Tim ligt op bed met zijn laptop.\nHij kijkt niet op.\nJij loopt naar hem toe.\n\u201cLaptop dicht.\u201d\nHij klapt hem dicht.\nGeen overleg. Geen vraag. Jij zag het moment en pakte het.\nEn als hij straks vraagt \u201cwat gaan we doen?\u201d \u2014 dan is het antwoord geen overleg.\n\u201cWe gaan wandelen.\u201d\nNiet omdat hij het vroeg. Maar omdat jij het besloot.'},
-     {type:'inzicht', tekst:'Jij kiest de momenten.\nSoms omdat je iets ziet. Soms zomaar.\nNiet als reactie op zijn vraag \u2014 maar omdat jij besluit dat het nu zo is.\nDat is het hele verschil.'},
+     {type:'scene', tekst:'Je hebt Milou naar school gebracht.\nJe komt thuis. Tim ligt op bed met zijn laptop.\nHij kijkt niet op.\nJij loopt naar hem toe.\n\u201cLaptop dicht.\u201d\nHij klapt hem dicht.\nGeen overleg. Geen vraag.\nJij zag het moment en pakte het.'},
+     {type:'inzicht', tekst:'Het maakt niet uit w\u00e1t er gebeurt.\nHet gaat erom dat <b>j\u00edj</b> zegt wat er gebeurt.\nOp jouw moment.\nGeen overleg. Alleen richting.'},
      {type:'voorbeeld', tekst:'\u201cLaptop dicht.\u201d \u2014 hij klapt hem dicht.\n\u201cKom. We gaan wandelen.\u201d\n\u201cKom even hier.\u201d'},
-     {type:'noot', tekst:'De eerste keer voelt dat misschien een beetje vreemd.\nDat is normaal. Veel mensen moeten er zelfs even om lachen.\nJe merkt het vaak meteen \u2014 hij wordt stiller. Of hij doet gewoon wat je zegt.\nHet gaat niet om de hele dag sturen. Het gaat om de momenten dat jij kiest om de leiding te nemen. Eén moment is al genoeg.\nEn het werkt twee kanten op: veel vrouwen merken dat het ook voor henzelf rustiger voelt. Niet steeds overleggen. Gewoon zeggen wat er gebeurt.\nNa een paar keer voelt het vaak verrassend vanzelfsprekend.'},
+     {type:'noot', tekst:'De eerste keer voelt dat misschien een beetje vreemd.\nDat is normaal. Veel mensen moeten er zelfs even om lachen.\nJe merkt het vaak meteen \u2014 hij wordt stiller. Of hij doet gewoon wat je zegt.\nHet gaat niet om de hele dag sturen.\nHet gaat om de momenten dat jij kiest om de leiding te nemen.\nE\u00e9n moment is al genoeg.\nEn als hij vraagt \u201cwat gaan we doen?\u201d \u2014 dan hoef je niet te overleggen.\n\u201cWe gaan wandelen.\u201d Klaar.\nNiet omdat hij het vroeg. Maar omdat jij het besloot.\nVeel vrouwen merken dat dit ook voor henzelf rustiger voelt.\nGewoon zeggen wat er gebeurt.\nNa een paar keer voelt het vaak verrassend vanzelfsprekend.'},
      {type:'probeer', tekst:'Kies vandaag zelf een moment.\nE\u00e9n zin. Geen vraag.\nKijk wat er gebeurt.'}
    ],
    zichtbaar:{
      intro:'', uitleg:'', voorbeeld:'',
      oefening:'Zeg vandaag \u00e9\u00e9n keer wat jij wilt. E\u00e9n zin, geen vraag.'
    },
+   verdieping:[
+     {vraag:'Het voelde alsof ik toneel speelde', antwoord:'Dat gevoel kent bijna iedereen. Je hoort jezelf praten en denkt: dit ben ik niet.\nMaar dat is precies hoe elk nieuw gedrag voelt in het begin. Na twee of drie keer wordt het al stiller van binnen. Niet omdat je verandert \u2014 maar omdat je went aan jezelf.'},
+     {vraag:'Hij werd heel enthousiast en wilde meteen meer', antwoord:'Dat kan gebeuren. Hij voelt iets verschuiven en wil er vol in.\nJouw tempo is het goede tempo. Je hoeft niet mee te gaan in zijn energie. E\u00e9n moment per dag is genoeg. Dat hij meer wil is een goed teken \u2014 maar jij bepaalt het ritme.'},
+     {vraag:'Hoe vaak moet ik dit doen?', antwoord:'Het gaat niet om de hele dag sturen.\nHet gaat om de momenten dat jij kiest om de leiding te nemen.\nIn het begin: gewoon oefenen. Hoe vaker je het doet, hoe natuurlijker het gaat voelen.\nHet is als een spier \u2014 in het begin moet je eraan denken, maar na een tijdje doe je het zonder nadenken.\nEn dan merk je vanzelf hoeveel goed voelt voor jullie.'},
+     {vraag:'Meer voorbeelden', antwoord:'\u201cPak een glaasje water voor me.\u201d\n\u201cRuim de tafel af.\u201d\n\u201cJe gaat nu sporten.\u201d\n\u201cAls ik thuis kom is de afwas gedaan.\u201d\n\u201cSchoenen aan, we gaan.\u201d\n\u201cVanavond kook jij.\u201d\n\u201cZet even thee voor me.\u201d\n\u201cJij rijdt.\u201d\nHet maakt niet uit wat je kiest. Het gaat erom d\u00e1t jij het kiest.'}
+   ],
    meerLezen:{
      preview:'Waarom vragen anders voelt dan zeggen'
    }},
@@ -2778,15 +2788,21 @@ const LESSEN_INHOUD = [
   {id:2, titel:'Hoe je het zegt', subtitel:'Het verschil zit in het vraagteken.', domein:'verbinding', fase:0, type:'story',
    scroll:[
      {type:'scene', tekst:'De waterfles is leeg.\n\u201cWil je even de waterfles vullen?\u201d\nHij staat op. Vult hem.\nNu nog een keer.\n\u201cWaterfles vullen.\u201d\nHij staat op. Vult hem.\nZelfde resultaat. Maar voor hem voelt het compleet anders.'},
-     {type:'inzicht', tekst:'Bij een vraag denkt hij mee.\nBij een mededeling volgt hij.\nDat tweede geeft hem rust.'},
+     {type:'inzicht', tekst:'Bij een vraag denkt hij mee.\nBij een mededeling volgt hij.\nDat tweede geeft hem rust.\nEn jou ook \u2014 je hoeft niet te wachten op zijn antwoord.\nJij zegt het. Het gebeurt.'},
      {type:'voorbeeld', tekst:'\u201cWe bestellen Thais.\u201d \u2014 klaar. Geen overleg.\n\u201cJij rijdt.\u201d \u2014 twee woorden, hij pakt de sleutels.\n\u201cVaatwasser leegruimen.\u201d \u2014 via WhatsApp. Hij draagt het de hele dag mee.'},
-     {type:'noot', tekst:'Je hoeft niet altijd zo te praten.\nHet gaat om momenten.\nEn het werkt ook de andere kant op \u2014 niet meer hoeven overleggen geeft ook jou lucht.'},
+     {type:'noot', tekst:'Je hoeft niet altijd zo te praten.\nHet gaat om momenten.\nEn het werkt ook de andere kant op.\nNiet meer hoeven overleggen geeft ook jou lucht.\nJe merkt het vanzelf: als je het een paar keer hebt gedaan, gaat het steeds makkelijker.\nHet voelt dan niet meer als iets dat je \u201cdoet\u201d \u2014 het wordt gewoon hoe je praat.'},
      {type:'probeer', tekst:'Zeg vandaag \u00e9\u00e9n ding als mededeling.\nNiet \u201cwil je...\u201d maar \u201cje gaat...\u201d\nMerk het verschil.'}
    ],
    zichtbaar:{
      intro:'', uitleg:'', voorbeeld:'',
      oefening:'Zeg vandaag \u00e9\u00e9n ding als mededeling in plaats van als vraag.'
    },
+   verdieping:[
+     {vraag:'Het voelt bot zonder vraagteken', antwoord:'Dat is precies het punt. Het voelt anders omdat het anders \u00eds.\nBot is niet hetzelfde als onaardig. \u201cJij rijdt.\u201d is niet grof \u2014 het is duidelijk. En duidelijk voelt voor hem als rust.'},
+     {vraag:'Hij vroeg waarom ik zo praat', antwoord:'Dat kan. Je hoeft er niks over uit te leggen als je dat niet wilt.\nJe kunt zeggen: \u201cOmdat ik het zo wil.\u201d Of je zegt helemaal niks en doet het gewoon nog een keer. Het went. Voor hem \u00e9n voor jou.'},
+     {vraag:'Soms wil ik juist w\u00e9l overleggen', antwoord:'Natuurlijk. Dit is niet voor alles en altijd.\nHet gaat om de momenten dat jij kiest om het anders te doen. De rest van de dag mag gewoon zijn zoals het is. Dat maakt die momenten juist bijzonder.'},
+     {vraag:'Via WhatsApp voelt het anders', antwoord:'Klopt \u2014 en dat is juist krachtig.\nEen berichtje met \u201cvaatwasser leegruimen\u201d is drie woorden. Maar hij leest het, en hij kan er niks aan veranderen. Het zit de rest van de dag in zijn hoofd.'}
+   ],
    meerLezen:{
      preview:'Dezelfde aanraking, maar dan bewust'
    }},
@@ -2795,14 +2811,20 @@ const LESSEN_INHOUD = [
    scroll:[
      {type:'scene', tekst:'Hij zit op zijn telefoon.\nJij loopt langs. Legt je hand op zijn nek.\nTien seconden. Zegt niks.\nHij wordt stil.'},
      {type:'inzicht', tekst:'Het gaat niet om de aanraking zelf.\nHet gaat erom dat jij besloot het te doen.\nOp jouw moment. Zonder aanleiding.'},
-     {type:'voorbeeld', tekst:'Hij loopt langs je heen. Jij pakt zijn arm, kort, stevig. Laat weer los.\n\n\nJullie zitten op de bank. Jij laat je nagels over zijn onderarm gaan. Even maar. Hij wordt stil.'},
-     {type:'noot', tekst:'Het hoeft niet speciaal te voelen.\nSoms is een hand op zijn schouder gewoon een hand.\nEn soms voelt hij het de rest van de avond.'},
+     {type:'voorbeeld', tekst:'Hij loopt langs je heen.\nJij pakt zijn arm, kort, stevig.\nLaat weer los.\nHij kijkt je aan. Jij loopt door.\n\n\nJullie zitten op de bank.\nJij laat je nagels over zijn onderarm gaan.\nEven maar.\nHij wordt stil.'},
+     {type:'noot', tekst:'Het hoeft niet speciaal te voelen.\nSoms is een hand op zijn schouder gewoon een hand.\nEn soms voelt hij het de rest van de avond.\nHet verschil zit niet in de aanraking.\nHet verschil zit erin dat jij het deed zonder aanleiding.\nDat is wat hij voelt.'},
      {type:'probeer', tekst:'Raak hem vandaag \u00e9\u00e9n keer onverwacht aan.\nHand in zijn nek, nagels over zijn arm, of gewoon even vasthouden.\nKijk wat het doet.'}
    ],
    zichtbaar:{
      intro:'', uitleg:'', voorbeeld:'',
      oefening:'Raak hem vandaag \u00e9\u00e9n keer onverwacht aan. Kijk wat het doet.'
    },
+   verdieping:[
+     {vraag:'Hij pakte me meteen terug vast', antwoord:'Dat is een natuurlijke reflex. Maar het punt is dat j\u00edj aanraakt \u2014 niet dat jullie samen knuffelen.\nJe kunt zijn hand wegduwen. Of zeggen: \u201cnee, ik raak jou aan.\u201d Dat kleine verschil maakt het voelbaar.'},
+     {vraag:'Kort of lang?', antwoord:'Kort is vaak krachtiger. Vijf seconden, tien seconden. En dan loslaten en doorlopen.\nHet gaat om een moment dat jij cre\u00ebert en jij weer be\u00ebindigt. Dat is wat hem bijblijft.'},
+     {vraag:'Het voelde seksueel terwijl dat niet de bedoeling was', antwoord:'Dat kan \u2014 aanraking heeft niet altijd een duidelijke grens.\nDe intentie maakt het verschil. Jij raakte hem aan om te laten voelen dat jij er bent. Niet als uitnodiging. Als hij het anders opvat, kun je dat benoemen: \u201cdit was voor mij, niet voor jou.\u201d'},
+     {vraag:'Ik vergeet het steeds', antwoord:'Dat is normaal. Het is nieuw gedrag.\nProbeer het te koppelen aan iets dat je toch al doet. Je loopt langs hem heen \u2014 hand op zijn nek. Je zit naast hem \u2014 nagels over zijn arm. Het hoeft niet gepland. Het mag gewoon ontstaan.'}
+   ],
    meerLezen:{
      preview:'Hoe maak je van een gewone avond iets anders?'
    }},
@@ -4022,19 +4044,20 @@ function toonScrollLes(les, kleur){
       '}',
 
       // ── Overlay: zachte blauwe blur ──
-      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(126,167,255,0.08),transparent 40%),rgba(10,14,20,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
+      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(126,167,255,0.10),transparent 40%),rgba(22,26,34,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
 
-      // ── Sheet: premium reading container ──
-      '.lesson-sheet{position:relative;width:min(100%,520px);min-height:100%;margin:0 auto;padding:28px 20px 48px;'+
+      // ── Sheet: premium reading container met safe-area ──
+      '.lesson-sheet{position:relative;width:min(100%,520px);min-height:100%;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 20px calc(48px + env(safe-area-inset-bottom,0px));'+
         'background:radial-gradient(circle at top,rgba(126,167,255,0.10),transparent 50%),linear-gradient(180deg,#242A34 0%,#1B1F27 60%,#171B22 100%);'+
         'color:var(--les-text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif}',
 
-      // ── Close button ──
-      '.lesson-close{position:absolute;top:18px;right:16px;width:36px;height:36px;border:0;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--les-text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}',
+      // ── Close button met safe-area ──
+      '.lesson-close{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));right:16px;width:36px;height:36px;border:0;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--les-text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}',
       '.lesson-close:active{background:rgba(255,255,255,0.08)}',
 
-      // ── Header: title + subtitle ──
-      '.lesson-header{padding-top:10px;margin-bottom:32px}',
+      // ── Header: title + subtitle + subtiele glow ──
+      '.lesson-header{position:relative;padding-top:10px;margin-bottom:32px}',
+      '.lesson-header::before{content:"";position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:200px;height:80px;background:radial-gradient(ellipse,rgba(126,167,255,0.12),transparent 70%);pointer-events:none}',
       '.lesson-kicker{margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--les-insight-accent)}',
       '.lesson-title{margin:0;font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-0.02em;color:var(--les-text)}',
       '.lesson-subtitle{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--les-text-muted)}',
@@ -4053,7 +4076,7 @@ function toonScrollLes(les, kleur){
       // ── Scene & Note: gewone tekst, veel ademruimte ──
       '.lesson-scene{margin:0 0 24px}',
       '.lesson-note{margin:0 0 24px}',
-      '.lesson-scene p,.lesson-note p,.lesson-card p{margin:0 0 18px;font-size:18px;line-height:1.75;letter-spacing:-0.01em}',
+      '.lesson-scene p,.lesson-note p,.lesson-card p{margin:0 0 20px;font-size:18px;line-height:1.75;letter-spacing:-0.01em}',
       '.lesson-scene p:last-child,.lesson-note p:last-child,.lesson-card p:last-child{margin-bottom:0}',
       '.lesson-note p{color:var(--les-soft)}',
 
@@ -4085,6 +4108,20 @@ function toonScrollLes(les, kleur){
       '.lesson-next-label{margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--les-text-muted)}',
       '.lesson-next{border:0;padding:0;background:transparent;color:var(--les-soft);font-size:16px;line-height:1.45;text-align:left;cursor:pointer;font-family:inherit;transition:opacity .2s}',
       '.lesson-next:active{opacity:.6}',
+
+      // ── Verder verkennen ──
+      '.lesson-explore{margin-top:28px;border-top:1px solid var(--les-line)}',
+      '.lesson-explore-toggle{display:block;width:100%;border:0;background:transparent;padding:16px 0;color:var(--les-text-muted);font-size:14px;font-family:inherit;letter-spacing:0.04em;cursor:pointer;text-align:left;transition:color .2s}',
+      '.lesson-explore-toggle:active{color:var(--les-text-secondary)}',
+      '.lesson-explore-items{display:none;padding-bottom:8px}',
+      '.lesson-explore-items.open{display:block}',
+      '.lesson-faq{margin:0 0 4px;border:0;border-radius:14px;overflow:hidden}',
+      '.lesson-faq-q{display:block;width:100%;border:0;background:rgba(255,255,255,0.03);padding:14px 16px;color:var(--les-text-secondary);font-size:15px;line-height:1.5;font-family:inherit;cursor:pointer;text-align:left;transition:background .2s}',
+      '.lesson-faq-q:active{background:rgba(255,255,255,0.06)}',
+      '.lesson-faq-a{display:none;padding:0 16px 14px;background:rgba(255,255,255,0.03);color:var(--les-soft);font-size:15px;line-height:1.65}',
+      '.lesson-faq-a.open{display:block}',
+      '.lesson-faq-a p{margin:0 0 10px;font-size:15px;line-height:1.65}',
+      '.lesson-faq-a p:last-child{margin-bottom:0}',
 
       // ── Carousel ──
       '.lesson-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;margin:0 -18px}',
@@ -4155,7 +4192,7 @@ function toonScrollLes(les, kleur){
         if(!alGelezen){
           btnHtml = '<div class="lesson-gate" id="les-gelezen-gate"><p class="lesson-gate-hint" id="les-leestijd-hint">even lezen...</p></div>';
         } else {
-          btnHtml = '<button class="lesson-primary" onclick="window._scrollLesSluit()">Verder</button>';
+          btnHtml = '<button class="lesson-primary" onclick="window._scrollLesSluit()">Verder \u2192</button>';
         }
         return '<section class="lesson-card lesson-card--try">'+
           '<p class="lesson-card-label">PROBEER DIT VANDAAG</p>'+
@@ -4185,6 +4222,26 @@ function toonScrollLes(les, kleur){
     var blockHtml = renderBlock(les.scroll[i], i);
     contentHtml += '<div class="lesson-block">' + blockHtml + '</div>';
   }
+
+  // ── Verder verkennen (FAQ) ──
+  var exploreHtml = '';
+  if(les.verdieping && les.verdieping.length > 0){
+    var faqItems = '';
+    for(var fi=0;fi<les.verdieping.length;fi++){
+      var faq = les.verdieping[fi];
+      var faqId = 'les-faq-'+lesNr+'-'+fi;
+      faqItems += '<div class="lesson-faq">'+
+        '<button class="lesson-faq-q" onclick="var a=document.getElementById(\''+faqId+'\');a.classList.toggle(\'open\')">'+faq.vraag+'</button>'+
+        '<div class="lesson-faq-a" id="'+faqId+'">'+toParagraphs(faq.antwoord)+'</div>'+
+      '</div>';
+    }
+    exploreHtml = '<div class="lesson-block"><section class="lesson-explore">'+
+      '<button class="lesson-explore-toggle" onclick="var el=this.nextElementSibling;el.classList.toggle(\'open\');this.textContent=el.classList.contains(\'open\')?\'\u25B4 Sluiten\':\'\u25BE Verder verkennen\'">'+
+      '\u25BE Verder verkennen</button>'+
+      '<div class="lesson-explore-items">'+faqItems+'</div>'+
+    '</section></div>';
+  }
+  contentHtml += exploreHtml;
 
   // ── Footer: volgende les link ──
   var footerHtml = '';
@@ -4241,6 +4298,7 @@ function toonScrollLes(les, kleur){
     delete window._scrollLesSluit;
     delete window._scrollLesMarkeerGelezen;
     delete window._scrollLesGaNaar;
+    if(location.hash) history.replaceState(null,'',location.pathname);
     if(typeof render === 'function') render();
   };
   window._scrollLesMarkeerGelezen = function(){
@@ -4252,7 +4310,23 @@ function toonScrollLes(les, kleur){
       setLesVoortgang(v);
     }
     alGelezen = true;
-    toonScrollLes(les, kleur);
+    // Smooth: toon footer inline zonder volledige re-render
+    var gate = document.getElementById('les-gelezen-gate');
+    if(gate) gate.innerHTML = '<button class="lesson-primary" onclick="window._scrollLesSluit()">Verder \u2192</button>';
+    // Voeg footer toe als die er nog niet is
+    var sheet = overlay.querySelector('.lesson-sheet');
+    if(sheet && les.meerLezen && les.meerLezen.preview){
+      var vlId = lesNr + 1;
+      var vl = LESSEN_INHOUD.find(function(l){return l.id === vlId;});
+      if(vl && !sheet.querySelector('.lesson-footer')){
+        var ft = document.createElement('footer');
+        ft.className = 'lesson-footer lesson-block';
+        ft.style.animation = 'lessonFadeIn .3s ease both';
+        ft.innerHTML = '<p class="lesson-next-label">Volgende ontdekking</p>'+
+          '<button class="lesson-next" onclick="window._scrollLesGaNaar('+vl.id+')">'+les.meerLezen.preview+' \u2192</button>';
+        sheet.appendChild(ft);
+      }
+    }
   };
   window._scrollLesGaNaar = function(nr){
     overlay.remove();
@@ -4263,6 +4337,7 @@ function toonScrollLes(les, kleur){
   };
 
   document.body.appendChild(overlay);
+  overlay.scrollTop = 0;
 
   // ── Leestijd-gate timer ──
   if(!alGelezen){
@@ -4277,7 +4352,7 @@ function toonScrollLes(les, kleur){
         if(_ct<=0){
           clearInterval(_tiv);
           var gate = document.getElementById('les-gelezen-gate');
-          if(gate) gate.innerHTML = '<button class="lesson-primary" onclick="window._scrollLesMarkeerGelezen()">Verder<\/button>';
+          if(gate) gate.innerHTML = '<button class="lesson-primary" onclick="window._scrollLesMarkeerGelezen()">Verder \u2192<\/button>';
         }
       },1000);
     },100);
