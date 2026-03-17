@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suggesties V4 — Review</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; max-width: 800px; margin: 0 auto; }
+h1 { color: #e94560; margin-bottom: 8px; font-size: 1.5em; }
+.subtitle { color: #888; margin-bottom: 24px; font-size: 0.9em; }
+.stats { background: #16213e; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 24px; flex-wrap: wrap; font-size: 0.95em; }
+.stat { display: flex; align-items: center; gap: 6px; }
+.stat-num { font-weight: 700; font-size: 1.2em; }
+.stat-label { color: #888; }
+.divider { border: none; border-top: 2px solid #e94560; margin: 32px 0; opacity: 0.4; }
+.section-header { background: #16213e; border-left: 4px solid #e94560; padding: 12px 16px; margin: 24px 0 12px 0; border-radius: 0 8px 8px 0; }
+.section-header h2 { font-size: 1.1em; color: #e94560; }
+.section-header p { font-size: 0.85em; color: #888; margin-top: 4px; font-style: italic; }
+.section-header.lesson { border-left-color: #3498db; }
+.section-header.lesson h2 { color: #3498db; }
+.card { background: #16213e; border-radius: 10px; padding: 16px; margin-bottom: 10px; border: 2px solid transparent; transition: border-color 0.2s; }
+.card.status-yes { border-color: #27ae60; }
+.card.status-no { border-color: #e74c3c; }
+.card.status-edit { border-color: #f39c12; }
+.card-num { font-weight: 700; color: #e94560; margin-right: 6px; }
+.card-num.lesson-num { color: #3498db; }
+.card-text { line-height: 1.6; margin-bottom: 10px; }
+.card-meta { font-size: 0.82em; color: #7f8c8d; line-height: 1.5; margin-bottom: 10px; font-style: italic; }
+.card-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 1em; cursor: pointer; transition: all 0.15s; font-weight: 600; }
+.btn-yes { background: #27ae60; color: white; }
+.btn-yes:hover { background: #2ecc71; }
+.btn-yes.active { background: #1e8449; box-shadow: 0 0 0 3px #27ae604d; }
+.btn-no { background: #e74c3c; color: white; }
+.btn-no:hover { background: #ec7063; }
+.btn-no.active { background: #c0392b; box-shadow: 0 0 0 3px #e74c3c4d; }
+.btn-edit { background: #f39c12; color: white; }
+.btn-edit:hover { background: #f5b041; }
+.btn-edit.active { background: #d68910; box-shadow: 0 0 0 3px #f39c124d; }
+.note-input { flex: 1; min-width: 200px; background: #0f3460; border: 1px solid #333; border-radius: 8px; padding: 8px 12px; color: #e0e0e0; font-size: 0.9em; font-family: inherit; }
+.note-input::placeholder { color: #555; }
+.note-input:focus { outline: none; border-color: #e94560; }
+.export-bar { position: sticky; bottom: 0; background: #1a1a2e; padding: 16px 0; border-top: 1px solid #333; margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-export { background: #e94560; color: white; padding: 12px 24px; font-size: 1em; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; }
+.btn-export:hover { background: #c0392b; }
+.btn-secondary { background: #16213e; color: #e94560; border: 2px solid #e94560; padding: 10px 20px; font-size: 1em; border-radius: 10px; cursor: pointer; font-weight: 600; }
+.btn-secondary:hover { background: #e945601a; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn { background: #16213e; border: 1px solid #333; color: #888; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 0.85em; transition: all 0.15s; }
+.filter-btn:hover, .filter-btn.active { color: #e0e0e0; border-color: #e94560; background: #e945601a; }
+.tab-bar { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #333; }
+.tab { padding: 10px 20px; cursor: pointer; font-weight: 600; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+.tab:hover { color: #e0e0e0; }
+.tab.active-tab { color: #e94560; border-bottom-color: #e94560; }
+.tab.lesson-tab.active-tab { color: #3498db; border-bottom-color: #3498db; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Sprankelend Souffleur — Review</h1>
+<p class="subtitle">Klik per item op Ja / Nee / Aanpassen. Notities worden altijd bewaard, ook bij Nee. Exporteer onderaan.</p>
+
+<div class="stats" id="stats">
+  <div class="stat"><span class="stat-num" id="count-total">0</span><span class="stat-label">totaal</span></div>
+  <div class="stat"><span class="stat-num" id="count-yes" style="color:#27ae60">0</span><span class="stat-label">ja</span></div>
+  <div class="stat"><span class="stat-num" id="count-no" style="color:#e74c3c">0</span><span class="stat-label">nee</span></div>
+  <div class="stat"><span class="stat-num" id="count-edit" style="color:#f39c12">0</span><span class="stat-label">aanpassen</span></div>
+  <div class="stat"><span class="stat-num" id="count-open" style="color:#888">0</span><span class="stat-label">open</span></div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active-tab" onclick="switchTab('suggesties')">Suggesties (113)</div>
+  <div class="tab lesson-tab" onclick="switchTab('lessen')">Lessen / Inzichten (7)</div>
+</div>
+
+<div class="filter-bar" id="filter-bar">
+  <button class="filter-btn active" onclick="filterCards('all')">Alles</button>
+  <button class="filter-btn" onclick="filterCards('open')">Open</button>
+  <button class="filter-btn" onclick="filterCards('yes')">Ja</button>
+  <button class="filter-btn" onclick="filterCards('no')">Nee</button>
+  <button class="filter-btn" onclick="filterCards('edit')">Aanpassen</button>
+</div>
+
+<div id="content-suggesties"></div>
+<div id="content-lessen" class="hidden"></div>
+
+<div class="export-bar">
+  <button class="btn-export" onclick="exportResults()">Exporteer resultaten</button>
+  <button class="btn-secondary" onclick="copyResults()">Kopieer naar klembord</button>
+</div>
+
+<script>
+const suggestions = [
+  // ── V4 ORIGINEEL (1-80) ──
+  { section: "1. ZICHTBARE MACHT", desc: "Het verschil voelbaar maken. Niet door woorden, maar door wat er gebeurt.", items: [
+    { id: 1, text: "Eet iets lekkers op de bank. Tim zit naast je. Als hij zijn hand uitsteekt: trek het weg. Eén blik." },
+    { id: 2, text: "Haal twee glazen. Water voor Tim. Fris voor jou. Neerzetten. Niks zeggen." },
+    { id: 3, text: "Tim wil op de bank komen zitten. Leg je benen lang. Kijk hem aan. Hij snapt het." },
+    { id: 4, text: 'Tim brengt je drinken. Neem een slok. Zet het neer. "Nog een kussen erbij." Hij is nog niet klaar.' },
+    { id: 5, text: "Pak de afstandsbediening uit Tim's hand. Midden in zijn programma. Zap naar iets van jou." },
+    { id: 6, text: "Tim vraagt wat jullie bestellen vanavond. Kies voor jezelf iets lekkers. Voor Tim bestel je iets simpelers. Geen overleg." },
+    { id: 7, text: 'Ga op de bank zitten. Klop naast je. Als Tim komt zitten: "Nee, op de grond." Klop op de vloer.' },
+    { id: 8, text: "Neem het laatste stuk van iets uit de koelkast. Loop langs Tim. Eet het langzaam op." },
+    { id: 9, text: 'Tim zit op zijn telefoon. Pak hem af. Leg hem achter je. "Straks." Ga door met je serie.' },
+    { id: 10, text: 'Vraag Tim om drinken te halen. Als hij terugkomt: neem een slok, geef het terug. "Dit is voor jou. Ik wil iets anders."' },
+    { id: 11, text: "Tim staat. Jij zit. Hou dat zo. Als hij wil gaan zitten, schud je hoofd. Eén keer." },
+    { id: 12, text: "Zit op de bank met een snack. Tim kijkt. Geef hem er één. Neem zelf drie." },
+  ]},
+  { section: "2. INTIMITEIT — Lisanne neemt de leiding in bed", desc: "Geen items, geen blinddoek. Gewoon seks of aanraking waar Lisanne bepaalt.", items: [
+    { id: 13, text: "Duw Tim op zijn rug in bed. Ga boven op hem zitten. Pak zijn polsen vast boven zijn hoofd met je handen. Kijk hem aan. Daarna doe je wat je wilt.", meta: "watJeKuntMerken: Tim vindt dit ongelooflijk. Niet de kracht, maar dat jij het initieert." },
+    { id: 14, text: "Lig in bed naast Tim. Leg je hand op zijn borst. Schuif langzaam naar beneden. Stop bij zijn navel. Wacht. Kijk naar zijn gezicht. Ga pas verder als jij dat wilt.", meta: "watJeKuntMerken: Tim houdt zijn adem in. Hij wil dat je doorgaat maar durft niks te zeggen." },
+    { id: 15, text: 'Begin Tim aan te raken in bed. Als hij jou terug wil aanraken: pak zijn hand en leg hem terug naast zijn lichaam. "Niet nu. Ik doe het." Ga door.' },
+    { id: 16, text: "Als jullie seks hebben: stop. Helemaal stil. Tim beweegt niet (dat weet hij). Wacht tot jij er weer klaar voor bent. De stilte maakt het intenser." },
+    { id: 17, text: "Ga op Tim zitten. Pak zijn handen. Leg ze op je heupen. Verplaats ze naar waar jij ze wilt. Zijn handen gaan waar jij ze stuurt." },
+    { id: 18, text: "Draai Tim op zijn buik. Ga met je handen over zijn rug. Langzaam. Van schouders tot onderrug. Neem de tijd. Dit gaat over jouw tempo." },
+    { id: 19, text: "Na seks: leg je hand op Tim's borst. Houd hem vast. Niet loslaten als hij wil bewegen. Jij bepaalt wanneer het moment voorbij is." },
+    { id: 20, text: "Trek Tim naar je toe in bed. Draai zijn gezicht naar jou. Kijk hem aan. Lange blik. Dan mag hij dichterbij komen." },
+    { id: 21, text: "Raak Tim aan in bed — maar alleen boven zijn middel. Hoe lang je ook bezig bent. De rest komt als jij dat beslist." },
+  ]},
+  { section: "3. ORGASMCONTROLE", desc: "Edging, permission, denial. Concreet uitgewerkt.", items: [
+    { id: 22, text: "Stimuleer Tim met je hand. Als zijn ademhaling versnelt: stop. Hand weg. Wacht tot hij weer rustig is. Begin opnieuw. Herhaal drie keer. De vierde keer bepaal jij of hij mag." },
+    { id: 23, text: 'Zeg tegen Tim: "Je mag niet klaarkomen tot ik het zeg." Begin hem aan te raken. Neem alle tijd. Als hij dichtbij komt: vertraag. Niet stoppen, maar net genoeg om het uit te rekken.' },
+    { id: 24, text: "Geef Tim toestemming om zichzelf aan te raken. Maar jij bepaalt het tempo. Leg je hand op de zijne en stuur: langzamer, sneller, stop. Zonder woorden." },
+    { id: 25, text: "Stimuleer Tim tot hij dichtbij is. Stop. Sta op. Loop de kamer uit. Kom na twee minuten terug. Begin opnieuw.", meta: "watJeKuntMerken: Het weglopen is krachtiger dan het stoppen. Tim weet niet wanneer je terugkomt." },
+    { id: 26, text: "Tim op zijn rug. Polsboeien vast aan bedriemen. Stimuleer hem langzaam. Breng hem drie keer tot de rand. Elke keer: hand weg, wacht 60 seconden. Na de derde keer mag hij. Of niet. Jij kiest." },
+    { id: 27, text: "Combineer met blinddoek: Tim ziet niks. Jij wisselt af tussen aanraken en niks doen. Soms 30 seconden niks. Soms 2 minuten contact. Tim kan niet anticiperen." },
+    { id: 28, text: "Na een edging-sessie: laat Tim klaarkomen, maar vertraag je beweging op het laatste moment. Langzamer, niet sneller. Het orgasme is anders — langzamer, dieper, langer." },
+  ]},
+  { section: "4. SENSORISCH", desc: "Verrassing door contrast. Overgeleverd aan jouw aanraking.", items: [
+    { id: 29, text: "Leg Tim op zijn rug op bed. Pak een ijsklontje. Leg het in je mond. Kus zijn borst met koude lippen. Eén plek, dan een andere." },
+    { id: 30, text: "Krab langzaam met je nagels over Tim's binnenkant van zijn dij. Van knie naar boven. Stop net voor het interessant wordt. Andere dij." },
+    { id: 31, text: "Leg drie dingen klaar: ijsklontje, veertje, je eigen handen. Tim op zijn rug, ogen dicht (hij moet ze zelf dichthouden). Wissel onvoorspelbaar af. Als hij zijn ogen opent: stop." },
+    { id: 32, text: "Pak het wartenbergwiel. Rol het heel langzaam over Tim's borstkas. Van links naar rechts. Dan buik. Dan binnenkant arm. Kijk naar zijn reacties." },
+    { id: 33, text: "Druppel kaarsvet op Tim's borst. Wacht tot het afkoelt. Pul het eraf. Druppel opnieuw, ietsje lager. Langzaam een pad van keel tot navel." },
+    { id: 34, text: "Bijt zachtjes in Tim's schouder terwijl je hem van achteren vasthoudt. Niet hard. Maar hard genoeg dat hij het een uur later nog voelt." },
+    { id: 35, text: "Pak het veertje en de crop. Wissel om de 30 seconden. Veertje: buik. Crop: binnenkant dij. Veertje: nek. Crop: billen. Onvoorspelbaar." },
+  ]},
+  { section: "5. BONDAGE + NORMAAL LEVEN", desc: "Items tijdens alledaagse bezigheden. Niet als scene, maar als achtergrond.", items: [
+    { id: 36, text: "Bondagewanten aan terwijl Tim de tafel dekt. Borden vastpakken met wanten is een puzzel. Kijk vanaf de bank hoe hij het oplost." },
+    { id: 37, text: "Bondagewanten aan. Tim moet de afstandsbediening bedienen. Kijk hoe hij de knoppen probeert te raken.", meta: "watJeKuntMerken: Stiekem grappig. Tim lacht er ook om. Maar ondertussen voelt hij zich hulpeloos." },
+    { id: 38, text: "Polsboeien aan de bondageriem terwijl Tim probeert zijn telefoon te gebruiken. Scrollen lukt net, typen niet. Jij kijkt toe." },
+    { id: 39, text: "Halsband om met slotje. Sleuteltje om jouw nek aan een kettinkje. De hele avond draag jij het sleuteltje. Tim ziet het steeds." },
+    { id: 40, text: "Polsboeien om, aan de bondageriem. Tim kan zijn handen niet verder dan 20cm van zijn lichaam bewegen. Zo kijken jullie een film." },
+    { id: 41, text: "Blinddoek om terwijl Tim op de bank zit. Jij zet een serie op. Hij hoort het maar ziet niks. Af en toe raak je hem aan. Een hele aflevering lang." },
+    { id: 42, text: "Enkelboeien om terwijl Tim een film kijkt. Zijn benen zitten kort aan elkaar. Als hij naar de wc wil, moet hij je toestemming vragen. Jij knikt. Of niet." },
+    { id: 43, text: "Politiehandboeien om terwijl Tim onder de douche staat. Handen voor. Wassen met boeien om is een hele klus." },
+    { id: 44, text: "Slaapzak dicht op de bank. Jij zet Tim's favoriete serie op. Hij kan niet bij de afstandsbediening. Als hij wil pauzeren: jij beslist." },
+  ]},
+  { section: "6. OPBOUW DOOR DE DAG", desc: "Een bericht overdag, actie 's avonds. Spanning die groeit.", items: [
+    { id: 45, text: '14:00 — stuur een foto van de blinddoek. 17:00 — stuur: "20 minuten vanavond." 21:00 — blinddoek om. 20 minuten. Jij bepaalt wat.' },
+    { id: 46, text: 'Avond: leg de halsband op Tim\'s kussen. Geen tekst, geen uitleg. Tim ziet hem liggen. Later: "Doe hem om."', meta: "timing: Na 19:00 als Milou slaapt." },
+    { id: 47, text: 'Stuur om 12:00: "Vanavond kies ik drie items." Geen vervolg. Om 21:00 leg je drie items op het bed. "Op je rug."' },
+    { id: 48, text: "Stuur om 15:00 een foto van een item. Geen tekst. Tim piekert de rest van de dag. 's Avonds doe je iets heel zachts — schoudermassage, thee, samen op de bank. Het contrast is het punt." },
+    { id: 49, text: 'Stuur Tim overdag: "Vanavond om 21:00 wil ik je in de slaapkamer." Om 21:00 als Milou slaapt: laat hem knielen. Halsband om. 10 minuten samen, meer niet.' },
+    { id: 50, text: 'Stuur drie berichtjes door de dag. 10:00: "Ik heb een plan." 14:00: "Het heeft met de polsboeien te maken." 18:00: "21:30." Niet meer.' },
+  ]},
+  { section: "7. AFTERCARE & BELONING", desc: "Wat er NA een moment gebeurt. De zachte kant.", items: [
+    { id: 51, text: "Na een sessie met items: maak alles los. Deken om Tim heen. Trek hem tegen je aan. Zeg niks. Gewoon vasthouden.", meta: "waarom: Dit heet aftercare. Net zo belangrijk als het moment zelf." },
+    { id: 52, text: 'Na een vastmaakavond: zet thee. Ga naast Tim zitten. Vraag: "Hoe was dat?" Luister. Dat is alles.' },
+    { id: 53, text: "Na een edging-sessie: laat Tim met zijn hoofd op je schoot liggen. Aai zijn hoofd. Lange stilte." },
+    { id: 54, text: 'De dag na iets spannends: stuur een berichtje. "Was fijn." Tim denkt er de hele dag over na.' },
+    { id: 55, text: "Na een stevige sessie: bodylotion op Tim's huid. Langzaam. Armen, schouders, borst. Niet erotisch, maar zorgzaam." },
+    { id: 56, text: "Na een avond met polsboeien: masseer kort Tim's polsen. Daar waar de boeien zaten. Kleine cirkel met je duim." },
+    { id: 57, text: 'Na iets dat goed ging vanavond: "Dat was precies goed." Eén zin. Raak hem even aan.' },
+    { id: 58, text: 'Beloning voor een week waarin Tim goed luisterde: "Vanavond kies jij." Geef hem de controle voor één avond.' },
+  ]},
+  { section: "8. PSYCHOLOGISCH SPEL", desc: "Macht door aanwezigheid, timing, en keuze. Geen items nodig.", items: [
+    { id: 59, text: 'Vraag Tim: "Welk item wil je vanavond?" Hij kiest. Jij zegt: "Nee. Het andere." Welk ander? Dat bepaal jij later.' },
+    { id: 60, text: 'Zeg: "Ik ga iets doen. Jij beweegt niet." Sta op. Loop door de kamer. Pak dingen, leg ze neer. Doe uiteindelijk niks bijzonders. De spanning was het doel.' },
+    { id: 61, text: 'Leg drie items op het bed. Zeg: "Kies er twee." Tim kiest. "Goed. Nu liggen."', meta: "De illusie van keuze. Tim denkt dat hij beslist, maar jij hebt al drie items gekozen die jij wilde." },
+    { id: 62, text: "Kijk Tim aan. Lang. Zonder te praten. Wanneer hij iets wil zeggen: leg je vinger op je lippen. Hou de stilte 30 seconden vast. Ga dan verder met je avond." },
+    { id: 63, text: 'Laat Tim wachten. Zeg om 20:30: "Om 21:00." Doe om 21:00 niks. Wacht tot 21:15. Dan pas actie. Het extra kwartier is het echte spel.' },
+    { id: 64, text: "Maak een klein krasje met je nagel op Tim's binnenkant van zijn arm. Niet hard — maar zichtbaar. Een roze streep die een paar uur blijft." },
+    { id: 65, text: "Leg de crop naast je op de bank terwijl jullie tv kijken. Pak hem af en toe op. Draai hem rond. Leg hem neer. Gebruik hem niet. De hele avond niet." },
+    { id: 66, text: 'Zeg: "Ik heb drie regels voor vanavond. Regel 1: jij luistert. Regel 2 en 3 vertel ik later." Tim kent regel 2 en 3 nooit.' },
+  ]},
+  { section: "9. RITUELEN", desc: "Gewoontes die de dynamiek onderdeel maken van het dagelijks leven.", items: [
+    { id: 67, text: "Halsband-ritueel: elke avond als Milou slaapt legt Tim de halsband op het nachtkastje. Jij beslist of hij omgaat. Soms wel. Soms niet." },
+    { id: 68, text: 'Check-in: elke avond voor het slapen vraagt Tim: "Is er nog iets dat je wilt?" Soms nee. Soms "schouders." Soms meer.' },
+    { id: 69, text: "Sleuteltje: als de halsband om zit, draag jij het sleuteltje. Om je nek, armbandje, in je zak. Tim weet dat jij het hebt." },
+    { id: 70, text: "Na-moment: na elke sessie of vastmaakavond — deken, thee, 5 minuten dicht tegen elkaar. Niet bespreken. Gewoon even zijn." },
+    { id: 71, text: "Ochtendgebaar: Tim zet elke ochtend jouw thee klaar. Jij hoeft er nooit om te vragen. Het is gewoon zo." },
+  ]},
+  { section: "10. SESSIES", desc: "Specifieke sessies die nog niet in de pool zitten. Met items uit SPULLEN_DB.", items: [
+    { id: 72, text: "Kattennagels-sessie: Tim op zijn rug, blinddoek om. Krab langzaam met de kattennagels over zijn borst. Wissel af met je eigen nagels. Dan het veertje. Drie texturen, één lichaam.", meta: "items: blinddoek, kattennagels, veertje" },
+    { id: 73, text: "E-stim + blinddoek: Bandjes om, 2B aan. Blinddoek om. Begin op laag. Verhoog terwijl je Tim's borst aanraakt. Twee dingen tegelijk — stroom en handen.", meta: "items: estim_2b, estim_bandjes_breed, electrogel, blinddoek" },
+    { id: 74, text: "Gag + handen vrij: Ballgag in. Handen zijn vrij. Geef hem een opdracht die hij niet kan uitleggen. Kijk hoe hij communiceert.", meta: "items: ballgag" },
+    { id: 75, text: "Laag-voor-laag: Elke 5 minuten voeg je iets toe. Min 0: halsband. Min 5: polsboeien. Min 10: blinddoek. Min 15: oordopjes. Tim weet niet hoeveel er nog komt.", meta: "items: collar, polsboeien, blinddoek, oordopjes" },
+    { id: 76, text: 'Controle-sessie met crop: Tim knielt. Tik op schouder: "Rechtop." Tik op dij: "Breder." Tik op rug: "Voorover." De crop is je communicatiemiddel.', meta: "items: crop" },
+    { id: 77, text: "IJs + was + handen: Drie ronden. Ronde 1: ijsklontjes (2 min). Ronde 2: kaarsvet van 30cm hoogte (2 min). Ronde 3: jouw warme handen (2 min). Drie temperaturen.", meta: "items: ijsklontjes, kaarsen" },
+    { id: 78, text: "Hood + E-stim: Hood om. Tim hoort en ziet bijna niks. E-stim bandjes om. Jij bedient de 2B. 20 minuten.", meta: "items: hood, estim_2b, estim_bandjes_breed, electrogel" },
+    { id: 79, text: "Tepelklemmen + edging: Polsboeien vast aan bedriemen. Tepelklemmen op. Begin te stimuleren. Als hij dichtbij is: trek aan de ketting. Herhaal.", meta: "items: polsboeien, bedriemen, tepelklemmen" },
+    { id: 80, text: "Slaapzak + aanraking: Tim in de slaapzak, rits dicht. Blinddoek om. Gebruik de tepel/penis-rits om hem aan te raken. Wissel af met niks doen.", meta: "items: slaapzak, blinddoek" },
+  ]},
+
+  // ── NIEUWE THEMA'S (81-113) ──
+  { section: "11. GEKLEED VS. BLOOT", desc: "Tim loopt al bloot na 19:00 — maar het wordt anders als Lisanne het claimt.", items: [
+    { id: 81, text: "Tim loopt bloot rond. Loop naar hem toe, volledig gekleed. Leg je hand op zijn borst. Kijk naar beneden, dan naar zijn ogen. Loop weg. Het verschil in kleding zegt alles." },
+    { id: 82, text: '"Vanavond blijf je aangekleed." Tim verwacht bloot — dit is het tegenovergestelde. De afwijking van de routine is de verrassing.' },
+    { id: 83, text: 'Tim zit bloot op de bank. Gooi een deken over hem heen. "Je mag pas uitpakken als ik het zeg." De deken als grens die jij bepaalt.' },
+    { id: 84, text: "Sta aangekleed voor Tim terwijl hij bloot op bed ligt. Kijk op hem neer. Neem de tijd. Het hoogteverschil plus de kleding maakt het ongelijk." },
+  ]},
+  { section: "12. INSPECTIE", desc: "Lisanne bekijkt Tim. Bewust. Als eigenaar die checkt.", items: [
+    { id: 85, text: "Tim staat bloot. Loop om hem heen. Langzaam. Bekijk hem van alle kanten. Raak niks aan. Alleen kijken. Knik als je klaar bent." },
+    { id: 86, text: "Leg je vinger onder Tim's halsband. Trek zachtjes omhoog zodat hij zijn kin moet optillen. Check of de band goed zit. Laat los." },
+    { id: 87, text: 'Tim knielt. Pak zijn kin. Draai zijn gezicht naar links. Naar rechts. Kijk hem aan. Laat los. "Goed." Dat is alles.' },
+    { id: 88, text: "Na het douchen: bekijk Tim's lichaam. Loop je vinger langs de plek waar gisteravond de polsboeien zaten. Geen woorden. Alleen de aanraking op die plek." },
+  ]},
+  { section: "13. CONTRAST-MOMENTEN", desc: "Bewuste switches tussen zachtheid en controle. De overgang zelf is het krachtigste moment.", items: [
+    { id: 89, text: 'Aai Tim over zijn hoofd op de bank. Langzaam, zacht. Dan opeens: "Op je knieën." Zonder waarschuwing. De overgang is het punt.' },
+    { id: 90, text: 'Masseer Tim\'s schouders. Neem de tijd, laat hem ontspannen. Stop midden in een beweging. "Halsband. Nu." Ga door met masseren als hij terugkomt.' },
+    { id: 91, text: 'Lig dicht tegen Tim aan in bed. Warm, rustig. Zeg bij zijn oor: "Morgen kies ik iets uit voor je." Ga verder met liggen alsof je niks zei.' },
+    { id: 92, text: 'Geef Tim een compliment. Oprecht, warm. En dan meteen: "En nu op de grond." Compliment en commando in één adem.' },
+  ]},
+  { section: "14. ONVERWACHT MOMENT", desc: "De dynamiek breekt door routine heen. Tim weet nooit wanneer het 'aan' is — want het is altijd aan.", items: [
+    { id: 93, text: 'Midden op een doordeweekse avond, zonder aanleiding: "Slaapkamer. Nu." Tim verwacht niks. Dat maakt het krachtiger dan elk gepland moment.' },
+    { id: 94, text: "Tim is bezig in de keuken. Loop naar hem toe. Polsboeien om, zeg niks, loop terug naar de bank. Laat hem de keuken afmaken met boeien om." },
+    { id: 95, text: 'Tim kijkt tv. Ga voor de tv staan. Houd de blinddoek omhoog. "Ogen dicht." Doe hem om. Ga weer naast hem zitten. De tv loopt door.' },
+    { id: 96, text: 'Doordeweekse ochtend, Milou is naar school. "Kom. Slaapkamer." Vijf minuten: knielen, halsband om. Dan terug naar de woonkamer alsof er niks gebeurde.', meta: "timing: Ma-do tussen 8:00-15:00 als Milou op school is." },
+  ]},
+  { section: "15. LICHAAM ALS TERRITORIUM", desc: "Lisanne raakt Tim aan wanneer ze wilt. Niet als voorspel — als vanzelfsprekendheid.", items: [
+    { id: 97, text: "Zit naast Tim op de bank. Leg je hand op zijn dij. Hoog. Laat hem daar de hele aflevering. Niet erotisch — bezitterig." },
+    { id: 98, text: "Tim loopt voorbij. Pak zijn arm. Trek hem naar je toe. Hand op zijn borst, drie seconden. Duw hem zachtjes weg. Ga door met wat je deed." },
+    { id: 99, text: "Krab met je nagels over Tim's rug terwijl jullie tv kijken. Niet als voorspel, niet als massage. Gewoon omdat je er zin in hebt. Stop wanneer jij wilt." },
+    { id: 100, text: "Pak Tim's hand. Leg hem op je been. Jij plaatst zijn hand waar jij hem wilt. Niet andersom." },
+  ]},
+  { section: "16. SERVICE ALS DEVOTIE", desc: "Niet huishouden (dat is normaal), maar zorgvuldigheid als uiting van de dynamiek.", items: [
+    { id: 101, text: "Tim zet thee voor je. Maar vanavond bepaal jij alles: welke thee, hoeveel suiker, welke mok, waar hij hem neerzet. Het gaat niet om de thee." },
+    { id: 102, text: 'Tim masseert je schouders. Stuur hem: "Harder. Zachter. Meer naar links. Daar. Blijf." Elke aanpassing is een vorm van controle. Hij leert precies wat jij wilt.' },
+    { id: 103, text: "Vraag Tim je haar te borstelen. Langzaam. Jij bepaalt hoe lang. Als het niet goed genoeg is: opnieuw." },
+    { id: 104, text: "Tim brengt je iets. Laat hem vanavond knielen als hij het aangeeft. Eén keer. Het gebaar maakt het anders dan normaal." },
+  ]},
+  { section: "17. SCHRIJVEN / MARKEREN", desc: "Lisanne laat een fysiek spoor achter. Iets dat Tim de volgende dag nog voelt of ziet.", items: [
+    { id: 105, text: "Zuigzoen op Tim's schouder. Op een plek die alleen hij ziet als hij zijn shirt uittrekt. Morgen is het er nog." },
+    { id: 106, text: "Kneep hard in Tim's bovenbeen. Hard genoeg dat er een rode plek achterblijft. Morgen als hij ernaar kijkt: jouw handtekening." },
+    { id: 107, text: "Krab een lijn over Tim's borst met je nagel. Van schouder tot navel. Eén lange streep die een paar minuten zichtbaar blijft. Jouw pad." },
+  ]},
+  { section: "18. ONTHOUDING BUITEN SEKS", desc: "Kleine deprivaties die Tim constant herinneren: zij bepaalt.", items: [
+    { id: 108, text: "Tim mag vanavond niet praten tenzij jij iets vraagt. Stilte als opdracht. Als hij iets wil zeggen: wachten tot jij naar hem kijkt." },
+    { id: 109, text: "Geen deken voor Tim vanavond op de bank. Jij hebt de deken. Als hij het koud heeft: dichterbij komen. Dat is de enige optie." },
+    { id: 110, text: "Tim mag vanavond niet zelf water pakken. Als hij dorst heeft: vragen. Jij geeft het. Of niet. Of straks." },
+  ]},
+  { section: "19. AANDACHT ALS MACHTSMIDDEL", desc: "Lisanne's aandacht zelf is de beloning. En het wegtrekken het contrast.", items: [
+    { id: 111, text: "Tim doet iets voor je — klusje, thee, opdracht. Kijk bewust toe. Volle aandacht, geen telefoon. Tim voelt het verschil onmiddellijk." },
+    { id: 112, text: "Negeer Tim. Volledig. 20 minuten. Dan draai je je om: volle aandacht. Hand op zijn gezicht. Het contrast maakt de aandacht intenser." },
+    { id: 113, text: "Tim heeft iets goed gedaan. Kijk hem lang aan. Eén knikje. Geen woorden, geen aanraking. Alleen de erkenning in je blik." },
+  ]},
+];
+
+const lessons = [
+  { section: "LESSEN / INZICHTEN", desc: "Concepten die Lisanne begrijpt via het inzichtensysteem. Groeien over tijd.", items: [
+    { id: "L1", text: "Lichaamshouding als taal — Over tijd ontwikkelen jullie een vocabulaire van posities. Een tik op zijn schouder betekent 'rechtop'. Een hand op zijn hoofd betekent 'lager'. Dit hoeft niet in één keer — het groeit vanzelf als je het een paar keer doet. Tim leert jouw lichaamstaal lezen zonder dat er ooit een woord aan te pas komt." },
+    { id: "L2", text: "Toestemming als structuur — Soms kun je Tim laten vragen voor dingen die hij normaal gewoon doet. Niet alles (dat wordt vermoeiend), maar één ding per avond. 'Mag ik op de bank?' 'Mag ik water?' Het gaat niet om de toestemming zelf — het gaat om het vragen. Het herinnert Tim eraan dat jij beslist." },
+    { id: "L3", text: "Tempo als controle — Je kunt Tim's tempo bepalen zonder iets te zeggen over wát hij doet. 'Langzamer' als hij uitkleedt. Een hand op zijn arm als hij te snel beweegt. Dit werkt bij alles: eten, lopen, aanraken. Het gaat niet om de handeling maar om het ritme — en het ritme is van jou." },
+    { id: "L4", text: "Publieke subtiliteit — De dynamiek kan mee naar buiten zonder dat iemand het merkt. Op de nachtmarkt: jij loopt voorop, Tim volgt. Bij het bestellen: jij bestelt voor hem. Een hand op zijn knie onder tafel. Met Milou erbij: een blik die alleen Tim begrijpt. De dynamiek stopt niet bij de voordeur." },
+    { id: "L5", text: "De dag erna — Na iets intens voelt Tim het de volgende dag nog. Niet alleen fysiek, maar in zijn hoofd. Een moment van herkenning — een blik, een aanraking op de plek waar gisteravond iets gebeurde — verankert de ervaring. Je hoeft het niet te bespreken. Eén gebaar is genoeg." },
+    { id: "L6", text: "Afhankelijkheid creëren — Voor Tim voelt het als rust als jij beslissingen neemt. Niet over grote dingen, maar over kleine. Wanneer het licht uitgaat, wat hij drinkt, wanneer hij naar bed gaat. Een avond waarop Tim helemaal niks hoeft te beslissen is voor hem een cadeautje. Niet omdat hij het niet kan — maar omdat het heerlijk is om even niet te hoeven." },
+    { id: "L7", text: "Privétaal — Over tijd ontstaan er signalen die alleen van jullie zijn. Een bepaald gebaar dat 'kom' betekent. Een woord dat 'nu' zegt. Een tik die 'goed zo' is. Dit hoef je niet te plannen — het ontstaat vanzelf als je dingen herhaalt. Maar als je het bewust doet, wordt het sterker." },
+  ]},
+];
+
+const state = {};
+let currentFilter = 'all';
+let currentTab = 'suggesties';
+
+function init() {
+  const saved = localStorage.getItem('v4review2');
+  if (saved) Object.assign(state, JSON.parse(saved));
+  render();
+  updateStats();
+}
+
+function save() {
+  localStorage.setItem('v4review2', JSON.stringify(state));
+}
+
+function getKey(id) { return typeof id === 'string' ? id : id; }
+
+function setStatus(id, status) {
+  const k = getKey(id);
+  if (state[k]?.status === status) {
+    state[k].status = undefined;
+    if (!state[k].note) delete state[k];
+  } else {
+    state[k] = state[k] || {};
+    state[k].status = status;
+  }
+  save();
+  updateCard(id);
+  updateStats();
+}
+
+function setNote(id, note) {
+  const k = getKey(id);
+  state[k] = state[k] || {};
+  state[k].note = note;
+  if (!note && !state[k].status) delete state[k];
+  save();
+}
+
+function updateCard(id) {
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  const k = getKey(id);
+  const s = state[k]?.status;
+  card.className = 'card' + (s ? ' status-' + s : '');
+  card.querySelectorAll('.btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === s);
+  });
+  if (currentFilter !== 'all') {
+    const cardStatus = state[k]?.status || 'open';
+    card.style.display = (currentFilter === 'open' ? !state[k]?.status : cardStatus === currentFilter) ? '' : 'none';
+  }
+}
+
+function updateStats() {
+  const allItems = currentTab === 'suggesties' ? suggestions : lessons;
+  let total = 0, yes = 0, no = 0, edit = 0;
+  for (const sec of allItems) {
+    for (const item of sec.items) {
+      total++;
+      const s = state[getKey(item.id)]?.status;
+      if (s === 'yes') yes++;
+      else if (s === 'no') no++;
+      else if (s === 'edit') edit++;
+    }
+  }
+  document.getElementById('count-total').textContent = total;
+  document.getElementById('count-yes').textContent = yes;
+  document.getElementById('count-no').textContent = no;
+  document.getElementById('count-edit').textContent = edit;
+  document.getElementById('count-open').textContent = total - yes - no - edit;
+}
+
+function filterCards(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach((b, i) => {
+    const filters = ['all','open','yes','no','edit'];
+    b.classList.toggle('active', filters[i] === filter);
+  });
+  const container = document.getElementById('content-' + currentTab);
+  container.querySelectorAll('.card').forEach(card => {
+    const id = card.id.replace('card-', '');
+    const k = getKey(id.startsWith('L') ? id : parseInt(id));
+    const s = state[k]?.status || 'open';
+    if (filter === 'all') card.style.display = '';
+    else if (filter === 'open') card.style.display = s === 'open' || !state[k]?.status ? '' : 'none';
+    else card.style.display = s === filter ? '' : 'none';
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+  document.querySelector(tab === 'suggesties' ? '.tab:first-child' : '.tab:last-child').classList.add('active-tab');
+  document.getElementById('content-suggesties').classList.toggle('hidden', tab !== 'suggesties');
+  document.getElementById('content-lessen').classList.toggle('hidden', tab !== 'lessen');
+  currentFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  updateStats();
+}
+
+function renderCards(data, container, isLesson) {
+  let html = '';
+  for (const sec of data) {
+    html += `<div class="section-header${isLesson ? ' lesson' : ''}"><h2>${sec.section}</h2><p>${sec.desc}</p></div>`;
+    for (const item of sec.items) {
+      const k = getKey(item.id);
+      const s = state[k]?.status || '';
+      const note = state[k]?.note || '';
+      const numClass = isLesson ? 'card-num lesson-num' : 'card-num';
+      html += `<div class="card${s ? ' status-'+s : ''}" id="card-${item.id}">
+        <div class="card-text"><span class="${numClass}">${item.id}.</span>${item.text}</div>
+        ${item.meta ? `<div class="card-meta">${item.meta}</div>` : ''}
+        <div class="card-actions">
+          <button class="btn btn-yes${s==='yes'?' active':''}" data-status="yes" onclick="setStatus('${item.id}','yes')">Ja</button>
+          <button class="btn btn-no${s==='no'?' active':''}" data-status="no" onclick="setStatus('${item.id}','no')">Nee</button>
+          <button class="btn btn-edit${s==='edit'?' active':''}" data-status="edit" onclick="setStatus('${item.id}','edit')">Aanpassen</button>
+          <input class="note-input" placeholder="Notitie..." value="${note.replace(/"/g,'&quot;')}" oninput="setNote('${item.id}',this.value)">
+        </div>
+      </div>`;
+    }
+  }
+  document.getElementById(container).innerHTML = html;
+}
+
+function render() {
+  renderCards(suggestions, 'content-suggesties', false);
+  renderCards(lessons, 'content-lessen', true);
+}
+
+function generateText() {
+  let lines = ['SUGGESTIES V4 — REVIEW RESULTATEN\n'];
+  let yes = [], no = [], edit = [];
+
+  function process(data, label) {
+    for (const sec of data) {
+      for (const item of sec.items) {
+        const k = getKey(item.id);
+        const s = state[k]?.status;
+        const n = state[k]?.note || '';
+        const entry = `#${item.id} [${sec.section}]: ${item.text.substring(0,80)}...${n ? '\n   Notitie: ' + n : ''}`;
+        if (s === 'yes') yes.push(entry);
+        else if (s === 'no') no.push(entry);
+        else if (s === 'edit') edit.push(entry);
+      }
+    }
+  }
+
+  process(suggestions, 'Suggesties');
+  process(lessons, 'Lessen');
+
+  lines.push(`=== JA (${yes.length}) ===\n${yes.join('\n')}\n`);
+  lines.push(`=== AANPASSEN (${edit.length}) ===\n${edit.join('\n')}\n`);
+  lines.push(`=== NEE (${no.length}) ===\n${no.join('\n')}`);
+  return lines.join('\n');
+}
+
+function exportResults() {
+  const text = generateText();
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'review_v4_resultaten.txt';
+  a.click();
+}
+
+function copyResults() {
+  const text = generateText();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-secondary');
+    btn.textContent = 'Gekopieerd!';
+    setTimeout(() => btn.textContent = 'Kopieer naar klembord', 2000);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

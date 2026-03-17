@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statusbalk Preview — Sprankelend Souffleur</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card-border: #0f3460;
+    --text: #e0e0e0;
+    --text-muted: #8a8a9a;
+    --accent: #e94560;
+    --accent-soft: #533483;
+    --radius-sm: 10px;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 1rem;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 1.2rem;
+    color: var(--accent);
+  }
+  .option-label {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 1.4rem 0 .5rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .option-desc {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+    line-height: 1.4;
+  }
+
+  /* ── shared statusbalk base ── */
+  .statusbalk {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    margin-bottom: .6rem;
+  }
+  .statusbalk button {
+    background: none; border: none; color: var(--text); font-size: .82rem;
+    cursor: pointer; padding: 0;
+  }
+  .statusbalk .muted { color: var(--text-muted); font-size: .75rem; }
+
+  /* ── hoofdkaart (placeholder) ── */
+  .hoofdkaart {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1rem;
+    text-align: center;
+    margin-bottom: .6rem;
+  }
+  .hoofdkaart .titel { font-size: .95rem; font-weight: 600; margin-bottom: .4rem; }
+  .hoofdkaart .body { font-size: .82rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── subsignaal ── */
+  .subsignaal {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-muted);
+    padding: .3rem 0;
+  }
+
+  /* ── OPTIE A: 2 regels ── */
+  .optA .statusbalk {
+    padding: .45rem .6rem;
+  }
+  .optA .row1 {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: .25rem;
+  }
+  .optA .row2 {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .8rem; color: var(--text-muted);
+  }
+  .optA .row2 .dagdeel { color: var(--text); font-weight: 500; }
+
+  /* ── OPTIE B: apart kaartje ── */
+  .optB .statusbalk {
+    padding: .5rem .6rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .optB .agenda-card {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: .5rem .7rem;
+    margin-bottom: .6rem;
+    font-size: .8rem;
+  }
+  .optB .agenda-card .header {
+    font-weight: 600; font-size: .82rem; margin-bottom: .3rem;
+    display: flex; align-items: center; gap: .3rem;
+  }
+  .optB .agenda-card .slot {
+    display: flex; justify-content: space-between;
+    padding: .15rem 0;
+    color: var(--text-muted);
+  }
+  .optB .agenda-card .slot .val { color: var(--text); }
+  .optB .agenda-card .slot .empty { color: var(--text-muted); font-style: italic; }
+
+  /* ── OPTIE C: expandable ── */
+  .optC .statusbalk {
+    padding: .5rem .6rem;
+  }
+  .optC .row-main {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .optC .expand-area {
+    display: none;
+    border-top: 1px solid var(--card-border);
+    margin-top: .4rem;
+    padding-top: .4rem;
+    font-size: .8rem;
+  }
+  .optC .expand-area.open { display: block; }
+  .optC .expand-area .slot {
+    display: flex; justify-content: space-between;
+    padding: .12rem 0;
+    color: var(--text-muted);
+  }
+  .optC .expand-area .slot .val { color: var(--text); }
+  .optC .expand-area .slot .empty { font-style: italic; }
+
+  /* divider */
+  hr { border: none; border-top: 1px solid var(--card-border); margin: 1.5rem 0 .5rem; }
+
+  .vote-bar {
+    display: flex; gap: .5rem; margin-top: 1.5rem; justify-content: center;
+  }
+  .vote-bar button {
+    flex: 1;
+    padding: .7rem .5rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--card-border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .vote-bar button:hover, .vote-bar button.selected {
+    border-color: var(--accent);
+    background: rgba(233,69,96,.15);
+  }
+</style>
+</head>
+<body>
+
+<h1>Statusbalk Preview</h1>
+
+<!-- ═══════════════ OPTIE A ═══════════════ -->
+<div class="option-label">Optie A — 2 regels</div>
+<div class="option-desc">Energie + status bovenaan, agenda eronder. Altijd zichtbaar.</div>
+
+<div class="optA">
+  <div class="statusbalk">
+    <div class="row1">
+      <button>😊 Goed</button>
+      <button class="muted">Niks lopend</button>
+    </div>
+    <div class="row2">
+      <span>📅</span>
+      <span class="dagdeel">Avond:</span>
+      <span>polsboeien omdoen bij Tim</span>
+    </div>
+  </div>
+  <div class="hoofdkaart">
+    <div class="titel">✨ Suggestie van vandaag</div>
+    <div class="body">Zeg vanavond tegen Tim: "Ik wil dat je op de bank gaat zitten en je ogen dichtdoet."</div>
+  </div>
+  <div class="subsignaal">💬 Tim heeft gereflecteerd</div>
+</div>
+
+<hr>
+
+<!-- ═══════════════ OPTIE B ═══════════════ -->
+<div class="option-label">Optie B — apart agenda-kaartje</div>
+<div class="option-desc">Statusbalk compact, agenda als eigen mini-kaart eronder.</div>
+
+<div class="optB">
+  <div class="statusbalk">
+    <button>😊 Goed</button>
+    <button class="muted">Niks lopend</button>
+  </div>
+  <div class="agenda-card">
+    <div class="header">📅 Vandaag</div>
+    <div class="slot">
+      <span>Middag</span>
+      <span class="empty">— vrij</span>
+    </div>
+    <div class="slot">
+      <span>Avond</span>
+      <span class="val">polsboeien omdoen bij Tim</span>
+    </div>
+  </div>
+  <div class="hoofdkaart">
+    <div class="titel">✨ Suggestie van vandaag</div>
+    <div class="body">Zeg vanavond tegen Tim: "Ik wil dat je op de bank gaat zitten en je ogen dichtdoet."</div>
+  </div>
+  <div class="subsignaal">💬 Tim heeft gereflecteerd</div>
+</div>
+
+<hr>
+
+<!-- ═══════════════ OPTIE C ═══════════════ -->
+<div class="option-label">Optie C — uitklapbaar</div>
+<div class="option-desc">Compact, tap op agenda om details te zien. Tap hieronder om te testen.</div>
+
+<div class="optC">
+  <div class="statusbalk" id="optC-bar">
+    <div class="row-main">
+      <button>😊 Goed</button>
+      <button onclick="toggleOptC()" id="optC-btn">📅 Avond ▾</button>
+    </div>
+    <div class="expand-area" id="optC-expand">
+      <div class="slot">
+        <span>Middag</span>
+        <span class="empty">— vrij</span>
+      </div>
+      <div class="slot">
+        <span>Avond</span>
+        <span class="val">polsboeien omdoen bij Tim</span>
+      </div>
+    </div>
+  </div>
+  <div class="hoofdkaart">
+    <div class="titel">✨ Suggestie van vandaag</div>
+    <div class="body">Zeg vanavond tegen Tim: "Ik wil dat je op de bank gaat zitten en je ogen dichtdoet."</div>
+  </div>
+  <div class="subsignaal">💬 Tim heeft gereflecteerd</div>
+</div>
+
+<!-- ═══════════════ VOTE ═══════════════ -->
+<div class="vote-bar">
+  <button onclick="vote(this,'A')">A</button>
+  <button onclick="vote(this,'B')">B</button>
+  <button onclick="vote(this,'C')">C</button>
+</div>
+
+<script>
+function toggleOptC(){
+  const el = document.getElementById('optC-expand');
+  const btn = document.getElementById('optC-btn');
+  const open = el.classList.toggle('open');
+  btn.textContent = open ? '📅 Avond ▴' : '📅 Avond ▾';
+}
+function vote(el, opt){
+  document.querySelectorAll('.vote-bar button').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLR/BDSM Session Test Suite</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+      color: #c9a84c;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #c9a84c;
+      padding-bottom: 5px;
+    }
+
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-top: 15px;
+    }
+
+    h3 {
+      font-size: 14px;
+      border: none;
+      margin-top: 10px;
+    }
+
+    .control-panel {
+      background: #1a1a1a;
+      border: 1px solid #c9a84c;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    label {
+      color: #c9a84c;
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="password"],
+    input[type="number"],
+    select {
+      background: #000;
+      color: #e0e0e0;
+      border: 1px solid #c9a84c;
+      padding: 8px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    button {
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    button:hover {
+      background: #e0b86d;
+    }
+
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    .progress-bar {
+      background: #1a1a1a;
+      border: 1px solid #c9a84c;
+      border-radius: 3px;
+      height: 20px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-fill {
+      background: #c9a84c;
+      height: 100%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #000;
+    }
+
+    .log-area {
+      background: #0a0a0a;
+      border: 1px solid #c9a84c;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 8px;
+      background: #1a1a1a;
+      border-left: 3px solid #c9a84c;
+    }
+
+    .log-entry.success {
+      border-left-color: #4ade80;
+      color: #9ef01a;
+    }
+
+    .log-entry.error {
+      border-left-color: #f87171;
+      color: #fca5a5;
+    }
+
+    .log-entry.warning {
+      border-left-color: #fbbf24;
+      color: #fcd34d;
+    }
+
+    .session-block {
+      background: #1a1a1a;
+      border: 1px solid #c9a84c;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .session-header {
+      color: #c9a84c;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #333;
+    }
+
+    .step-display {
+      background: #0a0a0a;
+      border-left: 3px solid #c9a84c;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 2px;
+    }
+
+    .step-number {
+      color: #c9a84c;
+      font-weight: bold;
+    }
+
+    .step-title {
+      color: #4ade80;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+
+    .step-instruction {
+      color: #e0e0e0;
+      margin: 5px 0;
+      padding-left: 10px;
+      border-left: 2px solid #666;
+    }
+
+    .step-meta {
+      color: #888;
+      font-size: 10px;
+      margin-top: 5px;
+    }
+
+    .error-badge {
+      display: inline-block;
+      background: #f87171;
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 2px;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      background: #1a1a1a;
+      border: 1px solid #c9a84c;
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    .stat-box h4 {
+      color: #c9a84c;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    .stat-item {
+      color: #e0e0e0;
+      margin: 5px 0;
+      font-size: 11px;
+    }
+
+    .stat-value {
+      color: #4ade80;
+      font-weight: bold;
+    }
+
+    .rapport-section {
+      background: #1a1a1a;
+      border: 2px solid #c9a84c;
+      padding: 20px;
+      margin: 30px 0;
+      border-radius: 4px;
+    }
+
+    .rapport-section h2 {
+      margin-top: 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    .status-running {
+      background: #fbbf24;
+      color: #000;
+    }
+
+    .status-complete {
+      background: #4ade80;
+      color: #000;
+    }
+
+    .status-error {
+      background: #f87171;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ FLR/BDSM Session Test Suite</h1>
+
+    <div class="control-panel">
+      <div class="control-row">
+        <div>
+          <label for="apiKey">OpenRouter API Key:</label>
+          <input type="password" id="apiKey" placeholder="Enter your API key">
+        </div>
+        <div>
+          <label for="numSessions">Number of Sessions:</label>
+          <input type="number" id="numSessions" value="50" min="1" max="100">
+        </div>
+      </div>
+
+      <div class="control-row">
+        <button id="startBtn" onclick="startTest()">▶ Start Test Suite</button>
+        <button id="stopBtn" onclick="stopTest()" disabled>⏹ Stop</button>
+        <button id="exportBtn" onclick="exportToExcel()" disabled style="background:#4ade80;color:#000;">📊 Export Excel</button>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+      </div>
+
+      <div class="control-row">
+        <span id="statusText">Ready.</span>
+        <span id="statusBadge" class="status-badge"></span>
+      </div>
+    </div>
+
+    <div class="log-area" id="logArea"></div>
+
+    <div id="sessionsContainer"></div>
+
+    <div id="rapportSection"></div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CONSTANTS & DATABASE
+    // ============================================================================
+
+    const SPULLEN_DB = {
+      "collar": {
+        naam: "Leren halsband met O-ring",
+        categorie: "bondage",
+        omdoen: "Om de nek, eventueel afsluiten met slotje. ALTIJD door Lisanne.",
+        gebruik: ["Aan O-ring trekken voor controle/aandacht", "Aan O-ring leiden", "Kettinkje bevestigen als 'riem'", "Vastmaken aan bondageriem of bedriemen"],
+        beperkingen: ["Tim mag collar NOOIT zelf omdoen of afdoen"],
+        combinaties_niet: [],
+        opmerkingen: "Sessie begint altijd met collar omdoen."
+      },
+      "daycollar": {
+        naam: "Daycollar (ketting met hangslotje)",
+        categorie: "bondage",
+        omdoen: "Om de nek, afsluiten met hangslotje.",
+        gebruik: ["Subtiel teken van eigendom buiten de deur"],
+        beperkingen: ["Alleen voor buiten/dagelijks, niet tijdens sessie"],
+        combinaties_niet: ["collar"],
+        opmerkingen: "Gaat af als collar omgaat."
+      },
+      "polsboeien": {
+        naam: "Lederen polsboeien (2 losse boeien)",
+        categorie: "bondage",
+        omdoen: "Om elke pols, MOET dicht met slotje anders vallen ze af.",
+        gebruik: ["Los om polsen", "Aan elkaar verbinden met kettinkje — VOOR of ACHTER de rug", "Vastmaken aan bondageriem", "Vastmaken aan bedriemen voor spread-eagle", "Vastmaken aan collar via kettinkje"],
+        beperkingen: ["Hebben GEEN O-ring, maar een klein verbindingspunt", "Zonder slotje vallen ze af", "Als achter rug vast: Tim kan NIETS pakken/doen", "Vermeld ALTIJD of VOOR of ACHTER de rug"],
+        combinaties_niet: ["bondagewanten", "politiehandboeien"],
+        opmerkingen: "Mogen in dezelfde stap als enkelboeien."
+      },
+      "enkelboeien": {
+        naam: "Lederen enkelboeien (2 losse boeien)",
+        categorie: "bondage",
+        omdoen: "Om elke enkel, MOET dicht met slotje.",
+        gebruik: ["Los om enkels", "Aan elkaar verbinden met kettinkje", "Vastmaken aan bedriemen voor spread-eagle"],
+        beperkingen: ["Zonder slotje vallen ze af"],
+        combinaties_niet: [],
+        opmerkingen: "Mogen in dezelfde stap als polsboeien."
+      },
+      "bondagewanten": {
+        naam: "Lederen bondagewanten",
+        categorie: "bondage",
+        omdoen: "Over beide handen, optioneel afsluiten met slotje.",
+        gebruik: ["Tim kan NIETS meer vastpakken", "Kunnen aan bondageriem of bedriemen vastgemaakt worden"],
+        beperkingen: ["Niet combineren met polsboeien", "Tim kan niet communiceren via gebaren"],
+        combinaties_niet: ["polsboeien", "politiehandboeien"],
+        opmerkingen: "Intenser dan polsboeien."
+      },
+      "bondageriem": {
+        naam: "Bondageriem voor middel met vastmaakpunten",
+        categorie: "bondage",
+        omdoen: "Om Tim's middel, MOET afgesloten met slotjes.",
+        gebruik: ["Polsboeien/wanten vastmaken aan ringen", "Controle over Tim's beweging"],
+        beperkingen: ["Zonder slotjes valt ring af", "Moet EERST om voordat je er iets aan vastmaakt"],
+        combinaties_niet: ["slaapzak"],
+        opmerkingen: "Om het middel, niet verwarren met bedriemen."
+      },
+      "bedriemen": {
+        naam: "Bedriemen (4 riemen aan hoeken van het bed)",
+        categorie: "bondage",
+        omdoen: "Liggen al aan het bed.",
+        gebruik: ["Spread-eagle positie"],
+        beperkingen: ["VOLGORDE: eerst boeien om + slotje → DAN aan bedriemen", "Tim moet op bed liggen"],
+        combinaties_niet: ["slaapzak"],
+        opmerkingen: "Spread-eagle is Tim's favoriet."
+      },
+      "politiehandboeien": {
+        naam: "Politiehandboeien",
+        categorie: "bondage",
+        omdoen: "Om polsen klikken. ALTIJD dubbel-lock!",
+        gebruik: ["Laagdrempelig alternatief voor leren boeien", "Snel om te doen", "Klikgeluid is psychologisch effectief"],
+        beperkingen: ["ALTIJD dubbel-lock activeren", "Minder comfortabel bij lang gebruik"],
+        combinaties_niet: ["polsboeien", "bondagewanten"],
+        opmerkingen: "Goed voor verrassingsmoment."
+      },
+      "blinddoek": {
+        naam: "Blinddoek (simpel)",
+        categorie: "bondage",
+        omdoen: "Over de ogen.",
+        gebruik: ["Visuele deprivatie", "Verhoogt andere zintuigen"],
+        beperkingen: ["Kan makkelijk afvallen", "Niet combineren met hood"],
+        combinaties_niet: ["hood"],
+        opmerkingen: "Laagdrempelig begin van sensorische deprivatie."
+      },
+      "ballgag": {
+        naam: "Ballgag met leren riempjes",
+        categorie: "bondage",
+        omdoen: "Bal in mond, riempjes vastmaken.",
+        gebruik: ["Beperkt spraak", "Speekselcontrole"],
+        beperkingen: ["Non-verbaal safeword afspreken"],
+        combinaties_niet: ["gag_bitje"],
+        opmerkingen: "Kan onder de hood."
+      },
+      "gag_bitje": {
+        naam: "Gag/bitje met luchtpijp",
+        categorie: "bondage",
+        omdoen: "Vult hele mond. Kan onder hood.",
+        gebruik: ["Volledige mondvulling", "Extreme controle"],
+        beperkingen: ["Tim kan deze NIET zelf uitdoen", "Non-verbaal safeword VERPLICHT"],
+        combinaties_niet: ["ballgag"],
+        opmerkingen: "Intenser dan ballgag."
+      },
+      "hood": {
+        naam: "Lederen hood/masker",
+        categorie: "bondage",
+        omdoen: "Over het hele hoofd, dichtmaken met touwtjes.",
+        gebruik: ["Volledige visuele deprivatie", "Dehumaniserend effect"],
+        beperkingen: ["Kost MOEITE om op te doen", "Als net af: NIET meteen weer opzetten", "Gezichtshuid NIET bereikbaar, MOND WEL", "Niet met blinddoek"],
+        combinaties_niet: ["blinddoek"],
+        opmerkingen: "Eén van de meest intense items."
+      },
+      "oordopjes": {
+        naam: "Oordopjes",
+        categorie: "bondage",
+        omdoen: "In de oren.",
+        gebruik: ["Geluid dempen"],
+        beperkingen: ["Tim hoort instructies minder goed"],
+        combinaties_niet: ["hoofdtelefoon"],
+        opmerkingen: "Subtielere optie dan hoofdtelefoon."
+      },
+      "hoofdtelefoon": {
+        naam: "Noise-cancelling hoofdtelefoon",
+        categorie: "bondage",
+        omdoen: "Over de oren.",
+        gebruik: ["Volledige geluidsdeprivatie"],
+        beperkingen: ["Tim hoort NIETS", "Past mogelijk niet goed over/onder hood"],
+        combinaties_niet: ["oordopjes"],
+        opmerkingen: "Maximale sensorische deprivatie."
+      },
+      "slaapzak": {
+        naam: "Bondage slaapzak",
+        categorie: "bondage",
+        omdoen: "Tim erin, rits dicht aan achterkant.",
+        gebruik: ["Volledige lichaamsbeperking", "Toegang tot penis via rits", "Toegang tot tepels via rits"],
+        beperkingen: ["WARM KLIMAAT — max 15 min", "Geen armbondage mogelijk", "Tim kan niet van positie wisselen"],
+        combinaties_niet: ["polsboeien", "enkelboeien", "bondagewanten", "bondageriem", "bedriemen"],
+        opmerkingen: "Intens hulpeloos."
+      },
+      "kettinkjes": {
+        naam: "Kettinkjes (40cm, 20cm, 10cm x2)",
+        categorie: "bondage",
+        omdoen: "Tussen verbindingspunten haken.",
+        gebruik: ["40cm: polsboeien aan elkaar (veel ruimte)", "20cm: polsboeien aan elkaar of aan bondageriem", "10cm: strak verbinden"],
+        beperkingen: ["Karabijnhaken nodig"],
+        combinaties_niet: [],
+        opmerkingen: "Korter = meer restrictie."
+      },
+      "tepelklemmen": {
+        naam: "Tepelklemmen (clover-type met ketting)",
+        categorie: "stimulatie",
+        omdoen: "Op de tepels klemmen.",
+        gebruik: ["Constante druk", "Aan ketting trekken", "Ketting aan collar/bondageriem"],
+        beperkingen: ["NIET met e-stim tepelklemmen", "Afdoen doet meer pijn dan opdoen"],
+        combinaties_niet: ["estim_tepelklemmen"],
+        opmerkingen: "Clover-type is intens."
+      },
+      "kaarsen": {
+        naam: "Kaarsen voor waxplay",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Hete wax op huid druppelen"],
+        beperkingen: ["EERST aansteken", "Afstand houden", "NIET op gezicht/genitaliën"],
+        combinaties_niet: [],
+        opmerkingen: "Goed met ijsklontjes voor contrast."
+      },
+      "crop": {
+        naam: "Riding crop",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Tikken/spanking", "Aanwijzen/dirigeren", "Over huid strelen (tease)"],
+        beperkingen: ["Billen/achterkant alleen bij buik/kniel"],
+        combinaties_niet: [],
+        opmerkingen: "Veelzijdig."
+      },
+      "cane": {
+        naam: "Bamboe cane",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Spanking op billen/bovenbenen"],
+        beperkingen: ["Intenser dan crop — opbouwen", "Billen alleen bij buik/kniel"],
+        combinaties_niet: [],
+        opmerkingen: "Later in sessie."
+      },
+      "ijsklontjes": {
+        naam: "IJsklontjes",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Over huid laten glijden", "Op tepels leggen", "In mond"],
+        beperkingen: ["Smelten — handdoek erbij"],
+        combinaties_niet: [],
+        opmerkingen: "Simpel maar effectief."
+      },
+      "veertje": {
+        naam: "Zacht veertje",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Licht over huid strijken", "Kietelen", "Contrast na pijn"],
+        beperkingen: [],
+        combinaties_niet: [],
+        opmerkingen: "Perfect voor opwarming."
+      },
+      "kattennagels": {
+        naam: "Kattennagels",
+        categorie: "stimulatie",
+        omdoen: "Op Lisanne's vingers.",
+        gebruik: ["Krabben over huid", "Contrast met strelen"],
+        beperkingen: ["Niet te hard"],
+        combinaties_niet: [],
+        opmerkingen: "Goed met blinddoek."
+      },
+      "wartenbergwiel": {
+        naam: "Wartenbergwiel",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Over huid rollen", "Langs wervelkolom/dijen/voetzolen"],
+        beperkingen: ["Niet over gewrichten"],
+        combinaties_niet: [],
+        opmerkingen: "Effectief bij blinddoek."
+      },
+      "glijmiddel": {
+        naam: "Glijmiddel",
+        categorie: "stimulatie",
+        omdoen: null,
+        gebruik: ["Bij manuele stimulatie", "Bij plug"],
+        beperkingen: [],
+        combinaties_niet: [],
+        opmerkingen: null
+      },
+      "estim_2b": {
+        naam: "E-stim 2B",
+        categorie: "e-stim",
+        omdoen: "Accessoires EERST + electrogel, DAN apparaat aan.",
+        gebruik: ["Twee kanalen — twee accessoires tegelijk"],
+        beperkingen: ["ALTIJD electrogel", "Nooit op hoogste stand beginnen"],
+        combinaties_niet: [],
+        opmerkingen: "Noem GEEN specifieke standen."
+      },
+      "estim_remote": {
+        naam: "E-stim Remote met afstandsbediening",
+        categorie: "e-stim",
+        omdoen: "Accessoires EERST + electrogel, DAN apparaat aan.",
+        gebruik: ["Afstandsbediening tot 100m"],
+        beperkingen: ["ALTIJD electrogel"],
+        combinaties_niet: [],
+        opmerkingen: "Goed voor wegstuur-stappen."
+      },
+      "estim_plug": {
+        naam: "E-stim plug",
+        categorie: "e-stim",
+        omdoen: "Inbrengen met glijmiddel + electrogel.",
+        gebruik: ["E-stim accessoire met 2B of Remote", "Kan ook zonder stroom als plug"],
+        beperkingen: ["ALTIJD glijmiddel"],
+        combinaties_niet: ["buttplug"],
+        opmerkingen: "Dubbel gebruik."
+      },
+      "estim_bandjes_breed": {
+        naam: "E-stim bandjes breed",
+        categorie: "e-stim",
+        omdoen: "Om de penis, met electrogel.",
+        gebruik: ["Penistimulatie via e-stim"],
+        beperkingen: ["ALLEEN om de penis", "ALTIJD electrogel"],
+        combinaties_niet: [],
+        opmerkingen: "Noem GEEN standen."
+      },
+      "estim_bandjes_dun": {
+        naam: "E-stim bandjes dun",
+        categorie: "e-stim",
+        omdoen: "Om de penis, met electrogel.",
+        gebruik: ["Penistimulatie — preciezer dan breed"],
+        beperkingen: ["ALLEEN om de penis", "ALTIJD electrogel"],
+        combinaties_niet: [],
+        opmerkingen: "Noem GEEN standen."
+      },
+      "estim_tepelklemmen": {
+        naam: "E-stim tepelklemmen",
+        categorie: "e-stim",
+        omdoen: "Op tepels, met electrogel.",
+        gebruik: ["Tepelstimulatie via e-stim"],
+        beperkingen: ["NIET met clover tepelklemmen", "ALTIJD electrogel"],
+        combinaties_niet: ["tepelklemmen"],
+        opmerkingen: "Noem GEEN standen."
+      },
+      "electrogel": {
+        naam: "Electrogel",
+        categorie: "e-stim",
+        omdoen: "Aanbrengen op huid en accessoire VOOR e-stim.",
+        gebruik: ["VERPLICHT bij alle e-stim accessoires"],
+        beperkingen: ["Zonder gel geen goed contact"],
+        combinaties_niet: [],
+        opmerkingen: "Altijd vermelden bij e-stim."
+      },
+      "buttplug": {
+        naam: "Vibrerende buttplug met afstandsbediening",
+        categorie: "overig",
+        omdoen: "Inbrengen met glijmiddel.",
+        gebruik: ["Vibratie via afstandsbediening"],
+        beperkingen: ["Afstandsbediening werkt alleen EXTREEM dichtbij"],
+        combinaties_niet: ["estim_plug"],
+        opmerkingen: "Beperkt bereik."
+      },
+      "wandvibrator": {
+        naam: "Wandvibrator",
+        categorie: "overig",
+        omdoen: null,
+        gebruik: ["Externe stimulatie op gevoelige plekken"],
+        beperkingen: ["Moet opgeladen zijn"],
+        combinaties_niet: [],
+        opmerkingen: null
+      },
+      "voorbinddildo": {
+        naam: "Harnas voor voorbinddildo",
+        categorie: "overig",
+        omdoen: "Lisanne doet harnas om.",
+        gebruik: ["Penetratie door Lisanne"],
+        beperkingen: ["Glijmiddel nodig", "Opbouw vereist"],
+        combinaties_niet: [],
+        opmerkingen: null
+      },
+      "handen": {
+        naam: "Lisanne's handen (geen item nodig)",
+        categorie: "aanraking",
+        omdoen: null,
+        gebruik: ["Strelen", "Aaien", "Knijpen", "Krabben", "Tikken", "Grijpen", "Trekken"],
+        beperkingen: ["Als hood op: gezichtshuid niet bereikbaar, MOND WEL", "Als slaapzak: alleen hoofd + ritsen"],
+        combinaties_niet: [],
+        opmerkingen: "BASIS van elke sessie. Wissel af met items."
+      }
+    };
+
+    const CONTEXT = `
+Koppel: Lisanne (dominant, nuchter, beginner) + Tim (submissief, bondage/aandacht nodig). Thailand, appartement. Dochter Milou 5jr.
+
+LOCATIES:
+- Slaapkamer: alles mag.
+- Woonkamer: stil, geen zichtbare spullen.
+- Wegstuurstap: Tim wegsturen met opdracht, O-ring collar af, komt terug.
+
+INTIEM (optioneel): oraal verwennen, manueel, Tim's gezicht berrijden, aan O-ring trekken, edging zonder toestemming.
+
+COMMUNICATIE: Lisanne is beginner verbaal. Geef ALTIJD een non-verbale variant (gebaar/tik/voorwerp).
+
+BALANS: wissel ALTIJD af tussen items/speeltjes en gewone aanraking (strelen, aaien, knijpen, krabben, veer, wieltje). Ga NIET direct naar e-stim — bouw op via handmatige stimulatie. E-stim is pas vanaf opbouw-fase of later, en NOEM GEEN specifieke standen.
+
+STAPPEN COMBINEREN: soms mag een stap meerdere handelingen bevatten (bv. polsboeien + enkelboeien in één stap). Max 2-3 handelingen per stap.
+
+WACHTSTAPPEN: soms is de beste stap NIETS doen. Stilte en wachten is krachtig. Wachttijden in hele ronde cijfers: 5 minuten, 10 minuten, een half uur.
+
+VOORBEREIDINGSSTAPPEN: als een item voorbereiding nodig heeft (kaars aansteken, gel aanbrengen), vermeld dit ALTIJD.
+
+HOOD REGELS: hood is NIET voor even tussendoor. Als net af: NIET meteen weer opzetten. Met hood op: gezichtshuid niet bereikbaar, MOND WEL. Strelen OVER de hood kan.
+
+SCHRIJFSTIJL: max 2 zinnen instructie, alleen de actie, geen uitleg. Noem specifiek welk item en HOE. Vermeld of polsboeien VOOR of ACHTER vastgaan.
+
+═══ PSYCHOLOGISCHE DYNAMIEK ═══
+
+CONTRAST-PRINCIPE (VERPLICHT):
+Na iets hards → iets zachts. Na stilte → iets onverwachts. Na een item → aanraking met blote handen.
+Kijk naar de VORIGE stap en doe iets dat daar tegenover staat.
+
+ANTICIPATIE ALS WAPEN:
+Soms is de krachtigste stap wanneer er BIJNA iets gebeurt — een geluid, adem op huid, een item neerleggen zonder te gebruiken.
+
+PSYCHOLOGISCHE MACHT-MOMENTEN:
+Om Tim heen lopen, oogcontact afdwingen, fluisteren en weglopen, voet op borst. Kosten Lisanne weinig moeite maar zijn intens.
+
+LISANNE'S GENOT:
+FLR is geen eenrichtingsverkeer. Af en toe stappen waar Lisanne van geniet:
+- Tim masseert haar voeten terwijl hij knielt.
+- Lisanne laat Tim iets voor haar halen (dienstbaarheid).
+
+LISANNE-SUPPORT:
+De "waarom" moet Lisanne's zelfvertrouwen versterken.
+NIET: "Dit werkt omdat sensorische deprivatie endorfines vrijmaakt."
+WEL: "Hij kan alleen maar op jou focussen nu."
+`;
+
+    const ZWEVERIG_WOORDEN = [
+      'voelen', 'ervaren', 'energie', 'vibratie', 'golf', 'stroom',
+      'gevoel', 'diep', 'intens', 'resoneer', 'pulseer', 'ademhaling',
+      'warmte', 'koelte', 'spanning voelt', 'aanwezigheid voelen',
+      'bewust worden', 'overgave', 'zintuigen', 'prikkeling'
+    ];
+
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+
+    function bepaalEmotioneleFase(stapNr, sessieLogs, sessieStartTijd, inAftercare) {
+      if (inAftercare) return { fase: 'terugkeer', label: 'Terugkeer', beschrijving: 'Langzaam terug' };
+
+      let minutenVerstreken = 0;
+      if (sessieStartTijd) {
+        minutenVerstreken = Math.round((Date.now() - sessieStartTijd) / 60000);
+      }
+
+      if (stapNr >= 8 && sessieLogs.length >= 3) {
+        const laatste3 = sessieLogs.slice(-3);
+        const gemLaatste3 = laatste3.reduce((s, l) => s + (l.intensiteit || 3), 0) / 3;
+        const gemTotaal = sessieLogs.reduce((s, l) => s + (l.intensiteit || 3), 0) / sessieLogs.length;
+        if (gemLaatste3 < gemTotaal - 0.5) {
+          return { fase: 'afbouw', label: 'Afbouw' };
+        }
+      }
+
+      if ((minutenVerstreken >= 80 && stapNr >= 10) || stapNr >= 12) {
+        return { fase: 'afbouw', label: 'Afbouw' };
+      }
+
+      if (stapNr <= 1) return { fase: 'verbinding', label: 'Verbinding' };
+      if (stapNr <= 3) return { fase: 'machtsoverdracht', label: 'Machtsoverdracht' };
+      if (stapNr <= 6) return { fase: 'verdieping', label: 'Verdieping' };
+      if (stapNr <= 10) return { fase: 'kwetsbaarheid', label: 'Kwetsbaarheid' };
+      return { fase: 'plateau', label: 'Plateau' };
+    }
+
+    function bepaalFysiekeStatus(sessieLogs) {
+      let positie = 'kniel';
+      let boeien = new Set(['collar']);
+      let handenPositie = 'nvt';
+      let spreadEagle = false;
+
+      for (const s of sessieLogs) {
+        if (s.status_update) {
+          const su = s.status_update;
+          if (su.items_erbij && Array.isArray(su.items_erbij)) {
+            su.items_erbij.forEach(item => boeien.add(item.toLowerCase()));
+          }
+          if (su.items_eraf && Array.isArray(su.items_eraf)) {
+            su.items_eraf.forEach(item => boeien.delete(item.toLowerCase()));
+          }
+          if (su.nieuwe_positie && su.nieuwe_positie !== 'ongewijzigd') {
+            positie = su.nieuwe_positie;
+          }
+          if (su.handen_positie && su.handen_positie !== 'nvt') {
+            handenPositie = su.handen_positie;
+          }
+        } else {
+          const tekst = ((s.instructie || '') + ' ' + (s.kort || '')).toLowerCase();
+          if (tekst.includes('polsboeien') || tekst.includes('pols')) {
+            boeien.add('polsboeien');
+            if (tekst.includes('achter')) handenPositie = 'achter';
+            else if (tekst.includes('voor')) handenPositie = 'voor';
+          }
+          if (tekst.includes('enkel')) boeien.add('enkelboeien');
+          if (tekst.includes('blinddoek')) boeien.add('blinddoek');
+          if (tekst.includes('hood')) boeien.add('hood');
+          if (tekst.includes('ballgag')) boeien.add('ballgag');
+          if (tekst.includes('op zijn rug') || tekst.includes('op de rug') || tekst.includes('ga liggen')) positie = 'rug';
+          if (tekst.includes('op zijn buik') || tekst.includes('op de buik')) positie = 'buik';
+          if (tekst.includes('kniel')) positie = 'kniel';
+          if (tekst.includes('sta op') || tekst.includes('ga staan')) positie = 'sta';
+        }
+
+        if (boeien.has('bedriemen') && boeien.has('polsboeien') && boeien.has('enkelboeien')) {
+          spreadEagle = true;
+        }
+      }
+
+      return { positie, boeien: [...boeien], handenPositie, spreadEagle };
+    }
+
+    function bouwSpullenContext(fysiek, fase) {
+      let context = 'OP TIM:\n';
+      for (const item of fysiek.boeien) {
+        const db = SPULLEN_DB[item];
+        if (db) {
+          context += `  • ${item}: ${db.naam}\n`;
+        }
+      }
+
+      context += '\nBESCHIKBAAR:\n';
+      const faseFilter = {
+        'verbinding': ['handen'],
+        'machtsoverdracht': ['collar', 'polsboeien', 'blinddoek'],
+        'verdieping': ['bondageriem', 'enkelboeien', 'tepelklemmen'],
+        'kwetsbaarheid': ['hood', 'bedriemen', 'ballgag', 'estim_2b'],
+        'plateau': Object.keys(SPULLEN_DB),
+        'afbouw': ['handen', 'veertje', 'ijsklontjes'],
+        'terugkeer': ['handen']
+      };
+
+      const beschikbaar = faseFilter[fase] || Object.keys(SPULLEN_DB);
+      for (const item of beschikbaar) {
+        if (!fysiek.boeien.includes(item)) {
+          const db = SPULLEN_DB[item];
+          if (db) {
+            context += `  • ${item}: ${db.naam}\n`;
+          }
+        }
+      }
+
+      context += '\nAANRAAKING:\n  • Strelen\n  • Aaien\n  • Knijpen\n  • Krabben\n  • Tikken\n  • Trekken\n';
+
+      return context;
+    }
+
+    function valideerFysiekHard(stap, sessieLogs, fysiek) {
+      const fouten = [];
+      const tekst = ((stap.instructie || '') + ' ' + (stap.kort || '')).toLowerCase();
+      const items = (stap.spullen || []).map(s => s.toLowerCase());
+      const opTim = new Set(fysiek.boeien.map(b => b.toLowerCase()));
+      const handenVast = opTim.has('polsboeien') || opTim.has('bondagewanten') || opTim.has('politiehandboeien');
+
+      for (const item of items) {
+        if (opTim.has(item) && !tekst.includes('af') && !tekst.includes('verwijder') && !tekst.includes('los')) {
+          fouten.push(`DUBBEL: ${item} zit al op Tim.`);
+        }
+      }
+
+      if (handenVast && fysiek.handenPositie === 'achter') {
+        const timMoetDoen = tekst.includes('tim pakt') || tekst.includes('tim houdt') || tekst.includes('tim raakt') || tekst.includes('geeft') || tekst.includes('masseert');
+        if (timMoetDoen) {
+          fouten.push(`HANDEN: Tim's handen zitten vast achter zijn rug maar hij moet iets doen/pakken.`);
+        }
+      }
+
+      if (opTim.has('slaapzak')) {
+        const verboden = ['polsboeien', 'enkelboeien', 'bondagewanten', 'bondageriem', 'bedriemen'];
+        for (const item of items) {
+          if (verboden.includes(item)) {
+            fouten.push(`SLAAPZAK: ${item} kan niet als Tim in slaapzak zit.`);
+          }
+        }
+      }
+
+      if (sessieLogs.length > 0) {
+        const vorige = sessieLogs[sessieLogs.length - 1];
+        const vorigeTekst = ((vorige.instructie || '') + ' ' + (vorige.kort || '')).toLowerCase();
+        if (vorige.categorie === stap.categorie) {
+          const huidigWoorden = new Set(tekst.split(/\s+/).filter(w => w.length > 4));
+          const vorigeWoorden = new Set(vorigeTekst.split(/\s+/).filter(w => w.length > 4));
+          let overlap = 0;
+          for (const w of huidigWoorden) { if (vorigeWoorden.has(w)) overlap++; }
+          const overlapRatio = huidigWoorden.size > 0 ? overlap / huidigWoorden.size : 0;
+          if (overlapRatio > 0.4) {
+            fouten.push(`HERHALING: ${Math.round(overlapRatio*100)}% overlap, zelfde categorie "${stap.categorie}".`);
+          }
+        }
+      }
+
+      if (/\d+\s*seconde/i.test(tekst)) {
+        fouten.push('TIJD: Gebruik hele minuten, geen seconden.');
+      }
+
+      // 9. COLLAR misbruik: niets mag aan collar O-ring bevestigd worden behalve kettinkje naar polsboeien
+      if ((tekst.includes('collar') || tekst.includes('o-ring') || tekst.includes('halsband')) &&
+          (tekst.includes('enkel') || tekst.includes('voet'))) {
+        fouten.push('COLLAR: Enkelboeien aan collar/O-ring is fysiek onmogelijk.');
+      }
+
+      // 10. ENKELBOEIEN aan bondageriem terwijl Tim staat
+      if (tekst.includes('enkel') && tekst.includes('bondageriem') && (fysiek.positie === 'sta' || fysiek.positie === 'kniel')) {
+        fouten.push('ENKELBOEIEN: Enkelboeien aan bondageriem terwijl Tim staat/knielt is onlogisch.');
+      }
+
+      // 11. KETTINKJE logica: kettinkje tussen items die te ver uit elkaar zitten
+      if (tekst.includes('kettinkje') || tekst.includes('ketting')) {
+        if ((tekst.includes('enkel') && tekst.includes('collar')) ||
+            (tekst.includes('enkel') && tekst.includes('halsband')) ||
+            (tekst.includes('voet') && tekst.includes('collar'))) {
+          fouten.push('KETTINKJE: Enkelboeien aan collar verbinden is fysiek onmogelijk (te ver uit elkaar).');
+        }
+      }
+
+      // 12. VERBODEN items
+      if (tekst.includes('voetenmassage') || (tekst.includes('massage') && !tekst.includes('masseert'))) {
+        fouten.push('VERBODEN: Massage/voetenmassage.');
+      }
+
+      // 13. ADEMHALING op huid
+      if (tekst.includes('adem') && (tekst.includes('nek') || tekst.includes('huid') || tekst.includes('blaas') || tekst.includes('warmte'))) {
+        fouten.push('ADEM: Blazen/ademen op huid is niet gewenst.');
+      }
+
+      return fouten;
+    }
+
+    function valideerStap(stap) {
+      const errors = [];
+      const warnings = [];
+
+      if (typeof stap.intensiteit !== 'number' || stap.intensiteit < 1 || stap.intensiteit > 5) {
+        stap.intensiteit = 3;
+        warnings.push('Intensiteit niet geldig');
+      }
+
+      const valideCats = ['bondage', 'sensorisch', 'controle', 'intiem', 'stilte', 'opwinding', 'aftercare', 'ritueel', 'verbinding', 'wegstuur', 'psychologisch', 'anticipatie', 'dienstbaarheid'];
+      if (!valideCats.includes(stap.categorie)) {
+        stap.categorie = 'controle';
+        warnings.push('Categorie niet geldig');
+      }
+
+      if (!stap.instructie || typeof stap.instructie !== 'string' || stap.instructie.trim().length === 0) {
+        errors.push('Instructie ontbreekt');
+      }
+
+      if (!stap.status_update) {
+        stap.status_update = {
+          items_erbij: stap.spullen || [],
+          items_eraf: [],
+          handen_positie: 'nvt',
+          nieuwe_positie: stap.positie || 'ongewijzigd'
+        };
+      }
+
+      if (!Array.isArray(stap.spullen)) stap.spullen = [];
+
+      return { stap, errors, warnings };
+    }
+
+    function detectZweverig(tekst) {
+      const lowerTekst = tekst.toLowerCase();
+      const gevonden = [];
+      for (const woord of ZWEVERIG_WOORDEN) {
+        if (lowerTekst.includes(woord)) {
+          gevonden.push(woord);
+        }
+      }
+      return gevonden;
+    }
+
+    function bouwPrompt(stapNr, sessieLogs, sessieConfig, sessieStartTijd, correctie = null) {
+      const emFase = bepaalEmotioneleFase(stapNr, sessieLogs, sessieStartTijd, false);
+      const faseMap = {
+        'verbinding': 'opwarming',
+        'machtsoverdracht': 'building',
+        'verdieping': 'intensiteit',
+        'kwetsbaarheid': 'peak',
+        'plateau': 'peak',
+        'afbouw': 'afbouw',
+        'terugkeer': 'aftercare'
+      };
+      const fase = faseMap[emFase.fase] || 'building';
+
+      const fysiek = bepaalFysiekeStatus(sessieLogs);
+      const spullenContext = bouwSpullenContext(fysiek, fase);
+
+      const recenteLogs = sessieLogs.slice(-8).map(s => `- ${s.kort || 'stap'}: ${s.intensiteit || 3}/5`).join('\n');
+      const eerdereSamenvatting = sessieLogs.length > 8 ? `(${sessieLogs.length - 8} eerdere stappen weggelaten)\n` : '';
+
+      const contrastHint = sessieLogs.length > 0 ?
+        (sessieLogs[sessieLogs.length - 1].intensiteit > 3 ? 'Na intensiteit: Probeer iets zachts/stiller.' : 'Variatie: Kies ander thema dan vorige stap.') : '';
+
+      const checkInHint = (stapNr > 0 && stapNr % 4 === 3) ? 'CHECKIN: Vraag Tim hoe het gaat.' : '';
+
+      const stappenSindsRust = sessieLogs.filter(s => !s.categorie?.includes('stilte') && !s.kort?.includes('wacht')).length;
+      const rusthint = stappenSindsRust >= 3 ? 'RUST NODIG: doe een stilte/wachtstap.' : '';
+
+      const stappenSindsLisannePauze = sessieLogs.length;
+      const pauzehint = stappenSindsLisannePauze >= 5 ? 'LISANNE PAUZE: Tim wacht, Lisanne doet even niks.' : '';
+
+      const gebruikteHighlights = [];
+      const ongebruikteHighlights = sessieConfig.highlights || [];
+
+      const gedaneActiesStr = sessieLogs.map(s => s.kort).join(', ');
+
+      let promptTekst = `Genereer ÉÉN volgende stap voor een FLR/BDSM sessie. Lisanne (beginner-dominant) stuurt Tim aan.
+
+TOON: Nuchter, concreet, geen poëzie. Schrijf wat Lisanne letterlijk moet DOEN.
+DUUR: Combineer acties zodat Lisanne 1-3 minuten bezig is per stap. Tijden in hele minuten.
+ITEMS: Nieuw item? Altijd beginnen met "Pak de [item]". Items verschijnen niet vanzelf.
+COLLAR: Zit al om (O-ring aan VOORKANT). Nooit losmaken. Nooit opnieuw omdoen.
+STARTSITUATIE: Tim is uitgekleed (onderbroek), knielt, collar om. Dit hoef je niet te genereren.
+
+VERBODEN: voetenmassage, massage, ademcontrole/breathplay, ademen/blazen op huid, theatraal taalgebruik, seconden (gebruik minuten).
+
+KETTINKJES: Alleen als verbindingsstuk. Nooit aan collar. Nooit decoratief.
+ENKELBOEIEN: Nooit aan bondageriem als Tim staat.
+
+═══════════════════════════════════════════════════════════════════
+HUIDIGE STATUS
+═══════════════════════════════════════════════════════════════════
+TIM: positie=${fysiek.positie}, handen=${fysiek.handenPositie}, items=[${fysiek.boeien.join(', ')}]${fysiek.spreadEagle ? ' SPREAD-EAGLE' : ''}
+Stap ${stapNr + 1} | Fase: ${emFase.label}
+${rusthint}
+${pauzehint}
+${contrastHint}
+${checkInHint}
+
+═══════════════════════════════════════════════════════════════════
+SPULLEN & AANRAKING
+═══════════════════════════════════════════════════════════════════
+${spullenContext}
+
+═══════════════════════════════════════════════════════════════════
+CONTEXT
+═══════════════════════════════════════════════════════════════════
+${CONTEXT}
+
+Template: ${sessieConfig.template} | Omvang: ${sessieConfig.omvang} | Kleur: ${sessieConfig.kleur}
+${sessieConfig.beginnerModus ? 'BEGINNER MODUS: Eenvoudige stappen, veel uitleg.' : 'Gevorderd: Complexe combinaties toegestaan.'}
+${sessieConfig.seksueleSuggesties ? 'SEKSUEEL: Mag seksueel worden (edging, oraal, penetratie).' : 'NIET-SEKSUEEL: Focus op macht en sensatie, geen climax-nadruk.'}
+
+═══════════════════════════════════════════════════════════════════
+EERDER GEDAAN
+═══════════════════════════════════════════════════════════════════
+${eerdereSamenvatting}
+Recent:
+${recenteLogs || '(nog niets)'}
+
+Titels: ${gedaneActiesStr}
+
+${correctie ? '>>> CORRECTIE: ' + correctie : ''}
+
+═══════════════════════════════════════════════════════════════════
+ANTWOORD IN GELDIG JSON
+═══════════════════════════════════════════════════════════════════
+{"id":${900 + stapNr},"kort":"max 5 woorden","categorie":"bondage|sensorisch|controle|intiem|stilte|opwinding|psychologisch|anticipatie|dienstbaarheid","intensiteit":1-5,"stap_type":"getimed|open|suggestie","instructie":"2-4 zinnen","bevestiging":"beginner-tip of null","non_verbaal":"zonder woorden alternatief","waarom":"1 zin","waarschuwing":null,"afsluitmoment":"hoe stoppen","duur_seconden":60-180,"min_duur":1,"max_duur":3,"spullen":[],"milou":["weg"],"positie":"rug|buik|kniel|sta|zit|vrij|slaapzak|ongewijzigd","status_update":{"items_erbij":[],"items_eraf":[],"handen_positie":"voor|achter|nvt","nieuwe_positie":"rug|buik|kniel|sta|zit|vrij|slaapzak|ongewijzigd"}}`;
+
+      return promptTekst;
+    }
+
+    // ============================================================================
+    // TEST HARNESS
+    // ============================================================================
+
+    let testRunning = false;
+    let testStats = {
+      totalSessions: 0,
+      totalSteps: 0,
+      retries: 0,
+      failures: 0,
+      errorsByType: {},
+      categoriesUsed: {},
+      stepTypes: {},
+      intensities: [],
+      zweverigWords: {},
+      sessionResults: []
+    };
+
+    async function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function addLog(message, type = 'info') {
+      const logArea = document.getElementById('logArea');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = message;
+      logArea.appendChild(entry);
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function displaySessionBlock(sessionNum, sessionData) {
+      const container = document.getElementById('sessionsContainer');
+      const block = document.createElement('div');
+      block.className = 'session-block';
+
+      let html = `<div class="session-header">Session ${sessionNum + 1}: ${sessionData.template} | ${sessionData.omvang} | ${sessionData.steps.length} stappen</div>`;
+
+      for (let i = 0; i < sessionData.steps.length; i++) {
+        const step = sessionData.steps[i];
+        html += `<div class="step-display">`;
+        html += `<span class="step-number">STAP ${i + 1}:</span> <span class="step-title">${step.kort || 'Onbekend'}</span>`;
+        html += `<div class="step-instruction">${step.instructie || ''}</div>`;
+        html += `<div class="step-meta">Cat: ${step.categorie} | Int: ${step.intensiteit}/5 | Duur: ${step.duur_seconden}s`;
+
+        if (step.errors && step.errors.length > 0) {
+          html += `<div class="error-badge">ERRORS: ${step.errors.join('; ')}</div>`;
+        }
+        if (step.zweverig && step.zweverig.length > 0) {
+          html += `<div class="error-badge" style="background: #fbbf24; color: #000;">ZWEVERIG: ${step.zweverig.join(', ')}</div>`;
+        }
+
+        html += `</div>`;
+      }
+
+      block.innerHTML = html;
+      container.appendChild(block);
+    }
+
+    async function callAPI(prompt, apiKey, isCorrectie = false) {
+      const temp = isCorrectie ? 0.8 : 0.7;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'mistralai/mistral-large-2512',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: temp,
+          max_tokens: 800
+        })
+      });
+
+      if (response.status === 429) {
+        addLog('Rate limit hit, waiting 5 seconds...', 'warning');
+        await sleep(5000);
+        return callAPI(prompt, apiKey, isCorrectie);
+      }
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0].message.content;
+
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found in response');
+
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    async function runSession(sessionNum, numSessions, apiKey) {
+      const templates = ['vrij', 'bondage', 'senso', 'intiem'];
+      const omvangs = ['simpel', 'rustig', 'uitgebreid', 'verras'];
+      const kleuren = ['groen', 'oranje'];
+
+      const highlightPool = Object.keys(SPULLEN_DB).filter(k => !['handen','glijmiddel','electrogel','kettinkjes','daycollar'].includes(k));
+      const shuffled = highlightPool.sort(() => Math.random() - 0.5);
+      const numHL = Math.floor(Math.random() * 4); // 0-3 highlights
+
+      const sessionConfig = {
+        template: templates[Math.floor(Math.random() * templates.length)],
+        omvang: omvangs[Math.floor(Math.random() * omvangs.length)],
+        kleur: kleuren[Math.floor(Math.random() * kleuren.length)],
+        beginnerModus: Math.random() > 0.5,
+        seksueleSuggesties: Math.random() > 0.6,
+        highlights: shuffled.slice(0, numHL).map(k => SPULLEN_DB[k].naam)
+      };
+
+      const omvangStappen = { simpel: [3,5], rustig: [5,8], uitgebreid: [8,12], verras: [5,10] };
+      const [minS, maxS] = omvangStappen[sessionConfig.omvang] || [5,10];
+      const numSteps = Math.floor(Math.random() * (maxS - minS + 1)) + minS;
+      const sessionData = {
+        ...sessionConfig,
+        steps: [],
+        highlightsGebruikt: [],
+        flowIssues: [],
+        intensiteitsCurve: [],
+        categorieSequence: []
+      };
+
+      const sessionStartTijd = Date.now();
+      let sessieLogs = [];
+
+      addLog(`⚡ Session ${sessionNum + 1}/${numSessions}: ${sessionConfig.template} | ${sessionConfig.omvang} | ~${numSteps} stappen`, 'info');
+
+      for (let stepNum = 0; stepNum < numSteps; stepNum++) {
+        try {
+          const prompt = bouwPrompt(stepNum, sessieLogs, sessionConfig, sessionStartTijd);
+
+          let stap = await callAPI(prompt, apiKey, false);
+          testStats.totalSteps++;
+
+          const fysiekVoor = bepaalFysiekeStatus(sessieLogs);
+          const emFase = bepaalEmotioneleFase(stepNum, sessieLogs, sessionStartTijd, false);
+
+          const validatieResult = valideerStap(stap);
+          stap = validatieResult.stap;
+          const dataErrors = validatieResult.errors;
+          const dataWarnings = validatieResult.warnings;
+          const fysiekErrors = valideerFysiekHard(stap, sessieLogs, fysiekVoor);
+
+          const allErrors = [...dataErrors, ...fysiekErrors];
+          const zweverigWoorden = detectZweverig(stap.instructie || '');
+
+          stap.errors = allErrors;
+          stap.zweverig = zweverigWoorden;
+          stap._isRetry = false;
+
+          if (allErrors.length > 0) {
+            testStats.retries++;
+            addLog(`  ↻ Stap ${stepNum + 1}: ${allErrors.length} fouten, herprobeert...`, 'warning');
+
+            const correctiePrompt = bouwPrompt(stepNum, sessieLogs, sessionConfig, sessionStartTijd, allErrors[0]);
+            stap = await callAPI(correctiePrompt, apiKey, true);
+            testStats.totalSteps++;
+
+            const validatieResult2 = valideerStap(stap);
+            stap = validatieResult2.stap;
+            const fysiekErrors2 = valideerFysiekHard(stap, sessieLogs, fysiekVoor);
+            stap.errors = fysiekErrors2;
+            stap.zweverig = detectZweverig(stap.instructie || '');
+            stap._isRetry = true;
+          }
+
+          // Store metadata on step
+          stap._sessionNum = sessionNum + 1;
+          stap._stepNum = stepNum + 1;
+          stap._template = sessionConfig.template;
+          stap._omvang = sessionConfig.omvang;
+          stap._kleur = sessionConfig.kleur;
+          stap._beginner = sessionConfig.beginnerModus;
+          stap._seksueel = sessionConfig.seksueleSuggesties;
+          stap._emFase = emFase.label || emFase.fase;
+          stap._fysiekPositie = fysiekVoor.positie;
+          stap._fysiekHanden = fysiekVoor.handenPositie;
+          stap._fysiekItems = fysiekVoor.boeien.join(', ');
+          stap._fysiekSpreadEagle = fysiekVoor.spreadEagle;
+
+          if (stap.errors.length > 0) {
+            testStats.failures++;
+            for (const err of stap.errors) {
+              const type = err.split(':')[0].trim();
+              testStats.errorsByType[type] = (testStats.errorsByType[type] || 0) + 1;
+              testStats.allErrors.push({
+                sessionNum: sessionNum + 1,
+                stepNum: stepNum + 1,
+                foutType: type,
+                foutMelding: err,
+                kort: stap.kort || '',
+                instructie: stap.instructie || '',
+                retrySucsesvol: false,
+                template: sessionConfig.template,
+                omvang: sessionConfig.omvang,
+                fysiekPositie: fysiekVoor.positie,
+                fysiekItems: fysiekVoor.boeien.join(', '),
+                fysiekHanden: fysiekVoor.handenPositie
+              });
+            }
+            addLog(`  ✗ Stap ${stepNum + 1} "${stap.kort}": ${stap.errors.join('; ')}`, 'error');
+          } else {
+            if (stap._isRetry) {
+              // Mark previous error as retry-successful
+              const lastErr = testStats.allErrors[testStats.allErrors.length - 1];
+              if (lastErr) lastErr.retrySucsesvol = true;
+            }
+            addLog(`  ✓ Stap ${stepNum + 1}: ${stap.kort} (${stap.categorie}, Int: ${stap.intensiteit})`, 'success');
+          }
+
+          if (stap.zweverig.length > 0) {
+            for (const w of stap.zweverig) {
+              testStats.zweverigWords[w] = (testStats.zweverigWords[w] || 0) + 1;
+            }
+          }
+
+          testStats.categoriesUsed[stap.categorie] = (testStats.categoriesUsed[stap.categorie] || 0) + 1;
+          testStats.stepTypes[stap.stap_type] = (testStats.stepTypes[stap.stap_type] || 0) + 1;
+          testStats.intensities.push(stap.intensiteit);
+          testStats.allSteps.push(stap);
+
+          sessionData.intensiteitsCurve.push(stap.intensiteit);
+          sessionData.categorieSequence.push(stap.categorie);
+
+          // Track highlights usage
+          if (stap.spullen && stap.spullen.length > 0) {
+            for (const sp of stap.spullen) {
+              for (const hl of sessionConfig.highlights) {
+                if (hl.toLowerCase().includes(sp.toLowerCase()) || sp.toLowerCase().includes(hl.toLowerCase().split(' ')[0])) {
+                  if (!sessionData.highlightsGebruikt.includes(hl)) sessionData.highlightsGebruikt.push(hl);
+                }
+              }
+            }
+          }
+
+          sessieLogs.push(stap);
+          sessionData.steps.push(stap);
+
+          await sleep(1500);
+
+        } catch (error) {
+          testStats.failures++;
+          addLog(`  ✗ Stap ${stepNum + 1}: API Error - ${error.message}`, 'error');
+        }
+      }
+
+      // Flow analyse
+      const cats = sessionData.categorieSequence;
+      const ints = sessionData.intensiteitsCurve;
+      let heeft3xHerhaling = false;
+      for (let i = 2; i < cats.length; i++) {
+        if (cats[i] === cats[i-1] && cats[i] === cats[i-2]) heeft3xHerhaling = true;
+      }
+      let heeftContrast = true;
+      for (let i = 1; i < ints.length; i++) {
+        if (ints[i-1] >= 4 && ints[i] >= 4) { heeftContrast = false; break; }
+      }
+      const heeftStilte = cats.some(c => c === 'stilte' || c === 'anticipatie');
+      const heeftOpbouw = ints.length >= 4 && ints.slice(0, Math.floor(ints.length/2)).reduce((a,b)=>a+b,0) / Math.floor(ints.length/2) < ints.slice(Math.floor(ints.length/2)).reduce((a,b)=>a+b,0) / (ints.length - Math.floor(ints.length/2));
+      const uniqueCats = [...new Set(cats)];
+      const numErrors = sessionData.steps.filter(s => s.errors && s.errors.length > 0).length;
+      let flowScore = 100;
+      if (!heeftOpbouw) flowScore -= 15;
+      if (heeft3xHerhaling) flowScore -= 20;
+      if (!heeftContrast) flowScore -= 15;
+      if (!heeftStilte && sessionData.steps.length > 4) flowScore -= 10;
+      if (uniqueCats.length < 3) flowScore -= 10;
+      flowScore -= numErrors * 5;
+      flowScore = Math.max(0, Math.min(100, flowScore));
+
+      const sessieResult = {
+        sessionNum: sessionNum + 1,
+        sessionConfig,
+        steps: sessionData.steps.length,
+        stepsData: sessionData.steps,
+        errors: numErrors,
+        retries: sessionData.steps.filter(s => s._isRetry).length,
+        successRate: sessionData.steps.length > 0 ? Math.round(((sessionData.steps.length - numErrors) / sessionData.steps.length) * 100) : 0,
+        highlightsGekozen: sessionConfig.highlights,
+        highlightsGebruikt: sessionData.highlightsGebruikt,
+        intensiteitsCurve: ints.join(','),
+        categorieSequence: cats.join(','),
+        uniqueCats: uniqueCats.join(', '),
+        numUniqueCats: uniqueCats.length,
+        heeftOpbouw,
+        heeftStilte,
+        heeftContrast,
+        heeft3xHerhaling,
+        flowScore
+      };
+
+      testStats.sessionResults.push(sessieResult);
+      testStats.allSessions.push(sessieResult);
+
+      displaySessionBlock(sessionNum, sessionData);
+
+      const progress = Math.round((sessionNum + 1) / numSessions * 100);
+      document.getElementById('progressFill').style.width = progress + '%';
+      document.getElementById('progressFill').textContent = progress + '%';
+    }
+
+    async function startTest() {
+      const apiKey = document.getElementById('apiKey').value;
+      const numSessions = parseInt(document.getElementById('numSessions').value);
+
+      if (!apiKey) {
+        alert('Please enter your API key');
+        return;
+      }
+
+      testRunning = true;
+      testStats = {
+        totalSessions: numSessions,
+        totalSteps: 0,
+        retries: 0,
+        failures: 0,
+        errorsByType: {},
+        categoriesUsed: {},
+        stepTypes: {},
+        intensities: [],
+        zweverigWords: {},
+        sessionResults: [],
+        allSteps: [],
+        allErrors: [],
+        allSessions: []
+      };
+
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('statusBadge').className = 'status-badge status-running';
+      document.getElementById('statusBadge').textContent = 'RUNNING';
+
+      for (let i = 0; i < numSessions && testRunning; i++) {
+        await runSession(i, numSessions, apiKey);
+      }
+
+      displayRapport();
+
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('exportBtn').disabled = false;
+      document.getElementById('statusBadge').className = 'status-badge status-complete';
+      document.getElementById('statusBadge').textContent = 'COMPLETE';
+      testRunning = false;
+      // Geluidje: test is klaar!
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [523, 659, 784].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.value = 0.15;
+          osc.start(ctx.currentTime + i * 0.15);
+          osc.stop(ctx.currentTime + i * 0.15 + 0.2);
+        });
+      } catch(e) { /* geen audio support, geen probleem */ }
+    }
+
+    function stopTest() {
+      testRunning = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('statusBadge').className = 'status-badge';
+      document.getElementById('statusBadge').textContent = 'STOPPED';
+      addLog('Test stopped by user.', 'warning');
+    }
+
+    function displayRapport() {
+      const avgIntensity = testStats.intensities.length > 0 ?
+        (testStats.intensities.reduce((a, b) => a + b) / testStats.intensities.length).toFixed(2) : 0;
+
+      const successRate = testStats.totalSteps > 0 ?
+        (((testStats.totalSteps - testStats.failures) / testStats.totalSteps) * 100).toFixed(1) : 0;
+
+      const topErrors = Object.entries(testStats.errorsByType)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const topZweverig = Object.entries(testStats.zweverigWords)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const topCategories = Object.entries(testStats.categoriesUsed)
+        .sort((a, b) => b[1] - a[1]);
+
+      let html = `<div class="rapport-section">
+        <h2>📊 TEST RAPPORT</h2>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <h4>Overall Stats</h4>
+            <div class="stat-item">Total Sessions: <span class="stat-value">${testStats.sessionResults.length}</span></div>
+            <div class="stat-item">Total Steps Generated: <span class="stat-value">${testStats.totalSteps}</span></div>
+            <div class="stat-item">API Calls: <span class="stat-value">${testStats.totalSteps}</span></div>
+            <div class="stat-item">Retries: <span class="stat-value">${testStats.retries}</span></div>
+            <div class="stat-item">Failures: <span class="stat-value">${testStats.failures}</span></div>
+            <div class="stat-item">Success Rate: <span class="stat-value">${successRate}%</span></div>
+          </div>
+
+          <div class="stat-box">
+            <h4>Quality Metrics</h4>
+            <div class="stat-item">Avg Intensity: <span class="stat-value">${avgIntensity}</span></div>
+            <div class="stat-item">Avg Steps/Session: <span class="stat-value">${(testStats.totalSteps / testStats.sessionResults.length).toFixed(1)}</span></div>
+            <div class="stat-item">Avg Errors/Session: <span class="stat-value">${(testStats.failures / testStats.sessionResults.length).toFixed(1)}</span></div>
+            <div class="stat-item">Zweverig Words Found: <span class="stat-value">${Object.values(testStats.zweverigWords).reduce((a, b) => a + b, 0)}</span></div>
+          </div>
+
+          <div class="stat-box">
+            <h4>Top Error Types</h4>
+            ${topErrors.map(([type, count]) => `<div class="stat-item">${type}: <span class="stat-value">${count}</span></div>`).join('')}
+          </div>
+
+          <div class="stat-box">
+            <h4>Step Types Distribution</h4>
+            ${Object.entries(testStats.stepTypes).map(([type, count]) => `<div class="stat-item">${type}: <span class="stat-value">${count}</span></div>`).join('')}
+          </div>
+
+          <div class="stat-box">
+            <h4>Top Categories Used</h4>
+            ${topCategories.slice(0, 5).map(([cat, count]) => `<div class="stat-item">${cat}: <span class="stat-value">${count}</span></div>`).join('')}
+          </div>
+
+          <div class="stat-box">
+            <h4>Top Zweverig Words</h4>
+            ${topZweverig.map(([word, count]) => `<div class="stat-item">${word}: <span class="stat-value">${count}</span></div>`).join('')}
+          </div>
+        </div>
+
+        <h3>Session Breakdown</h3>
+        <div class="log-area" style="max-height: 300px;">
+          ${testStats.sessionResults.map((sr, idx) => {
+            const errorRate = sr.steps > 0 ? ((sr.errors / sr.steps) * 100).toFixed(0) : 0;
+            return `<div class="log-entry" style="border-left-color: ${sr.errors > 0 ? '#f87171' : '#4ade80'};">
+              Sess ${sr.sessionNum + 1}: ${sr.sessionConfig.template} | ${sr.sessionConfig.omvang} | ${sr.steps} steps | ${sr.errors} errors (${errorRate}%)
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+      const rapportSection = document.getElementById('rapportSection');
+      rapportSection.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════════════════
+    // EXCEL EXPORT — 7 TABS
+    // ══════════════════════════════════════════════════
+    function exportToExcel() {
+      if (!testStats || !testStats.allSteps.length) { alert('Geen data om te exporteren.'); return; }
+      const wb = XLSX.utils.book_new();
+
+      // Helper: style header row (bold + dark bg via cell formatting)
+      function addSheet(name, aoa) {
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        // Set column widths based on header lengths
+        if (aoa[0]) {
+          ws['!cols'] = aoa[0].map((h, i) => {
+            const hLen = String(h).length;
+            const maxData = Math.max(...aoa.slice(1, 20).map(r => String(r[i] || '').length));
+            let w = Math.max(hLen, Math.min(maxData, 60)) + 2;
+            if (String(h).toLowerCase().includes('instructie')) w = 80;
+            if (String(h).toLowerCase().includes('non_verbaal') || String(h).toLowerCase().includes('waarom') || String(h).toLowerCase().includes('bevestiging')) w = 40;
+            return { wch: w };
+          });
+        }
+        // Freeze top row
+        ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+        // Auto-filter
+        if (aoa.length > 1 && aoa[0]) {
+          ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: aoa.length - 1, c: aoa[0].length - 1 } }) };
+        }
+        XLSX.utils.book_append_sheet(wb, ws, name);
+        return ws;
+      }
+
+      // ── TAB 1: DASHBOARD ──
+      const successRate = testStats.totalSteps > 0 ? Math.round(((testStats.totalSteps - testStats.failures) / testStats.totalSteps) * 100) : 0;
+      const avgInt = testStats.intensities.length > 0 ? (testStats.intensities.reduce((a,b) => a+b, 0) / testStats.intensities.length).toFixed(2) : 0;
+      const avgFlowScore = testStats.allSessions.length > 0 ? Math.round(testStats.allSessions.reduce((s,x) => s + x.flowScore, 0) / testStats.allSessions.length) : 0;
+      const totalZweverig = Object.values(testStats.zweverigWords).reduce((a,b) => a+b, 0);
+
+      const topErrors = Object.entries(testStats.errorsByType).sort((a,b) => b[1]-a[1]).slice(0, 10);
+      const topZwev = Object.entries(testStats.zweverigWords).sort((a,b) => b[1]-a[1]).slice(0, 10);
+
+      // Template stats
+      const templateStats = {};
+      for (const s of testStats.allSessions) {
+        const t = s.sessionConfig.template;
+        if (!templateStats[t]) templateStats[t] = { sessies: 0, stappen: 0, fouten: 0, flowScores: [] };
+        templateStats[t].sessies++;
+        templateStats[t].stappen += s.steps;
+        templateStats[t].fouten += s.errors;
+        templateStats[t].flowScores.push(s.flowScore);
+      }
+
+      const dash = [
+        ['STAPPEN GENERATOR — TEST RAPPORT'],
+        [''],
+        ['Datum', new Date().toLocaleString('nl-NL')],
+        ['Model', 'mistralai/mistral-large-2512'],
+        ['Temperature', '0.7 (correctie: 0.8)'],
+        ['Sessies', testStats.allSessions.length],
+        [''],
+        ['═══ RESULTATEN ═══'],
+        ['Totaal Stappen', testStats.totalSteps],
+        ['Retries', testStats.retries],
+        ['Fouten (na retry)', testStats.failures],
+        ['Success Rate', successRate + '%'],
+        ['Gem. Intensiteit', avgInt],
+        ['Gem. Flow Score', avgFlowScore + '/100'],
+        ['Zweverige Woorden', totalZweverig],
+        [''],
+        ['═══ TOP FOUTEN ═══'],
+        ['Type', 'Aantal', '% van stappen'],
+        ...topErrors.map(([t,c]) => [t, c, Math.round(c/testStats.totalSteps*100) + '%']),
+        [''],
+        ['═══ TOP ZWEVERIG ═══'],
+        ['Woord', 'Aantal'],
+        ...topZwev.map(([w,c]) => [w, c]),
+        [''],
+        ['═══ PER TEMPLATE ═══'],
+        ['Template', 'Sessies', 'Gem. Stappen', 'Gem. Fouten', 'Success Rate', 'Gem. Flow Score'],
+        ...Object.entries(templateStats).map(([t, d]) => [
+          t, d.sessies,
+          (d.stappen / d.sessies).toFixed(1),
+          (d.fouten / d.sessies).toFixed(1),
+          d.stappen > 0 ? Math.round(((d.stappen - d.fouten) / d.stappen) * 100) + '%' : '0%',
+          Math.round(d.flowScores.reduce((a,b) => a+b, 0) / d.flowScores.length)
+        ]),
+        [''],
+        ['═══ VERDICT ═══'],
+        [successRate >= 85 ? 'GOED — Prompt werkt betrouwbaar' : successRate >= 60 ? 'MATIG — Structurele problemen aanpakken' : 'SLECHT — Fundamentele prompt-aanpassing nodig']
+      ];
+      addSheet('Dashboard', dash);
+
+      // ── TAB 2: ALLE STAPPEN ──
+      const stapHeader = [
+        'Sessie#', 'Stap#', 'Template', 'Omvang', 'Kleur', 'Beginner', 'Seksueel',
+        'Kort', 'Categorie', 'Intensiteit', 'Stap Type',
+        'Instructie', 'Bevestiging', 'Non-verbaal', 'Waarom',
+        'Duur (sec)', 'Spullen', 'Positie', 'Handen',
+        'Items Op Tim', 'Spread Eagle', 'Emotionele Fase',
+        'Fouten', 'Zweverig', 'Is Retry'
+      ];
+      const stapRows = testStats.allSteps.map(s => [
+        s._sessionNum, s._stepNum, s._template, s._omvang, s._kleur,
+        s._beginner ? 'ja' : 'nee', s._seksueel ? 'ja' : 'nee',
+        s.kort || '', s.categorie || '', s.intensiteit || '', s.stap_type || '',
+        s.instructie || '', s.bevestiging || '', s.non_verbaal || '', s.waarom || '',
+        s.duur_seconden || '', (s.spullen || []).join(', '), s.positie || '',
+        s._fysiekHanden || '',
+        s._fysiekItems || '', s._fysiekSpreadEagle ? 'ja' : 'nee', s._emFase || '',
+        (s.errors || []).join(' | '), (s.zweverig || []).join(', '),
+        s._isRetry ? 'ja' : 'nee'
+      ]);
+      addSheet('Alle Stappen', [stapHeader, ...stapRows]);
+
+      // ── TAB 3: SESSIES ──
+      const sessieHeader = [
+        'Sessie#', 'Template', 'Omvang', 'Kleur', 'Beginner', 'Seksueel',
+        'Highlights Gekozen', 'Highlights Gebruikt',
+        'Aantal Stappen', 'Aantal Fouten', 'Aantal Retries', 'Success Rate%',
+        'Unieke Categorieën', 'Aantal Unieke Cats',
+        'Intensiteitsverloop', 'Categorie Sequence',
+        'Heeft Opbouw', 'Heeft Stilte', 'Heeft Contrast', '3x Herhaling',
+        'Flow Score'
+      ];
+      const sessieRows = testStats.allSessions.map(s => [
+        s.sessionNum, s.sessionConfig.template, s.sessionConfig.omvang,
+        s.sessionConfig.kleur, s.sessionConfig.beginnerModus ? 'ja' : 'nee',
+        s.sessionConfig.seksueleSuggesties ? 'ja' : 'nee',
+        s.highlightsGekozen.join(', '), s.highlightsGebruikt.join(', '),
+        s.steps, s.errors, s.retries, s.successRate + '%',
+        s.uniqueCats, s.numUniqueCats,
+        s.intensiteitsCurve, s.categorieSequence,
+        s.heeftOpbouw ? 'ja' : 'nee', s.heeftStilte ? 'ja' : 'nee',
+        s.heeftContrast ? 'ja' : 'nee', s.heeft3xHerhaling ? 'ja' : 'nee',
+        s.flowScore
+      ]);
+      addSheet('Sessies', [sessieHeader, ...sessieRows]);
+
+      // ── TAB 4: FOUTEN DETAIL ──
+      const foutHeader = [
+        'Sessie#', 'Stap#', 'Fout Type', 'Volledige Foutmelding',
+        'Kort', 'Instructie',
+        'Retry Succesvol', 'Template', 'Omvang',
+        'Fysiek Positie', 'Items Op Tim', 'Handen'
+      ];
+      const foutRows = testStats.allErrors.map(e => [
+        e.sessionNum, e.stepNum, e.foutType, e.foutMelding,
+        e.kort, e.instructie,
+        e.retrySucsesvol ? 'ja' : 'nee', e.template, e.omvang,
+        e.fysiekPositie, e.fysiekItems, e.fysiekHanden
+      ]);
+      addSheet('Fouten Detail', [foutHeader, ...foutRows]);
+
+      // ── TAB 5: ITEMS ANALYSE ──
+      const itemStats = {};
+      for (const key of Object.keys(SPULLEN_DB)) {
+        if (['handen', 'glijmiddel', 'electrogel', 'kettinkjes'].includes(key)) continue;
+        itemStats[key] = { naam: SPULLEN_DB[key].naam, categorie: SPULLEN_DB[key].categorie, gebruikt: 0, correct: 0, fout: 0, sessies: new Set(), posities: [], perTemplate: {} };
+      }
+      for (const stap of testStats.allSteps) {
+        if (!stap.spullen) continue;
+        for (const sp of stap.spullen) {
+          const spLow = sp.toLowerCase();
+          for (const key of Object.keys(itemStats)) {
+            if (spLow.includes(key) || key.includes(spLow) || SPULLEN_DB[key].naam.toLowerCase().includes(spLow)) {
+              itemStats[key].gebruikt++;
+              itemStats[key].sessies.add(stap._sessionNum);
+              itemStats[key].posities.push(stap._stepNum);
+              const t = stap._template;
+              itemStats[key].perTemplate[t] = (itemStats[key].perTemplate[t] || 0) + 1;
+              if (stap.errors && stap.errors.length > 0) itemStats[key].fout++;
+              else itemStats[key].correct++;
+              break;
+            }
+          }
+        }
+      }
+      const itemHeader = [
+        'Item', 'Categorie', 'Keer Gebruikt', 'Keer Correct', 'Keer Fout',
+        '% Sessies Gebruikt', 'Gem. Stap Positie',
+        'In Vrij', 'In Bondage', 'In Senso', 'In Intiem',
+        'Nooit Gebruikt'
+      ];
+      const totalSess = testStats.allSessions.length || 1;
+      const itemRows = Object.entries(itemStats).map(([key, d]) => [
+        d.naam, d.categorie, d.gebruikt, d.correct, d.fout,
+        Math.round((d.sessies.size / totalSess) * 100) + '%',
+        d.posities.length > 0 ? (d.posities.reduce((a,b) => a+b, 0) / d.posities.length).toFixed(1) : '-',
+        d.perTemplate['vrij'] || 0, d.perTemplate['bondage'] || 0,
+        d.perTemplate['senso'] || 0, d.perTemplate['intiem'] || 0,
+        d.gebruikt === 0 ? 'JA' : ''
+      ]).sort((a, b) => b[2] - a[2]);
+      addSheet('Items Analyse', [itemHeader, ...itemRows]);
+
+      // ── TAB 6: FLOW & POSITIE ──
+      // Deel A: Per stappositie
+      const posStats = {};
+      for (const stap of testStats.allSteps) {
+        const pos = stap._stepNum;
+        if (!posStats[pos]) posStats[pos] = { count: 0, fouten: 0, intensiteiten: [], cats: {} };
+        posStats[pos].count++;
+        if (stap.errors && stap.errors.length > 0) posStats[pos].fouten++;
+        posStats[pos].intensiteiten.push(stap.intensiteit || 3);
+        const c = stap.categorie || 'onbekend';
+        posStats[pos].cats[c] = (posStats[pos].cats[c] || 0) + 1;
+      }
+
+      const flowData = [
+        ['═══ STAPPOSITIE ANALYSE ═══'],
+        ['Stap#', 'Aantal Stappen', 'Foutrate%', 'Gem. Intensiteit', 'Meest Voorkomende Categorie'],
+      ];
+      for (const pos of Object.keys(posStats).sort((a,b) => a-b)) {
+        const d = posStats[pos];
+        const topCat = Object.entries(d.cats).sort((a,b) => b[1]-a[1])[0];
+        flowData.push([
+          parseInt(pos), d.count,
+          Math.round((d.fouten / d.count) * 100) + '%',
+          (d.intensiteiten.reduce((a,b) => a+b, 0) / d.intensiteiten.length).toFixed(1),
+          topCat ? topCat[0] + ' (' + topCat[1] + 'x)' : '-'
+        ]);
+      }
+
+      // Deel B: Per template vergelijking
+      flowData.push([''], ['═══ TEMPLATE VERGELIJKING ═══']);
+      flowData.push(['Template', 'Sessies', 'Gem. Stappen', 'Success Rate', 'Gem. Flow Score', 'Top Categorie']);
+      for (const [t, d] of Object.entries(templateStats)) {
+        const catCount = {};
+        testStats.allSteps.filter(s => s._template === t).forEach(s => { catCount[s.categorie] = (catCount[s.categorie] || 0) + 1; });
+        const topCat = Object.entries(catCount).sort((a,b) => b[1]-a[1])[0];
+        flowData.push([
+          t, d.sessies, (d.stappen / d.sessies).toFixed(1),
+          d.stappen > 0 ? Math.round(((d.stappen - d.fouten) / d.stappen) * 100) + '%' : '0%',
+          Math.round(d.flowScores.reduce((a,b) => a+b, 0) / d.flowScores.length),
+          topCat ? topCat[0] : '-'
+        ]);
+      }
+
+      // Deel C: Per omvang vergelijking
+      const omvangStats = {};
+      for (const s of testStats.allSessions) {
+        const o = s.sessionConfig.omvang;
+        if (!omvangStats[o]) omvangStats[o] = { sessies: 0, stappen: 0, fouten: 0, flowScores: [] };
+        omvangStats[o].sessies++;
+        omvangStats[o].stappen += s.steps;
+        omvangStats[o].fouten += s.errors;
+        omvangStats[o].flowScores.push(s.flowScore);
+      }
+      const verwacht = { simpel: '3-5', rustig: '5-8', uitgebreid: '8-12', verras: '5-10' };
+      flowData.push([''], ['═══ OMVANG VERGELIJKING ═══']);
+      flowData.push(['Omvang', 'Sessies', 'Gem. Stappen', 'Verwacht', 'Success Rate', 'Gem. Flow Score']);
+      for (const [o, d] of Object.entries(omvangStats)) {
+        flowData.push([
+          o, d.sessies, (d.stappen / d.sessies).toFixed(1), verwacht[o] || '?',
+          d.stappen > 0 ? Math.round(((d.stappen - d.fouten) / d.stappen) * 100) + '%' : '0%',
+          Math.round(d.flowScores.reduce((a,b) => a+b, 0) / d.flowScores.length)
+        ]);
+      }
+
+      // Deel D: Categorieën overzicht
+      flowData.push([''], ['═══ CATEGORIEËN OVERZICHT ═══']);
+      flowData.push(['Categorie', 'Keer Gebruikt', '% van Stappen', 'Gem. Intensiteit', 'Gem. Stap Positie']);
+      const catStats = {};
+      for (const stap of testStats.allSteps) {
+        const c = stap.categorie || 'onbekend';
+        if (!catStats[c]) catStats[c] = { count: 0, ints: [], posities: [] };
+        catStats[c].count++;
+        catStats[c].ints.push(stap.intensiteit || 3);
+        catStats[c].posities.push(stap._stepNum);
+      }
+      for (const [c, d] of Object.entries(catStats).sort((a,b) => b[1].count - a[1].count)) {
+        flowData.push([
+          c, d.count,
+          Math.round((d.count / testStats.allSteps.length) * 100) + '%',
+          (d.ints.reduce((a,b) => a+b, 0) / d.ints.length).toFixed(1),
+          (d.posities.reduce((a,b) => a+b, 0) / d.posities.length).toFixed(1)
+        ]);
+      }
+
+      addSheet('Flow & Positie', flowData);
+
+      // ── TAB 7: ZWEVERIG & TOON ──
+      const zwevHeader = ['Woord', 'Keer Gevonden', 'Sessie#', 'Stap#', 'Context (zin)'];
+      const zwevRows = [];
+      for (const stap of testStats.allSteps) {
+        if (!stap.zweverig || stap.zweverig.length === 0) continue;
+        const instr = stap.instructie || '';
+        for (const w of stap.zweverig) {
+          // Extract sentence containing the word
+          const sentences = instr.split(/[.!?]+/).filter(s => s.toLowerCase().includes(w.toLowerCase()));
+          const context = sentences.length > 0 ? sentences[0].trim() : instr.slice(0, 100);
+          zwevRows.push([
+            w,
+            testStats.zweverigWords[w] || 1,
+            stap._sessionNum, stap._stepNum,
+            context
+          ]);
+        }
+      }
+      // Sort by word frequency
+      zwevRows.sort((a, b) => b[1] - a[1]);
+      addSheet('Zweverig & Toon', [zwevHeader, ...zwevRows]);
+
+      // ── DOWNLOAD ──
+      const datum = new Date().toISOString().slice(0,10);
+      XLSX.writeFile(wb, `test_rapport_${datum}.xlsx`);
+      addLog('📊 Excel rapport geëxporteerd!', 'success');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expert Review — Sprankelend Souffleur</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #2a2a2a;
+    background: #fdfaf7;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+  @media print {
+    body { padding: 20px; font-size: 11pt; background: white; }
+    .page-break { page-break-before: always; }
+    h1 { page-break-before: always; }
+    h1:first-of-type { page-break-before: avoid; }
+  }
+
+  /* TITLE */
+  .cover { text-align: center; padding: 80px 0 60px; border-bottom: 2px solid #e8ddd4; margin-bottom: 48px; }
+  .cover .label { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; color: #8B5E3C; margin-bottom: 8px; }
+  .cover h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 38px; color: #1a1a1a; margin-bottom: 16px; font-weight: 700; }
+  .cover .sub { font-size: 14px; color: #888; letter-spacing: 1px; }
+  .cover .date { font-size: 13px; color: #aaa; margin-top: 24px; }
+
+  /* HEADINGS */
+  h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; color: #1a1a1a; margin: 56px 0 20px; padding-top: 24px; border-top: 2px solid #e8ddd4; }
+  h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: #8B5E3C; margin: 36px 0 16px; }
+  h3 { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #444; margin: 28px 0 12px; }
+
+  p { margin-bottom: 14px; }
+
+  /* BULLETS */
+  ul { margin: 8px 0 20px 24px; }
+  li { margin-bottom: 10px; padding-left: 4px; }
+
+  /* BOLD LABEL */
+  .item { margin-bottom: 16px; }
+  .item strong { color: #1a1a1a; }
+
+  /* LES SCORE */
+  .les { margin: 20px 0; padding: 16px 20px; background: #fff; border-radius: 8px; border-left: 4px solid #ddd; }
+  .les.sterk { border-left-color: #4CAF50; }
+  .les.uitstekend { border-left-color: #2E7D32; }
+  .les.kantelpunt { border-left-color: #E65100; }
+  .les.risico { border-left-color: #C62828; }
+  .les.goed { border-left-color: #8B5E3C; }
+  .les .les-header { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+  .les .les-header .score { margin-left: 8px; font-size: 13px; padding: 2px 10px; border-radius: 12px; }
+  .les.sterk .score, .les.goed .score { background: #E8F5E9; color: #2E7D32; }
+  .les.uitstekend .score { background: #C8E6C9; color: #1B5E20; }
+  .les.kantelpunt .score { background: #FFF3E0; color: #E65100; }
+  .les.risico .score { background: #FFEBEE; color: #C62828; }
+  .les p { margin: 0; font-size: 14px; color: #555; }
+
+  /* FASE LABEL */
+  .fase-label { font-weight: 600; font-size: 16px; color: #8B5E3C; margin: 32px 0 8px; padding: 8px 0; border-bottom: 1px solid #e8ddd4; }
+
+  /* SECTION: NU/LATER/NIET */
+  .actie { margin-bottom: 16px; padding: 12px 16px; background: #fff; border-radius: 6px; }
+  .actie strong { color: #1a1a1a; }
+  .nu { border-left: 3px solid #E65100; }
+  .later { border-left: 3px solid #8B5E3C; }
+  .niet { border-left: 3px solid #999; }
+
+  /* QUOTE */
+  blockquote { border-left: 3px solid #8B5E3C; padding: 8px 16px; margin: 16px 0; background: #faf6f2; font-style: italic; color: #555; border-radius: 0 6px 6px 0; }
+
+  /* FOOTER */
+  .footer { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #e8ddd4; font-size: 13px; color: #aaa; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="label">Expert Review</div>
+  <h1>Sprankelend Souffleur</h1>
+  <div class="sub">Inhoud · Didactiek · Visueel · UX · Psychologie</div>
+  <div class="date">16 maart 2026</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1>1. Samenvattend oordeel</h1>
+
+<p>Sprankelend Souffleur is een ongewoon goed doordachte app voor een extreem moeilijk onderwerp. De kern — kleine richting geven in een relatie waar één partner dat fijn vindt en de ander het moet ontdekken — wordt consequent beschermd. De app voelt niet als een BDSM-handleiding. Het voelt als een relatie-gids die toevallig ook over polsboeien gaat.</p>
+
+<h3>Wat sterk is</h3>
+<ul>
+  <li>De eerste drie lessen zijn uitstekend. Ze beginnen bij iets dat Lisanne al doet (beslissen, kort zeggen, aanraken) en maken dat bewust. Geen nieuwe vaardigheden, alleen bewustzijn.</li>
+  <li>De toon is warm en consistent. De app praat als een vriendin, niet als een therapeut of instructeur. Zinnen als "je hoeft er niks mee te doen — dat is het punt" zijn precies goed.</li>
+  <li>Nazorg (les 10) is psychologisch de sterkste les. Bidirectioneel, dom drop uitgelegd, geen evaluatiedruk direct na een moment. Dit is zeldzaam goed voor een niet-professionele app.</li>
+  <li>Het 4-sporen scheduler-systeem voorkomt dat de app voelt als een to-do lijst. Suggesties variëren tussen relatie, bevestiging, speelsheid en dynamiek. De beschermende regel (na 2 intense in 3 dagen → gewoon_jullie) is slim.</li>
+  <li>De zachtheid-als-macht laag werkt. "Polsboeien om, maar dan: je hand door zijn haar. Stilte. Geen spanning, geen opdrachten" — dit is precies het soort dominantie dat bij Lisanne past.</li>
+</ul>
+
+<h3>Wat zwak is</h3>
+<ul>
+  <li>De app drijft vanaf fase 2 langzaam richting curriculum. Les 7 (vastzitten) tot les 9 (seks) voelt als een oplopende ladder, niet als variaties op een thema. Lisanne kan hier het gevoel krijgen dat ze "verder moet".</li>
+  <li>De meerProberen-secties lekken te vroeg geavanceerde content. Les 7 noemt gag en slaapzak. Les 8 noemt kaarswas, slaan en bijten. Les 9 noemt face sitting en masturbatiecontrole. Dit is fase 3-4 materiaal dat in fase 2 lesjes verschijnt.</li>
+  <li>Het woord "bepaalt" komt ~40 keer voor. Voor een niet-dominante vrouw is dit beladen. "Jij kiest" voelt zachter en geeft hetzelfde signaal.</li>
+  <li>Les 12 (Wat jij hieraan hebt) staat op 55% van het traject. Dit zou les 2-3 moeten zijn. Lisanne leest 11 lessen lang over wat Tim nodig heeft voordat ze hoort dat het ook voor haar iets kan zijn.</li>
+  <li>Visueel: de lesschermen zijn tekst-zwaar. Op een telefoon scrollt een intro + uitleg al snel 4-5 schermen. Dit is reading fatigue voor iemand die niet intrinsiek gemotiveerd is.</li>
+</ul>
+
+<h3>Is de app op de goede weg?</h3>
+<p>Ja. De kern klopt. De architectuur klopt. De toon klopt. Maar de app zit nu in een fase waarin content-volume het grootste risico is. Niet te weinig — te veel. De kracht zit in de eenvoud. Elke zin die je toevoegt moet een zin verdienen.</p>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">2. Grootste 10 problemen</h1>
+
+<div class="item"><strong>1. Les 12 staat te laat.</strong> Lisanne leest 11 lessen over Tim's behoeften voordat ze hoort wat zij eraan heeft. Dit is het grootste structurele probleem. Niet dat de les slecht is — de positie is fout.</div>
+
+<div class="item"><strong>2. MeerProberen lekt geavanceerde content.</strong> Gag, slaapzak, kaarswas, bijten, face sitting, masturbatiecontrole — dit staat allemaal in fase 2 meerProberen. Een nieuwsgierige Lisanne die "meer lezen" opent, schrikt hier mogelijk van.</div>
+
+<div class="item"><strong>3. "Bepaalt" als standaardwoord is te sterk.</strong> ~40 keer in de app. Vervang de meeste door "kiest", "besluit" of "geeft richting". Houd "bepaalt" voor momenten waar het echt past (seks, sessie-opbouw).</div>
+
+<div class="item"><strong>4. Les 21 (Psychologisch spel) is risicovol.</strong> De passage over "behandel hem even als ding" is voor een zorgend persoon een rode vlag. Dit werkt alleen met heel stevige normalisatie.</div>
+
+<div class="item"><strong>5. Tekst-volume in zichtbare lessen is te hoog.</strong> Een gemiddelde les heeft 200-300 woorden in intro + uitleg alleen al. Op een telefoon is dat 3-4 scrolls. Lisanne leest dit niet als ze moe is of twijfelt.</div>
+
+<div class="item"><strong>6. Oefeningen in fase 3-4 zijn te prescriptief.</strong> Les 17 zegt "kies één regel en zeg hem tegen Tim". Les 20 zegt "schrijf drie dingen op een briefje". Dit voelt als huiswerk.</div>
+
+<div class="item"><strong>7. De app mist een expliciet "geen-zin-pad".</strong> Als Lisanne opent en geen energie heeft, ziet ze een suggestie + energiecheck. Maar er is geen warme "vandaag is gewoon een gewone avond — en dat is prima" landing.</div>
+
+<div class="item"><strong>8. Preview-teksten zijn functioneel, niet uitnodigend.</strong> De meeste previews zeggen "Volgende les: [onderwerp]" in plaats van een teaser die nieuwsgierigheid wekt. Dit maakt de roadmap transparant maar niet spannend.</div>
+
+<div class="item"><strong>9. Onboarding mist de "waarom jij" stap.</strong> Tim's brief is goed. Maar Lisanne krijgt niet te horen wat ZIJ eruit kan halen — alleen wat Tim wil en dat het rustig is. Foundation talk is toegevoegd maar staat als apart scherm, niet als kern van de pitch.</div>
+
+<div class="item"><strong>10. De scheduler log is zichtbaar in de UI (debug).</strong> window._schedulerLog is een development tool dat in productie niet zichtbaar zou moeten zijn. Niet een UX-probleem, maar het laat zien dat de app nog in dev-modus zit.</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">3. Grootste 10 sterke punten</h1>
+
+<div class="item"><strong>1. Les 1-3 zijn bijna perfect.</strong> Ze beginnen bij gedrag dat Lisanne al doet en maken het bewust. Geen nieuwe rol, geen performance. Alleen: "je doet dit al, wist je dat het effect heeft?"</div>
+
+<div class="item"><strong>2. De zachtheid-als-macht laag is uniek.</strong> Geen enkele vergelijkbare app of bron zegt: "polsboeien om, maar dan je hand door zijn haar. Stilte. Dat is ook controle." Dit is de kern die de app onderscheidt.</div>
+
+<div class="item"><strong>3. Nazorg (les 10) is professioneel niveau.</strong> Bidirectionele nazorg, dom drop uitgelegd, timing goed ("niet meteen vragen, eerst landen"), en de volgende dag een berichtje. Dit staat niet in de meeste pro-BDSM bronnen.</div>
+
+<div class="item"><strong>4. De beschermende scheduler-regel is slim.</strong> Na 2 intense suggesties in 3 dagen → automatisch gewoon_jullie. Dit voorkomt dat Tim's enthousiasme de app overneemt.</div>
+
+<div class="item"><strong>5. Het herhaling-dagtype respecteert de filosofie.</strong> Eerder fijne suggesties opnieuw aanbieden met "dit werkte eerder goed voor jullie" — dit is diepte door herhaling, niet door meer inhoud.</div>
+
+<div class="item"><strong>6. De 5-stappen lesstructuur werkt.</strong> Intro (serif, persoonlijk) → praktijk (panel) → voorbeeld (italic) → oefening (accent) → verdieping. Visueel onderscheidend en functioneel.</div>
+
+<div class="item"><strong>7. Les 22 (Groei en evolutie) sluit perfect af.</strong> "De lessen stoppen hier. De dynamiek niet." En het beste voorbeeld: "je staat in de keuken, hij loopt langs, en je pakt hem bij zijn arm. Niet omdat de app het suggereerde."</div>
+
+<div class="item"><strong>8. Trauma-veilige normalisatie is subtiel goed.</strong> "Als er een onverwacht gevoel opkomt dat niks te maken lijkt te hebben met wat je doet: dat is een signaal." Niet confronterend, wel vangend.</div>
+
+<div class="item"><strong>9. De communicatiekanaal-progressie is realistisch.</strong> Berichtje → WhatsApp → hardop. De app accepteert dat Lisanne niet vocaal is en bouwt daar langzaam aan.</div>
+
+<div class="item"><strong>10. De ankerzin werkt.</strong> "Kleine richting is al genoeg" op vier strategische momenten (re-entry, fase-overgang, herhaling, bescherming) is een psychologisch anker dat de kern beschermt.</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">4. Les-voor-les beoordeling</h1>
+
+<p>Elke les beoordeeld op: inhoudelijke kracht, Lisanne-fit, dropout-risico, en één concrete aanpassing.</p>
+
+<div class="fase-label">Fase 0–1 — Basis</div>
+
+<div class="les sterk">
+  <div class="les-header">Les 1: Richting geven <span class="score">✓ Sterk</span></div>
+  <p>Perfecte opener. Herkenbare situatie, geen nieuwe vaardigheden. De zin "je merkt misschien ook dat het opluchting geeft — niet steeds afwachten, maar gewoon doen" is de sterkste zin van de hele app. Geen aanpassing nodig.</p>
+</div>
+
+<div class="les sterk">
+  <div class="les-header">Les 2: Hoe je het zegt <span class="score">✓ Sterk</span></div>
+  <p>Helder verschil tussen vraag, mededeling en direct. De non-verbale passage ("je lichaam zegt meer dan je woorden") is goed toegevoegd. Één risico: drie niveaus in één les is veel. Overweeg alleen vraag vs. mededeling te tonen, en "direct" in meerLezen.</p>
+</div>
+
+<div class="les sterk">
+  <div class="les-header">Les 3: Aanraking <span class="score">✓ Sterk</span></div>
+  <p>Precies goed. "Je doet het al. Nu weet je wat het voor hem betekent." De zachtheid-passage ("leg je hand op zijn hoofd — dat is zachtheid als keuze") is perfect. Geen aanpassing nodig.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 4: Momenten markeren <span class="score">✓ Goed</span></div>
+  <p>Het schakelmoment-concept is elegant. De normalisatie over "toneelachtig voelen" is net toegevoegd en goed. Let op: knielen als eerste fysieke actie is een grotere stap dan de les suggereert. Overweeg ook "halsband neerleggen zonder knielen" als optie.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 5: Stilte en wachten <span class="score">✓ Goed</span></div>
+  <p>Wachten als instrument is slim. Maar de les leunt zwaar op "niks doen is ook iets doen" — wat abstract kan voelen. Het voorbeeld ("tien seconden niets zeggen na een opdracht") redt het.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 6: Het verschil voelbaar maken <span class="score">✓ Goed</span></div>
+  <p>Goed concept: gewone avond vs. bewuste avond. De les zit dicht bij les 4 (schakelen). Risico: overlap. Overweeg deze twee samen te voegen of het verschil scherper te maken.</p>
+</div>
+
+<div class="fase-label">Fase 2 — Verkenning</div>
+
+<div class="les kantelpunt">
+  <div class="les-header">Les 7: Vastzitten als rust <span class="score">⚠ Kantelpunt</span></div>
+  <p>Eerste fysieke les. "Begin met vijf minuten" is net toegevoegd en helpt. Maar de meerProberen noemt gag en slaapzak — dat is te vroeg. Verplaats die content naar les 16 of later. De kern ("hij zit vast, jij kijkt je serie") is goed.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 8: Zintuigen en verrassing <span class="score">✓ Goed</span></div>
+  <p>Sterke les: contrast als instrument. De meerProberen noemt kaarswas, slaan en bijten — dat past beter in fase 3. De veiligheidsinformatie over kaarsen is net toegevoegd en goed.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 9: Seks op jouw voorwaarden <span class="score">✓ Goed, voorzichtig</span></div>
+  <p>Gevoelig terrein, goed behandeld. "Dit vervangt jullie gewone seks niet" staat er twee keer. Trauma-veilige normalisatie is toegevoegd. De meerProberen is veel te uitgebreid: face sitting, orale controle, masturbatiecontrole, vibrator. Dit hoort in fase 4.</p>
+</div>
+
+<div class="les uitstekend">
+  <div class="les-header">Les 10: Het moment erna <span class="score">✓✓ Uitstekend</span></div>
+  <p>Beste les van de app. Bidirectionele nazorg, dom drop, timing, bevestiging. De zin "leiding nemen kost energie — en het is oké om die energie aangevuld te krijgen" is goud. Niets aan veranderen.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 11: Jullie eigen taal <span class="score">✓ Goed</span></div>
+  <p>Rituelen als taal is een mooi concept. De meta-toevoeging ("doe iets wat niet in een les staat") is goed. Sub frenzy staat hier — dat is de juiste plek.</p>
+</div>
+
+<div class="fase-label">Fase 3 — Verdieping</div>
+
+<div class="les kantelpunt">
+  <div class="les-header">Les 12: Wat jij hieraan hebt <span class="score">⚠ Verkeerde positie</span></div>
+  <p>Inhoudelijk sterk. Maar deze les staat op positie 12 van 22. Lisanne leest 11 lessen over wat ze voor Tim kan doen voordat ze hoort dat het ook voor haar iets kan zijn. Dit zou les 2 of 3 moeten zijn.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 13: Service <span class="score">✓ Goed</span></div>
+  <p>Service topping wordt benoemd — goed. De oefening is concreet ("geef hem één service-opdracht"). Het gevaar is dat service voelt als "ik geef hem nog meer taken" in plaats van "hij doet iets voor mij." De framing is correct maar kan explicieter.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 14: Speelsheid en woorden <span class="score">✓ Goed</span></div>
+  <p>Licht en speels, past bij Lisanne's humor. De les zit qua toon goed. Geen groot risico.</p>
+</div>
+
+<div class="les risico">
+  <div class="les-header">Les 15: Impact <span class="score">⚠ Hoog risico</span></div>
+  <p>Slaan/tikken is voor een zorgend persoon het moeilijkste onderwerp. De normalisatie ("de eerste tik voelt altijd raar") is goed maar niet sterk genoeg. Voeg toe: "Als dit niet bij je past: sla deze les helemaal over. De dynamiek heeft geen impact nodig."</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 16: Speeltjes <span class="score">✓ Goed</span></div>
+  <p>Nuchter en praktisch. Items worden als gereedschap gepresenteerd, niet als must-haves. De plug wordt genoemd maar niet gepusht.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 17: Regels en structuur <span class="score">✓ Goed</span></div>
+  <p>Communicatie-passage net toegevoegd ("hoe jullie over de dynamiek praten") is goed. Consent-per-activiteit ook. De straf-passage is precies goed: "Geen straf met eten of slaap — dat is een harde grens."</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 18: Buitenshuis <span class="score">✓ Goed</span></div>
+  <p>Logisch op deze positie (fase 3, na service). Voorbeelden zijn realistisch (nachtmarkt, restaurant). Niet te exhibitionistisch.</p>
+</div>
+
+<div class="fase-label">Fase 4 — Geavanceerd</div>
+
+<div class="les goed">
+  <div class="les-header">Les 19: Orgasmecontrole <span class="score">✓ Goed, voorzichtig</span></div>
+  <p>De reframing als "meer vertrouwen, niet meer intensiteit" werkt. Maar orgasmecontrole is inherent intiem-dwingend. De normalisatie moet heel sterk zijn. Goed dat het in fase 4 zit.</p>
+</div>
+
+<div class="les goed">
+  <div class="les-header">Les 20: Sessie-opbouw <span class="score">✓ Goed</span></div>
+  <p>De zachte sessie-variant ("halsband om, hoofd op je schoot, serie kijken") is perfect. De oefening ("schrijf drie dingen op een briefje") kan lichter: "bedenk vanavond drie stappen — in je hoofd is ook goed."</p>
+</div>
+
+<div class="les risico">
+  <div class="les-header">Les 21: Psychologisch spel <span class="score">⚠ Hoog risico</span></div>
+  <p>Het concept is goed: onzichtbare controle. Maar "behandel hem even als ding" in de meerProberen is een rode vlag voor een zorgend persoon. De les zelf (spullen op tafel leggen, niks zeggen) is subtiel en sterk. Schrap of herschrijf de objectificatie-passage.</p>
+</div>
+
+<div class="les uitstekend">
+  <div class="les-header">Les 22: Groei en evolutie <span class="score">✓✓ Uitstekend</span></div>
+  <p>Perfecte afsluiter. "De lessen stoppen hier. De dynamiek niet." Het sterkste voorbeeld van de app: "je staat in de keuken, hij loopt langs, en je pakt hem bij zijn arm." Maintenance-tekst is net toegevoegd. Niets aan veranderen.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">5. Visuele beoordeling</h1>
+
+<h3>Wat goed voelt</h3>
+<ul>
+  <li>De donkere achtergrond met warme accenten creëert intimiteit. Dit voelt niet als een productiviteits-app.</li>
+  <li>De serif-font (Playfair Display) voor intro's geeft warmte. De sans-serif voor uitleg geeft duidelijkheid. Het contrast werkt.</li>
+  <li>De suggestiekaart op het hoofdscherm is visueel duidelijk: één idee, twee knoppen, klaar. Dit is de kern van de UX en die werkt.</li>
+  <li>Knoppen zijn duidelijk: roze/accent voor primair, donker voor secundair. Geen twijfel over wat te klikken.</li>
+</ul>
+
+<h3>Wat rommelig voelt</h3>
+<ul>
+  <li>De energiecheck-balk bovenin (Moe / Normaal / Goed) is functioneel maar visueel druk samen met de plannenknop. Op een smal scherm concurreren deze om aandacht.</li>
+  <li>Het "Kleine Signalen"-blok boven de suggestie voelt als een extra laag die niet altijd nodig is. Op een telefoon duwt dit de suggestiekaart naar beneden.</li>
+  <li>De les-navigatie (1/5 + Volgende) is subtiel maar kan op desktop lastig klikbaar zijn — het klikgebied is klein.</li>
+  <li>Er is geen visueel onderscheid tussen "gelezen" en "niet-gelezen" lessen in de Gids-tab. Een check of een kleurverandering zou helpen.</li>
+</ul>
+
+<h3>Wat visueel anders moet</h3>
+<ul>
+  <li>Lesinhoud: de zichtbare uitleg is op mobiel te lang. Overweeg een "lees meer" toggle na de eerste 3-4 regels van de uitleg, zodat Lisanne niet schrikt van een wall of text.</li>
+  <li>Meer witruimte tussen alinea's in de lestekst. De huidige regelafstand is krap voor langere passages.</li>
+  <li>De meerLezen-items zien er allemaal hetzelfde uit. Een subtiel icoontje per type (herhaling, stapeling, letOp, normalisatie) zou scanbaarheid verbeteren.</li>
+</ul>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">6. UX-beoordeling</h1>
+
+<h3>Waar haakt Lisanne waarschijnlijk af?</h3>
+<ul>
+  <li>Les 7 (vastzitten): eerste fysieke grens. Als les 4-6 niet goed geland zijn, is dit de exit. De "begin met vijf minuten" toevoeging helpt maar lost het structurele probleem niet op: Lisanne heeft dan nog niet gehoord wat zij eraan heeft (les 12).</li>
+  <li>Les 15 (impact): voor een zorgend persoon is pijn toebrengen de grootste hobbel. Als de les niet begint met "dit is optioneel en de dynamiek heeft het niet nodig", haakt ze hier af.</li>
+  <li>Elke les die langer dan 90 seconden lezen kost: de eerste 30 seconden bepalen of Lisanne de rest leest of het scherm sluit.</li>
+</ul>
+
+<h3>Waar voelt het te zwaar?</h3>
+<ul>
+  <li>De lessen-flow (5 stappen per les) is inhoudelijk logisch maar voelt als een mini-cursus. Op een rustige dinsdagavond wil Lisanne misschien alleen de oefening zien, niet eerst 4 stappen doorlopen.</li>
+  <li>De suggestiekaart + energiecheck + plannen + les-link op één scherm is veel. Op een goede dag is dit overzichtelijk. Op een slechte dag is dit overweldigend.</li>
+</ul>
+
+<h3>Waar voelt het precies goed?</h3>
+<ul>
+  <li>De dagelijkse suggestie op het hoofdscherm: één idee, twee knoppen. Dit is de kern en die werkt. De flow "Dit doe ik" / "Ander idee" / "Liever niet" is laagdrempelig.</li>
+  <li>De "Goed om te weten" toggle onder suggesties: opt-in verdieping zonder schermdruk.</li>
+  <li>De soft reset na 3+ dagen weg: "Geen probleem dat je even niks deed. Pak gewoon iets kleins op." Precies goed.</li>
+  <li>De beschermende regel: Lisanne merkt niks, maar het systeem beschermt haar tegen overbelasting. Dat is goede UX.</li>
+</ul>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">7. Concrete verbeterpunten</h1>
+
+<h2>Nu doen</h2>
+
+<div class="actie nu"><strong>1. Verplaats les 12 content naar les 2-3.</strong> Niet de hele les herschrijven, maar de kernboodschap ("er zit ook iets in voor jou") inzaaien in les 1-3. Les 12 kan dan korter worden als herbevestiging.</div>
+
+<div class="actie nu"><strong>2. Verplaats geavanceerde meerProberen content.</strong> Gag/slaapzak uit les 7 naar les 16+. Kaarswas/slaan/bijten uit les 8 naar les 15+. Face sitting etc. uit les 9 naar les 19+. Dit is de meest impactvolle fix.</div>
+
+<div class="actie nu"><strong>3. Vervang ~30 van de 40 "bepaalt" door "kiest"/"besluit".</strong> Houd "bepaalt" alleen waar het echt impact heeft (seks, sessie, orgasme).</div>
+
+<div class="actie nu"><strong>4. Voeg "sla deze les over" toe aan les 15 en 21.</strong> Niet als normalisatie verstopt in meerLezen, maar als zichtbare tekst in de intro: "Als dit niet bij je past: sla het over. De dynamiek heeft dit niet nodig."</div>
+
+<div class="actie nu"><strong>5. Verkort de zichtbare uitleg van les 7, 9 en 10.</strong> Verplaats de tweede helft van de uitleg naar meerLezen. Houd de zichtbare tekst onder 150 woorden.</div>
+
+<h2>Later doen</h2>
+
+<div class="actie later"><strong>6. Bouw een "geen-zin" landing.</strong> Als Lisanne "Moe" kiest bij de energiecheck, toon alleen: "Gewone avond. Niks doen is ook goed. Morgen is er weer een idee." Geen suggestie, geen les-link.</div>
+
+<div class="actie later"><strong>7. Maak preview-teksten tot teasers.</strong> Niet "Volgende les: vastzitten als rust" maar "Volgende les: wat er gebeurt als hij niet kan bewegen." Dit wekt nieuwsgierigheid.</div>
+
+<div class="actie later"><strong>8. Voeg les-status toe aan de Gids.</strong> Een vinkje of kleurverandering bij gelezen lessen. Dit geeft Lisanne een gevoel van voortgang zonder druk.</div>
+
+<div class="actie later"><strong>9. Herschrijf les 21 meerProberen.</strong> Schrap "behandel hem even als ding" of herschrijf naar: "als hij voor je staat en jij niets zegt — dat is al genoeg."</div>
+
+<div class="actie later"><strong>10. Bouw een "herhaal-modus" voor lessen.</strong> Na les 22: de suggestiemotor kan verwijzen naar eerdere lessen met "weet je nog? In les 3 ging het over bewust aanraken. Probeer dat vanavond nog eens." Dit versterkt herhaling boven nieuwheid.</div>
+
+<h2>Niet doen</h2>
+
+<div class="actie niet"><strong>Meer lessen toevoegen.</strong> 22 is genoeg. Elke extra les maakt de roadmap langer en de drempel hoger.</div>
+
+<div class="actie niet"><strong>De scheduler complexer maken.</strong> Het 4-sporen systeem + herhaling + beschermende regel is voldoende. Meer variabelen = meer edge cases.</div>
+
+<div class="actie niet"><strong>Lisanne's profiel "slimmer" maken.</strong> De app hoeft niet te leren wat Lisanne wil. Dat leert Lisanne zelf. De app biedt aan, zij kiest.</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-break">8. Als ik Lisanne was</h1>
+
+<h3>Waar zou ik warm van worden?</h3>
+<p>Tim's brief in de onboarding. Dat is echt en kwetsbaar. De eerste drie lessen — omdat ze bevestigen dat ik dit al doe. Les 10 — omdat het laat zien dat Tim ook voor mij kan zorgen. En de momenten waarop de app zegt: "je hoeft er niks mee te doen."</p>
+
+<h3>Waar zou ik twijfelen?</h3>
+<p>Bij les 4, als knielen voor het eerst wordt genoemd. Niet omdat ik het niet wil — maar omdat het voelt als een stap van "leuk weetje" naar "now it's a thing." En bij les 7, als vastzitten ineens tastbaar wordt. De app zegt "begin met vijf minuten" maar ik zou denken: wat doe ik in die vijf minuten?</p>
+
+<h3>Waar zou ik afhaken?</h3>
+<p>Bij les 15 (impact). Als de app mij vraagt om Tim te slaan — ook al zegt het "licht" — dan moet ik heel zeker weten dat dit oké is. Als de normalisatie niet overtuigend genoeg is, sluit ik de app en open hem een week niet. En als ik bij les 12 nog niet heb gehoord wat ik hieraan heb, dan heb ik ergens rond les 8 al besloten dat dit Tim's project is, niet van ons.</p>
+
+<h3>Wat zou ik waarderen?</h3>
+<p>Dat de app nooit zegt "je moet". Dat gewone avonden oké zijn. Dat er geen schuldgevoel-mechanisme zit. Dat de suggesties klein zijn en ik altijd "liever niet" kan kiezen. En dat Tim moeite heeft gedaan om dit voor mij te maken — zelfs als ik de helft oversla.</p>
+
+<h3>Wat zou ik te veel vinden?</h3>
+<p>De hoeveelheid tekst in de lessen. Ik zou de intro lezen, misschien de uitleg scannen, het voorbeeld bekijken, en de oefening doen. De meerLezen zou ik pas na weken openen. En face sitting in les 9 meerProberen — dat zou ik niet verwachten op dat punt en het zou me even afschrikken.</p>
+
+<div class="footer">Einde review</div>
+
+</body>
+</html>
