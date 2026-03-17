@@ -2760,7 +2760,7 @@ const LESSEN_INHOUD = [
   {id:1, titel:'Gewoon zeggen', subtitel:'Soms is \u00e9\u00e9n zin genoeg.', domein:'verbinding', fase:0, type:'story',
    scroll:[
      {type:'scene', tekst:'Je komt thuis nadat je Milou naar school hebt gebracht.\nTim ligt op bed met zijn laptop.\nHij kijkt op.\n\u201cWat gaan we zo doen?\u201d\nZo\u2019n vraag laat alles open. En vaak gebeurt er dan even niks.\nAls jij gewoon zegt wat er gebeurt, hoeft hij niet meer te twijfelen.\nGeen overleg. Geen vraagteken. Gewoon een zin.'},
-     {type:'inzicht', tekst:'Niet wat je kiest.\nMaar dat jij het zegt.'},
+     {type:'inzicht', tekst:'Het gaat meestal niet om wat je kiest.\nHet moment verandert al als jij gewoon zegt wat er gebeurt.\nDan hoeft hij niet meer te twijfelen.\nHij kan gewoon volgen.'},
      {type:'voorbeeld', tekst:'\u201cLaptop dicht.\u201d \u2014 hij klapt hem dicht.\n\u201cKom. We gaan wandelen.\u201d\n\u201cKom even hier.\u201d'},
      {type:'noot', tekst:'De eerste keer voelt dat misschien een beetje vreemd.\nDat is normaal.\nVeel mensen moeten er zelfs even om lachen als ze het proberen.\nJe merkt het vaak meteen. Hij wordt stiller. Of hij doet gewoon wat je zegt.\nVeel vrouwen merken dat het ook voor henzelf rustiger voelt. Niet steeds overleggen. Gewoon zeggen wat er gebeurt.\nNa een paar keer voelt het vaak verrassend vanzelfsprekend.'},
      {type:'probeer', tekst:'Zeg vandaag \u00e9\u00e9n keer wat jij wilt.\nE\u00e9n zin.\nGeen vraag.\nKijk wat er gebeurt.'}
@@ -4007,50 +4007,77 @@ function toonScrollLes(les, kleur){
     var css = document.createElement('style');
     css.id = 'lesson-css';
     css.textContent = [
-      ':root{--les-bg:#171110;--les-sheet:#1f1715;--les-card:#241c1a;--les-card-soft:#2a211d;--les-insight:#23271f;--les-example:#2a211d;--les-try:#2b2a20;--les-text:#f3ebe7;--les-muted:#b9aaa2;--les-soft:#d8cbc4;--les-line:rgba(255,255,255,0.06);--les-accent:#a8b97d;--les-radius-lg:22px;--les-radius-md:18px}',
+      // ── Design tokens: warm, zacht, veilig ──
+      ':root{'+
+        '--les-bg:#1f1b19;--les-bg-soft:#26211f;--les-bg-elevated:#2c2623;'+
+        '--les-text:#f3ece6;--les-text-secondary:#c9bdb5;--les-text-muted:#9e8f86;'+
+        '--les-soft:#d8cbc4;'+
+        '--les-line:rgba(255,255,255,0.06);--les-line-card:rgba(255,255,255,0.08);'+
+        '--les-insight-bg:rgba(168,185,140,0.15);--les-insight-border:rgba(168,185,140,0.30);--les-insight-accent:#a8b98c;'+
+        '--les-example-bg:rgba(255,255,255,0.04);--les-example-border:rgba(255,255,255,0.08);'+
+        '--les-try-bg:rgba(240,200,120,0.16);--les-try-border:rgba(240,200,120,0.30);--les-try-accent:#f0c878;'+
+        '--les-radius-lg:22px;--les-radius-md:18px'+
+      '}',
 
-      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(255,255,255,0.03),transparent 30%),rgba(10,8,8,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
+      // ── Overlay: warme blur ──
+      '.lesson-overlay{position:fixed;inset:0;background:radial-gradient(circle at top,rgba(255,220,170,0.06),transparent 40%),rgba(14,12,11,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:9999}',
 
-      '.lesson-sheet{position:relative;width:min(100%,560px);min-height:100%;margin:0 auto;padding:28px 20px 56px;background:linear-gradient(180deg,#1d1513 0%,#171110 100%);color:var(--les-text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}',
+      // ── Sheet: warme gradient, niet zwart ──
+      '.lesson-sheet{position:relative;width:min(100%,560px);min-height:100%;margin:0 auto;padding:28px 20px 56px;background:radial-gradient(circle at top,rgba(255,210,150,0.08),transparent 50%),linear-gradient(180deg,#26211f 0%,#1f1b19 60%,#1a1614 100%);color:var(--les-text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}',
 
-      '.lesson-close{position:absolute;top:18px;right:16px;width:36px;height:36px;border:0;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--les-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}',
+      // ── Close button ──
+      '.lesson-close{position:absolute;top:18px;right:16px;width:36px;height:36px;border:0;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--les-text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}',
       '.lesson-close:active{background:rgba(255,255,255,0.08)}',
 
+      // ── Header ──
       '.lesson-header{padding-top:10px;margin-bottom:28px}',
-      '.lesson-kicker{margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--les-accent)}',
+      '.lesson-kicker{margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--les-insight-accent)}',
       '.lesson-title{margin:0;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-0.02em;color:var(--les-text)}',
-      '.lesson-subtitle{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--les-muted)}',
+      '.lesson-subtitle{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--les-text-muted)}',
 
+      // ── Scene & Note: gewone tekst ──
       '.lesson-scene,.lesson-note{margin:0 0 28px}',
       '.lesson-scene p,.lesson-note p,.lesson-card p{margin:0 0 14px;font-size:18px;line-height:1.72;letter-spacing:-0.01em}',
       '.lesson-scene p:last-child,.lesson-note p:last-child,.lesson-card p:last-child{margin-bottom:0}',
       '.lesson-note p{color:var(--les-soft)}',
 
-      '.lesson-card{margin:0 0 24px;padding:18px 18px 20px;border-radius:var(--les-radius-lg);border:1px solid var(--les-line);box-shadow:0 10px 24px rgba(0,0,0,0.16)}',
-      '.lesson-card-label{margin:0 0 12px!important;font-size:11px!important;line-height:1.2!important;letter-spacing:0.14em;text-transform:uppercase;color:var(--les-muted)}',
-      '.lesson-card--insight{background:linear-gradient(180deg,rgba(168,185,125,0.10),rgba(168,185,125,0.04))}',
-      '.lesson-card--example{background:rgba(255,255,255,0.03)}',
-      '.lesson-card--try{background:linear-gradient(180deg,rgba(168,185,125,0.12),rgba(168,185,125,0.05))}',
+      // ── Cards: gedeelde basis ──
+      '.lesson-card{margin:0 0 24px;padding:18px 18px 20px;border-radius:var(--les-radius-lg);box-shadow:0 10px 25px rgba(0,0,0,0.25)}',
+      '.lesson-card-label{margin:0 0 12px!important;font-size:11px!important;line-height:1.2!important;letter-spacing:0.14em;text-transform:uppercase;color:var(--les-text-muted)}',
 
+      // ── Insight card: olijfgroen ──
+      '.lesson-card--insight{background:var(--les-insight-bg);border:1px solid var(--les-insight-border)}',
+      '.lesson-card--insight::before{content:"";display:block;width:28px;height:2px;background:var(--les-insight-accent);margin-bottom:10px;border-radius:2px}',
+
+      // ── Example card: neutraal warm ──
+      '.lesson-card--example{background:var(--les-example-bg);border:1px solid var(--les-example-border)}',
+
+      // ── Try card: warm goud ──
+      '.lesson-card--try{background:var(--les-try-bg);border:1px solid var(--les-try-border)}',
+      '.lesson-card--try .lesson-card-label{color:var(--les-try-accent)}',
+
+      // ── Buttons ──
       '.lesson-primary{margin-top:18px;width:100%;min-height:52px;border:0;border-radius:16px;background:rgba(255,255,255,0.08);color:var(--les-text);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}',
       '.lesson-primary:active{background:rgba(255,255,255,0.14)}',
 
+      // ── Gate ──
       '.lesson-gate{margin-top:18px;text-align:center}',
-      '.lesson-gate-hint{font-size:13px;color:var(--les-muted);opacity:0.5}',
+      '.lesson-gate-hint{font-size:13px;color:var(--les-text-muted);opacity:0.5}',
 
+      // ── Footer ──
       '.lesson-footer{margin-top:28px;padding-top:8px}',
-      '.lesson-next-label{margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--les-muted)}',
+      '.lesson-next-label{margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--les-text-muted)}',
       '.lesson-next{border:0;padding:0;background:transparent;color:var(--les-soft);font-size:16px;line-height:1.45;text-align:left;cursor:pointer;font-family:inherit;transition:opacity .2s}',
       '.lesson-next:active{opacity:.6}',
 
-      // Swipeable voorbeelden
+      // ── Carousel ──
       '.lesson-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;margin:0 -18px}',
       '.lesson-carousel::-webkit-scrollbar{display:none}',
       '.lesson-slide{min-width:100%;box-sizing:border-box;padding:0 18px;scroll-snap-align:start}',
       '.lesson-carousel-dots{display:flex;gap:4px;justify-content:center;padding-top:12px}',
       '.lesson-dot{height:3px;border-radius:2px;transition:all .3s ease}',
-      '.lesson-dot--on{width:16px;background:rgba(168,185,125,0.5)}',
-      '.lesson-dot--off{width:6px;background:rgba(168,185,125,0.18)}',
+      '.lesson-dot--on{width:16px;background:rgba(168,185,140,0.5)}',
+      '.lesson-dot--off{width:6px;background:rgba(168,185,140,0.18)}',
 
       '@media(min-width:768px){.lesson-sheet{padding-left:32px;padding-right:32px}}'
     ].join('\n');
