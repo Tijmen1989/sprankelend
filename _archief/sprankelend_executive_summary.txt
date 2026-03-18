@@ -1,0 +1,320 @@
+================================================================================
+SPRANKELEND SUGGESTION SYSTEM - EXECUTIVE SUMMARY
+================================================================================
+
+PROJECT: Understand suggestion system in 870KB single-file PWA
+STATUS: Complete Analysis (Research Only)
+
+================================================================================
+1. HOW SUGGESTIONS ARE STORED
+================================================================================
+
+PRIMARY STATE: localStorage key "l_suggesties"
+
+Structure:
+  - historie: Array of {id, datum, status, cat} — full decision history
+  - huidig: Current suggestion object OR null
+  - niveau: Escalation level (1-3)
+  - ervaringLog: Experience feedback tracking
+  - wachtOpErvaring: Boolean flag when waiting for user experience input
+  - permanentBlock: IDs user rejected permanently
+  - lopend: Multi-day ongoing suggestion
+
+Total Pool: ~200 suggestions across 10+ sub-pools
+  - Main aggregate: SUGGESTIE_POOL (line 1154)
+  - Lesson-linked: LESPRACTICE_SUGGESTIES (line 3630, 16 suggestions)
+  - Learning paths: KERN_LP1-6 (100+ suggestions)
+
+================================================================================
+2. HOW A SUGGESTION IS SELECTED
+================================================================================
+
+ALGORITHM: kiesSuggestie(state) at line 7767
+
+7-Stage Filtering Process:
+
+  Stage 0: BAILOUT (all recent=nee + no activity + 2+teveel) → NULL
+
+  Stage 1-3: CONSTRAINT CALCULATION
+    - Energy check (laag/normaal/goed) 
+    - Soft reset (3+ days missed → soften suggestions)
+    - Hard reset (10+ days missed → reset counters)
+    - Failsafe (after "teveel" or "reactie_viel_tegen" → soften)
+    - Warm gate (cold warmte → reduce weight, 60% soft)
+
+  Stage 4: FASE 0 (First 5 days only) → leerpad=0 suggestions
+
+  Stage 5: DETERMINE "DAGTYPE" (Day type)
+    - Sunday: rust/reflectie/gentle
+    - Friday: digitaal/avond types
+    - Saturday: light types
+    - Mon-Thu: balanced rotation (focus/bevestiging/gewoon_jullie)
+    - LISANNE SIGNAL BOOST: was_fijn→herhaling, wil_proberen→nieuwheid
+    - PROTECTION RULE: 2+ intense in 3 days → gewoon_jullie
+
+  Stage 6: BUILD FILTER
+    - Exclude recent 15 suggestions
+    - zwaarte <= maxZwaarte
+    - NOT permanently blocked
+    - NOT temporarily cooled down (actieType)
+    - [LESSON GATE] naLes: only show if lesson read ← KEY POINT
+    - [ITEM GATE] items require les 7 (aftercare)
+    - [SENSORY GATE] blinddoek etc require les 8
+
+  Stage 7: RANDOM PICK from filtered pool
+
+RESULT: Single suggestion object OR null
+
+================================================================================
+3. HOW SUGGESTIONS ARE DISPLAYED
+================================================================================
+
+ENTRY POINT: renderApp() at line 11100
+
+Reactive Flow:
+  1. Load state.huidig from localStorage
+  2. IF huidig === null AND no suggestion seen today:
+     → Call kiesSuggestie(state)
+     → Store result in state.huidig
+     → Save to localStorage
+
+RENDERING: renderVandaag() at line 12251
+
+Display Priority (shown once, blocking):
+  1. Terugkom-check (returning after absence?)
+  2. Evaluatie prompt (periodic assessment)
+  3. Wacht op ervaring (experience check from previous "ja")
+  4. Reflectie vraag (reflection prompt)
+  5. MAIN CARD: Suggestion display
+     - Context label ("Idee voor vandaag:")
+     - Full suggestion text
+     - Speech example (zegSubtiel if Milou present, else zegPrive)
+     - Optional: waarom, what to notice, reflection question
+     - BUTTONS: "Dit doe ik" | "Ander idee"
+
+================================================================================
+4. SUGGESTION ↔ LESSON INTERACTION
+================================================================================
+
+CONCEPT: ALREADY PARTIALLY IMPLEMENTED
+
+Named Property: naLes (lesson number gate)
+
+Example:
+  {id: 'sr01', cat: 'micro', naLes: 9, tekst: '...'}
+  → This suggestion only shows if lesson 9 has been read
+
+Lesson-Linked Suggestions:
+  - Les 9 (4 suggestions): Pace control
+  - Les 15 (2 suggestions): Impact
+  - Les 17 (2 suggestions): Rules & flexibility
+  - Les 21 (3 suggestions): Psychological play
+  - Les 7, 8: Gates (not suggestions, requirements)
+
+Safety Bridge (line 8102):
+  if(s.naLes && !_lesVoortgang.gelezen.includes(s.naLes)) return false;
+  → Blocks suggestion if prerequisite lesson not read
+
+STATUS: Works as passive gate, but NO PRIORITY SYSTEM
+        Lesson suggestions compete with regular pool equally
+
+================================================================================
+5. STATE MANAGEMENT KEYS
+================================================================================
+
+Core State:
+  l_suggesties          Main suggestion state
+  l_lesVoortgang        Lesson reading progress {gelezen: [1,2,3], ...}
+  l_zachteReeks         Counter for soft days in sequence
+  l_signalen_voor_tim   Lisanne's signals for Tim
+  l_eersteKeerCat       First-time category frames
+  l_lastSuggestieDatum  Last suggestion acceptance date
+  l_initiatief_log      Tim's initiative tracking
+
+All accessed via:
+  getSuggestieState()   ← Load
+  saveSuggestieState()  ← Save
+  getLesVoortgang()     ← Load lesson progress
+
+================================================================================
+6. "DIT DOE IK" / "ANDER IDEE" FLOW
+================================================================================
+
+ENTRY: verwerkKeuze(keuze) at line 8671
+
+"Dit doe ik" (Accept):
+  1. Add to histoire: {id, datum, status: 'ja', cat}
+  2. Check if needs experience feedback (zwaarte >= 2? first cat? random 33%)
+  3. Set wachtOpErvaring flag
+  4. Escalate niveau if 3x 'ja' in a row
+  5. Clear state.huidig (triggers new selection on next render)
+  6. Render shows EXPERIENCE CHECK next
+
+"Ander idee" (Alternative):
+  1. Check if in "ruzie-modus" or "warmte-pauze" (reject if yes)
+  2. Count attempts: andCount++
+  3. IF andCount >= 3:
+     - Reset counter
+     - Build pool from different categories
+     - Immediately show NEW suggestion
+  4. ELSE:
+     - Clear huidig
+     - Show "Wat nu?" state (prompts other actions)
+
+BOTH PATHS: Re-render, triggering renderVandaag()
+
+================================================================================
+7. LESSON-PRACTICE PRIORITY CONCEPT
+================================================================================
+
+DESIRED: Make lesson-practice suggestions PRIORITIZED after lesson read
+
+CURRENT STATE:
+  - naLes property exists (works as gate)
+  - 16 lesson-practice suggestions exist
+  - But NO priority system (compete with regular pool)
+
+TO IMPLEMENT PRIORITY:
+
+Step 1: Add lessonPracticeLead to suggestion state
+  lessonPracticeLead: {
+    lesId: number,
+    startedAt: "2026-03-17",
+    suggestionsShown: [id1, id2, ...],
+    cap: 3 suggestions per lesson per 7 days
+  }
+
+Step 2: Inject priority check in kiesSuggestie()
+  Location: After line 8087 (after dagtype determined), before line 8093
+  
+  const _recentlyReadLesId = getLesVoortgang().gelezen[last]
+  if(_recentlyReadLesId):
+    const lessond_sugs = SUGGESTIE_POOL.filter(s => s.naLes === _recentlyReadLesId)
+    if(lesson_sugs.length > 0 && suggestionsShown.length < 3):
+      return pick(lesson_sugs)
+  // Fall through to normal dagtype logic
+
+Step 3: Mark lesson as "in practice mode"
+  After _lesMarkeerGelezen() (line 4657):
+    getSuggestieState().lessonPracticeLead = {
+      lesId: lesNr,
+      startedAt: today(),
+      suggestionsShown: []
+    }
+
+Step 4: Track usage
+  In verwerkKeuze('ja'):
+    lessonPracticeLead.suggestionsShown.push(sug.id)
+
+================================================================================
+8. TIMING & SCHEDULER
+================================================================================
+
+WHEN SUGGESTIONS APPEAR:
+
+On App Load:
+  renderApp() checks if state.huidig === null
+  If null: calls kiesSuggestie() immediately
+  Stores in state.huidig
+  Saves to localStorage
+
+On User Choice:
+  verwerkKeuze() sets state.huidig = null
+  Triggers renderApp() which loads new suggestion
+
+NO HARD TIMER: Scheduler is reactive to user interaction
+DAILY: New suggestion once per day (unless "ander" count < 3)
+EXPIRY: Auto-replace if older than 1 day
+
+================================================================================
+9. PSEUDOCODE: SUGGESTION SELECTION ALGORITHM
+================================================================================
+
+FUNCTION kiesSuggestie(state):
+  // Bailout
+  IF allNeeRecent AND noActivity AND tooMuchFeedback: RETURN null
+  
+  // Soft reset
+  IF daysMissed >= 3: forceerZacht = true
+  IF daysMissed >= 10: resetCounters()
+  
+  // Failsafe after bad experiences
+  IF lastExperience = 'teveel' OR 'reactie_viel_tegen': forceerZacht = true
+  IF last2Choices = ['nee','nee']: forceerZacht = true
+  
+  // Fase 0 (first 5 days)
+  IF fase == 0 AND daysActive < 5:
+    RETURN random from LEERPAD0_suggestions
+  
+  // Determine day type
+  IF forceerZacht: dagtype = 'gentle'
+  ELSE IF Sunday: dagtype = 'rust'|'reflectie'
+  ELSE IF Friday: dagtype = 'digitaal'|'avond'
+  ELSE IF Saturday: dagtype = 'light'
+  ELSE: dagtype = weekly_balanced()
+  
+  // Apply Lisanne signal boost
+  IF was_fijn_recent AND !forceerZacht: 50% dagtype = 'herhaling'
+  IF wil_proberen_recent AND !forceerZacht: 50% dagtype = 'focus'
+  
+  // Filter pool
+  pool = SUGGESTIE_POOL.filter({
+    NOT in recenteIds,
+    zwaarte <= maxZwaarte,
+    dagtype matches,
+    NOT blocked,
+    IF naLes: REQUIRE lesson read,
+    IF items: REQUIRE les 7,
+    IF sensory: REQUIRE les 8
+  })
+  
+  RETURN pick(pool) OR null
+
+================================================================================
+10. IMPLEMENTATION CHECKLIST
+================================================================================
+
+To add lesson-practice priority system:
+
+Core Changes:
+  [ ] Add lessonPracticeLead field to getSuggestieState()
+  [ ] Insert priority check in kiesSuggestie() (line 8088)
+  [ ] Update _lesMarkeerGelezen() to set lessonPracticeLead
+  [ ] Add frequency cap (3 per lesson per 7 days)
+  [ ] Update verwerkKeuze() to track usage
+  [ ] Add to window._schedulerLog debug object
+
+Testing:
+  [ ] Verify lesson 9 suggestions prioritized after reading
+  [ ] Verify cap prevents spam (max 3 in 7 days)
+  [ ] Verify "ander" doesn't bypass priority
+  [ ] Verify safety gates still work (items→les7, sensory→les8)
+  [ ] Test with multiple lessons (9, 15, 17, 21)
+  [ ] Test interaction with "ruzie-modus" and "warmte-pauze"
+  [ ] Test that previous "ja" experience check still triggers
+
+================================================================================
+CRITICAL FILE LOCATIONS
+================================================================================
+
+Single File: /sessions/determined-eager-mayer/mnt/Sprankelend/index.html
+
+Key Functions:
+  kiesSuggestie()      Line 7767  - Selection algorithm
+  verwerkKeuze()       Line 8671  - Choice handling
+  renderVandaag()      Line 12251 - Display
+  getLesVoortgang()    Line 4029  - Lesson state
+  _lesMarkeerGelezen() Line 4656  - Mark lesson read
+  _basisFilter()       Line 8093  - Gate check
+  renderApp()          Line 11100 - Main entry
+
+Data Pools:
+  SUGGESTIE_POOL       Line 1154  - Master pool (200+)
+  LESPRACTICE_SUGE.    Line 3630  - Lesson suggestions (16)
+  KERN_LP1-6           Line 7350+ - Learning path (100+)
+
+State:
+  l_suggesties         in localStorage
+  l_lesVoortgang       in localStorage
+
+================================================================================
