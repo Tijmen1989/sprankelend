@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typografie vergelijking — Sprankelend Souffleur</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&family=Literata:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: linear-gradient(180deg, #232934 0%, #1B1F27 100%);
+  color: #F3F6FA;
+  padding: 20px;
+  min-height: 100vh;
+}
+h1 {
+  font-family: -apple-system, sans-serif;
+  font-size: 16px;
+  color: #8B97A8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.option {
+  margin-bottom: 40px;
+  padding: 24px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: radial-gradient(circle at top, rgba(126,167,255,0.06), transparent 50%), #242A34;
+}
+.option-label {
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7EA7FF;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.option-meta {
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  color: #8B97A8;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* ── Shared lesson structure ── */
+.les-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.les-subtitle {
+  font-size: 14px;
+  color: #8B97A8;
+  margin-bottom: 28px;
+}
+.les-scene p {
+  margin-bottom: 18px;
+}
+.les-scene p:last-child { margin-bottom: 0; }
+.les-insight {
+  border-left: 3px solid #7EA7FF;
+  padding: 2px 0 2px 20px;
+  margin: 24px 0;
+}
+.les-insight-label {
+  font-family: -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7EA7FF;
+  margin-bottom: 8px;
+}
+.les-insight p {
+  margin-bottom: 14px;
+}
+.les-insight p:last-child { margin-bottom: 0; }
+.les-note {
+  margin-top: 24px;
+}
+.les-note p {
+  color: #C9D1DC;
+  margin-bottom: 16px;
+}
+.les-note p:last-child { margin-bottom: 0; }
+
+/* ── Option A: Huidig (SF Pro / system) ── */
+.opt-a { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif; }
+.opt-a .les-scene p { font-size: 18px; line-height: 1.75; letter-spacing: -0.01em; }
+.opt-a .les-insight p { font-size: 19px; line-height: 1.7; }
+.opt-a .les-note p { font-size: 18px; line-height: 1.75; }
+
+/* ── Option B: Source Serif 4 ── */
+.opt-b { font-family: "Source Serif 4", Georgia, serif; }
+.opt-b .les-scene p { font-size: 18px; line-height: 1.85; letter-spacing: 0.005em; }
+.opt-b .les-insight p { font-size: 19px; line-height: 1.8; }
+.opt-b .les-note p { font-size: 18px; line-height: 1.85; }
+
+/* ── Option C: Literata ── */
+.opt-c { font-family: "Literata", Georgia, serif; }
+.opt-c .les-scene p { font-size: 17.5px; line-height: 1.85; letter-spacing: 0.01em; }
+.opt-c .les-insight p { font-size: 18.5px; line-height: 1.8; }
+.opt-c .les-note p { font-size: 17.5px; line-height: 1.85; }
+
+/* ── Option D: Lora ── */
+.opt-d { font-family: "Lora", Georgia, serif; }
+.opt-d .les-scene p { font-size: 17.5px; line-height: 1.85; letter-spacing: 0; }
+.opt-d .les-insight p { font-size: 18.5px; line-height: 1.8; }
+.opt-d .les-note p { font-size: 17.5px; line-height: 1.85; }
+
+/* ── Option E: EB Garamond ── */
+.opt-e { font-family: "EB Garamond", Georgia, serif; }
+.opt-e .les-scene p { font-size: 19.5px; line-height: 1.8; letter-spacing: 0.01em; }
+.opt-e .les-insight p { font-size: 20.5px; line-height: 1.75; }
+.opt-e .les-note p { font-size: 19.5px; line-height: 1.8; }
+
+/* ── Option F: Mix — serif scene + sans inzicht ── */
+.opt-f .les-scene, .opt-f .les-note { font-family: "Source Serif 4", Georgia, serif; }
+.opt-f .les-insight { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif; }
+.opt-f .les-scene p { font-size: 18px; line-height: 1.85; letter-spacing: 0.005em; }
+.opt-f .les-insight p { font-size: 18px; line-height: 1.7; font-weight: 500; }
+.opt-f .les-note p { font-size: 18px; line-height: 1.85; }
+
+/* ── Option G: Ruimere spacing variant ── */
+.opt-g { font-family: "Literata", Georgia, serif; }
+.opt-g .les-scene p { font-size: 17px; line-height: 2.0; letter-spacing: 0.015em; margin-bottom: 24px; }
+.opt-g .les-insight p { font-size: 18px; line-height: 1.9; margin-bottom: 20px; }
+.opt-g .les-note p { font-size: 17px; line-height: 2.0; margin-bottom: 22px; }
+.opt-g .les-insight { padding-left: 24px; margin: 32px 0; }
+</style>
+</head>
+<body>
+
+<h1>Typografie vergelijking</h1>
+
+<!-- ═══ OPTION A ═══ -->
+<div class="option">
+  <div class="option-label">A — Huidig (SF Pro / System Sans)</div>
+  <div class="option-meta">Sans-serif, clean, tech-achtig. Zoals het nu is.</div>
+  <div class="opt-a">
+    <div class="les-title">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION B ═══ -->
+<div class="option">
+  <div class="option-label">B — Source Serif 4</div>
+  <div class="option-meta">Moderne serif van Adobe. Warm, leesbaar, boek-gevoel. Denk Apple Books.</div>
+  <div class="opt-b">
+    <div class="les-title" style="font-family:'Source Serif 4',serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION C ═══ -->
+<div class="option">
+  <div class="option-label">C — Literata</div>
+  <div class="option-meta">Google's leeslettertype. Ontworpen voor langdurig lezen op scherm. Iets compacter dan Source Serif.</div>
+  <div class="opt-c">
+    <div class="les-title" style="font-family:'Literata',serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION D ═══ -->
+<div class="option">
+  <div class="option-label">D — Lora</div>
+  <div class="option-meta">Elegante serif. Iets meer karakter dan Literata, zachter. Goed voor persoonlijke content.</div>
+  <div class="opt-d">
+    <div class="les-title" style="font-family:'Lora',serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION E ═══ -->
+<div class="option">
+  <div class="option-label">E — EB Garamond</div>
+  <div class="option-meta">Klassieke Garamond. Literair, tijdloos. Iets groter omdat het font kleiner oogt.</div>
+  <div class="opt-e">
+    <div class="les-title" style="font-family:'EB Garamond',serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION F ═══ -->
+<div class="option">
+  <div class="option-label">F — Mix: Serif scene + Sans inzicht</div>
+  <div class="option-meta">Scene en noot in Source Serif (warm, verhalend). Inzicht in sans-serif (helder, direct). Contrast tussen voelen en weten.</div>
+  <div class="opt-f">
+    <div class="les-title" style="font-family:-apple-system,sans-serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPTION G ═══ -->
+<div class="option">
+  <div class="option-label">G — Literata met extra ademruimte</div>
+  <div class="option-meta">Zelfde font als C, maar met meer regelafstand (2.0), grotere marges tussen alinea's, en ruimer inzicht-blok. Meer "rust op de pagina".</div>
+  <div class="opt-g">
+    <div class="les-title" style="font-family:'Literata',serif">Als jij het zegt..</div>
+    <div class="les-subtitle">Soms is één zin genoeg.</div>
+    <div class="les-scene">
+      <p>Je hebt Milou naar school gebracht.</p>
+      <p>Je komt thuis. Tim zit weer op zijn laptop.</p>
+      <p>"Doe je laptop dicht en kom even hier."</p>
+      <p>Hij klapt hem dicht en komt naar je toe.</p>
+      <p>Geen overleg. Geen vraag.</p>
+      <p>Jij zag het moment en pakte het.</p>
+    </div>
+    <div class="les-insight">
+      <div class="les-insight-label">INZICHT</div>
+      <p>Het maakt niet uit <b>wát</b> er gebeurt.</p>
+      <p>Het gaat erom dat <b>jíj</b> zegt wat er gebeurt.</p>
+      <p>Op <b>jouw</b> moment.</p>
+      <p>Geen overleg. Alleen richting.</p>
+    </div>
+    <div class="les-note">
+      <p>De eerste keer voelt dat misschien een beetje vreemd. Dat is normaal.</p>
+      <p>Na een paar keer voelt het vaak verrassend vanzelfsprekend.</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:40px 0;color:#8B97A8;font-family:-apple-system,sans-serif;font-size:13px">
+  <p>Mijn advies: <b style="color:#7EA7FF">B (Source Serif 4)</b> of <b style="color:#7EA7FF">F (Mix)</b></p>
+  <p style="margin-top:8px">Serif voelt persoonlijker en warmer — minder "app", meer "iemand praat tegen je".</p>
+  <p style="margin-top:4px">De mix (F) geeft extra contrast: het verhaal voelt zacht, het inzicht voelt helder.</p>
+</div>
+
+</body>
+</html>
