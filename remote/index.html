@@ -8947,6 +8947,7 @@ let voiceCommandCallback = null;
 
 let micPermissionGranted = false;
 let speechRestartDelay = null;
+let persistentMicStream = null; // Houdt mic-indicator stabiel (geen knipperen)
 
 function initSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -9004,7 +9005,7 @@ function initSpeechRecognition() {
         if (speechRecognitionActive) {
           try { speechRecognition.start(); } catch(e) {}
         }
-      }, 300);
+      }, 100); // Snel herstarten — persistentMicStream voorkomt knipperen
     }
   };
 
@@ -9026,10 +9027,14 @@ async function requestMicPermission() {
     }
   } catch(e) { /* Permissions API not supported, try getUserMedia */ }
 
-  // Ask once via getUserMedia
+  // Ask once via getUserMedia — en houd stream open zodat mic-icoon niet knippert
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach(t => t.stop());
+    // NIET stoppen! We houden de stream open zodat de mic-indicator stabiel blijft
+    if (persistentMicStream) {
+      persistentMicStream.getTracks().forEach(t => t.stop());
+    }
+    persistentMicStream = stream;
     micPermissionGranted = true;
     return true;
   } catch(e) {
@@ -9063,6 +9068,11 @@ function stopListening() {
   clearTimeout(speechRestartDelay);
   if (speechRecognition) {
     try { speechRecognition.stop(); } catch(e) {}
+  }
+  // Sluit de permanente mic-stream → mic-indicator verdwijnt
+  if (persistentMicStream) {
+    persistentMicStream.getTracks().forEach(t => t.stop());
+    persistentMicStream = null;
   }
 }
 
