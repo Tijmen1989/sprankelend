@@ -1732,7 +1732,7 @@
     </div>
     <div class="control-row">
       <label>Frequentie</label>
-      <input type="range" id="solo-freq" min="20" max="1000" value="200" step="10" oninput="updateSoloLabels()">
+      <input type="range" id="solo-freq" min="20" max="1500" value="200" step="10" oninput="updateSoloLabels()">
       <span id="solo-freq-label" class="value">200 Hz</span>
     </div>
     <div class="control-row">
@@ -1916,6 +1916,16 @@
         </div>
         <div class="cont-row-hint">1-5 = golvend/ademend · 5-20 = pulserend · 20+ = buzzy tinteling</div>
         <div class="cont-row">
+          <label>LFO vorm</label>
+          <select id="solo-cont-lfowave" onchange="updateContLabels('solo')" style="flex:1;padding:4px;border-radius:4px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+            <option value="triangle">▲ Triangle (zacht, commercieel)</option>
+            <option value="sine">∿ Sine (glad)</option>
+            <option value="square">◼ Square (hard aan/uit)</option>
+            <option value="sawtooth">⟋ Sawtooth (scherp)</option>
+          </select>
+        </div>
+        <div class="cont-row-hint">Triangle = meest natuurlijk (zoals commerciële e-stim bestanden) · Square = scherpe pulsen</div>
+        <div class="cont-row">
           <label>Freq beweging</label>
           <input type="range" id="solo-cont-freqmod" min="0" max="100" value="0" oninput="updateContLabels('solo')">
           <span class="cont-val" id="solo-cont-freqmod-val">0%</span>
@@ -1937,6 +1947,14 @@
           <button class="cont-ch-btn" onclick="setContChannel('solo','monoA')">🎯 Mono A</button>
         </div>
         <div class="cont-row-hint" id="solo-cont-ch-hint">Beide kanalen actief. Stereo geeft ruimtelijk gevoel.</div>
+        <div class="cont-row" id="solo-cont-antiphase-row" style="margin-top:8px;">
+          <label style="flex:1;">⚡ Anti-fase</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="solo-cont-antiphase" onchange="updateContLabels('solo')">
+            <span style="font-size:12px;color:#f39c12;">Rechts = -Links (intense sensatie)</span>
+          </label>
+        </div>
+        <div class="cont-row-hint">Inverteert kanaal B. Creëert een uniek "zuigend" gevoel doordat stroom tegengesteld loopt. Alleen bij stereo!</div>
       </div>
 
       <!-- ADVIES -->
@@ -2191,21 +2209,25 @@
   </div>
 
   <!-- Audio routing section -->
-  <div class="control-card" id="audio-routing-section">
-    <h3>🔊 Audio Routing</h3>
+  <div class="control-card" id="audio-routing-section" style="border:2px solid #f39c12;">
+    <h3>🔊 Audio Routing — BELANGRIJK</h3>
+    <p style="color:#f39c12;font-size:13px;margin:0 0 12px 0;">⚠️ Stel in welk apparaat het e-stim signaal ontvangt en waar je beeps/spraak hoort</p>
     <div class="control-group">
-      <label>Stim output (→ 2B):</label>
+      <label><strong>E-stim signaal</strong> → naar je 2B device:</label>
       <select id="stim-output-device" onchange="updateAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
         <option value="default">Standaard audio output</option>
       </select>
     </div>
     <div class="control-group" style="margin-top:10px;">
-      <label>UI geluid (beeps, waarschuwingen):</label>
+      <label><strong>Beeps & spraak</strong> → naar je speakers/koptelefoon:</label>
       <select id="ui-output-device" onchange="updateUIAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
         <option value="default">Standaard audio output</option>
       </select>
     </div>
-    <button onclick="detectAudioDevices()" class="action-btn" style="margin-top:8px;width:100%;">🔄 Detecteer apparaten</button>
+    <button onclick="detectAudioDevices()" class="action-btn" style="margin-top:8px;width:100%;">🔄 Detecteer audio apparaten</button>
+    <button onclick="testMicrophone()" class="action-btn" style="margin-top:6px;width:100%;background:#2d5a3d;">🎤 Test microfoon</button>
+    <div id="mic-test-output" style="display:none;margin-top:8px;padding:8px;background:#1a1a2e;border-radius:6px;font-size:13px;color:#e0e0e0;max-height:120px;overflow-y:auto;"></div>
+    <p id="audio-routing-hint" style="color:#888;font-size:12px;margin:8px 0 0 0;display:none;">💡 Tip: kies verschillende outputs zodat e-stim en beeps apart lopen</p>
   </div>
 
   <!-- Audio player -->
@@ -2476,7 +2498,7 @@
     </div>
     <div class="control-row">
       <label>Frequentie</label>
-      <input type="range" id="send-freq" min="20" max="1000" value="200" step="10" oninput="updateSendLabels()">
+      <input type="range" id="send-freq" min="20" max="1500" value="200" step="10" oninput="updateSendLabels()">
       <span id="send-freq-label" class="value">200 Hz</span>
     </div>
     <div class="control-row">
@@ -3740,7 +3762,7 @@ function playToneStereoAdvanced(params) {
   if (p.lfoRateL > 0) {
     const lfoL = ctx.createOscillator();
     const lfoLGain = ctx.createGain();
-    lfoL.type = 'sine';
+    lfoL.type = p.lfoType || 'triangle';
     lfoL.frequency.value = p.lfoRateL;
     lfoLGain.gain.value = p.volume * p.lfoDepthL * 0.5;
     lfoL.connect(lfoLGain);
@@ -3784,7 +3806,7 @@ function playToneStereoAdvanced(params) {
   if (p.lfoRateR > 0) {
     const lfoR = ctx.createOscillator();
     const lfoRGain = ctx.createGain();
-    lfoR.type = 'sine';
+    lfoR.type = p.lfoType || 'triangle';
     lfoR.frequency.value = p.lfoRateR;
     lfoRGain.gain.value = p.volume * p.lfoDepthR * 0.5;
     lfoR.connect(lfoRGain);
@@ -4118,6 +4140,9 @@ async function detectAudioDevices() {
       });
     });
     recvLog('🔊 ' + outputs.length + ' audio apparaten gevonden');
+    // Toon hint als er meerdere outputs zijn
+    const hint = document.getElementById('audio-routing-hint');
+    if (hint && outputs.length > 1) hint.style.display = 'block';
   } catch(e) {
     recvLog('⚠️ Kan audio apparaten niet detecteren: ' + e.message);
   }
@@ -4170,6 +4195,10 @@ function getPeerId(code) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Auto-detect audio apparaten als we naar receiver of solo scherm gaan
+  if (id === 'receiver-screen' || id === 'solo-screen') {
+    detectAudioDevices();
+  }
 }
 
 function goBack() {
@@ -4564,13 +4593,15 @@ function applySafetyFromConfig() {
     if (typeof updateSafetyLimit === 'function') updateSafetyLimit();
   }
 
-  // Set frequency slider max
-  const freqSlider = document.getElementById('send-freq');
-  if (freqSlider) {
-    const maxFreq = Math.max(c.maxFreqA, c.maxFreqB);
-    freqSlider.max = maxFreq;
-    if (parseInt(freqSlider.value) > maxFreq) freqSlider.value = maxFreq;
-  }
+  // Set frequency slider max voor alle freq sliders
+  const maxFreq = Math.max(c.maxFreqA || 1000, c.maxFreqB || 1000);
+  ['send-freq', 'solo-freq'].forEach(sliderId => {
+    const freqSlider = document.getElementById(sliderId);
+    if (freqSlider) {
+      freqSlider.max = maxFreq;
+      if (parseInt(freqSlider.value) > maxFreq) freqSlider.value = maxFreq;
+    }
+  });
 }
 
 function hideStereoPatternsUI() {
@@ -6795,10 +6826,14 @@ function setContChannel(prefix, mode) {
 
 function readContSliders(prefix) {
   const g = id => parseFloat(document.getElementById(prefix + '-cont-' + id)?.value || 0);
+  const lfoWaveEl = document.getElementById(prefix + '-cont-lfowave');
+  const antiPhaseEl = document.getElementById(prefix + '-cont-antiphase');
   return {
     vol: g('vol'), freq: g('freq'), wave: g('wave'), harmonics: g('harmonics'),
     noise: g('noise'), ampmod: g('ampmod'), amprate: g('amprate'),
-    freqmod: g('freqmod'), drift: g('drift')
+    freqmod: g('freqmod'), drift: g('drift'),
+    lfowave: lfoWaveEl ? lfoWaveEl.value : 'triangle',
+    antiphase: antiPhaseEl ? antiPhaseEl.checked : false
   };
 }
 
@@ -6935,11 +6970,14 @@ function startContinuousMode(prefix) {
   const splitter = ctx.createChannelSplitter(2);
   const merger = ctx.createChannelMerger(2);
   const gainL = ctx.createGain(); gainL.gain.value = 1.0;
-  const gainR = ctx.createGain(); gainR.gain.value = chMode === 'monoA' ? 0.0 : 1.0;
+  // Anti-fase: inverteer rechterkanaal (gain = -1) voor tegengestelde stroom
+  const isAntiPhase = s.antiphase && chMode === 'stereo';
+  const gainR = ctx.createGain();
+  gainR.gain.value = chMode === 'monoA' ? 0.0 : (isAntiPhase ? -1.0 : 1.0);
 
   // Task 4: Stereo delay on right channel
   const stereoDelay = ctx.createDelay(0.2);
-  stereoDelay.delayTime.value = 0.04; // 40ms default phase offset
+  stereoDelay.delayTime.value = isAntiPhase ? 0 : 0.04; // Geen delay bij anti-fase (zuivere inversie)
 
   masterGain.connect(splitter);
   splitter.connect(gainL, 0); splitter.connect(gainR, 1);
@@ -6974,9 +7012,10 @@ function startContinuousMode(prefix) {
   osc3.connect(g3); g3.connect(masterGain); osc3.start(now);
 
   // ---- Task 3: Per-channel independent amplitude LFOs ----
+  const lfoWaveType = s.lfowave || 'triangle';
   const ampLfoL = ctx.createOscillator();
   const ampLfoLGain = ctx.createGain();
-  ampLfoL.type = 'sine';
+  ampLfoL.type = lfoWaveType;
   ampLfoL.frequency.value = s.amprate;
   ampLfoLGain.gain.value = Math.min((s.ampmod / 100) * cappedVol * 0.6, cappedVol * 0.5);
   ampLfoL.connect(ampLfoLGain);
@@ -6985,7 +7024,7 @@ function startContinuousMode(prefix) {
 
   const ampLfoR = ctx.createOscillator();
   const ampLfoRGain = ctx.createGain();
-  ampLfoR.type = 'sine';
+  ampLfoR.type = lfoWaveType;
   ampLfoR.frequency.value = s.amprate * 0.7; // Offset creates movement
   ampLfoRGain.gain.value = Math.min((s.ampmod / 100) * cappedVol * 0.6, cappedVol * 0.5);
   ampLfoR.connect(ampLfoRGain);
@@ -6995,7 +7034,7 @@ function startContinuousMode(prefix) {
   // ---- Frequency LFO (freq drift / movement) ----
   const freqLfo = ctx.createOscillator();
   const freqLfoGain = ctx.createGain();
-  freqLfo.type = 'sine';
+  freqLfo.type = lfoWaveType;
   freqLfo.frequency.value = 0.3; // slow drift
   freqLfoGain.gain.value = (s.freqmod / 100) * s.freq * 0.15;
   freqLfo.connect(freqLfoGain);
@@ -8037,16 +8076,20 @@ function vibrateDevice(ms) {
 let warningBeepEnabled = true;
 function playWarningBeep(callback, delayMs) {
   if (!warningBeepEnabled) { if (callback) trackTimeout(callback, delayMs || 0); return; }
-  const ctx = ensureAudio();
+  // Gebruik UI audio context (laptop/telefoon speakers), NIET de e-stim output!
+  if (!uiAudioCtx) {
+    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  const ctx = uiAudioCtx;
   const now = ctx.currentTime;
   const beepOsc = ctx.createOscillator();
   const beepGain = ctx.createGain();
   beepOsc.type = 'sine';
   beepOsc.frequency.value = 880;
-  beepGain.gain.setValueAtTime(0.03, now);
+  beepGain.gain.setValueAtTime(0.3, now); // Luider op speakers (was 0.03 op e-stim)
   beepGain.gain.linearRampToValueAtTime(0, now + 0.15);
   beepOsc.connect(beepGain);
-  beepGain.connect(getMasterLimiter());
+  beepGain.connect(ctx.destination);
   beepOsc.start(now);
   beepOsc.stop(now + 0.15);
   vibrateDevice(100);
@@ -8940,6 +8983,42 @@ checkPresets();
 
 // ==================== VOICE QUIZ SYSTEM ====================
 
+// --- Mic Test ---
+function testMicrophone() {
+  const output = document.getElementById('mic-test-output');
+  output.style.display = 'block';
+  output.innerHTML = '🎤 Luistert 5 seconden... zeg iets!<br>';
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { output.innerHTML += '❌ SpeechRecognition niet beschikbaar'; return; }
+
+  const testRec = new SR();
+  testRec.lang = 'nl-NL';
+  testRec.continuous = true;
+  testRec.interimResults = true;
+  testRec.maxAlternatives = 3;
+
+  testRec.onstart = () => { output.innerHTML += '✅ Gestart<br>'; };
+  testRec.onaudiostart = () => { output.innerHTML += '🎤 Audio capture actief<br>'; };
+  testRec.onspeechstart = () => { output.innerHTML += '🗣️ Spraak gedetecteerd!<br>'; };
+  testRec.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      output.innerHTML += (e.results[i].isFinal ? '✅ ' : '⏳ ') + '"' + t + '" (conf: ' + e.results[i][0].confidence.toFixed(2) + ')<br>';
+      output.scrollTop = output.scrollHeight;
+    }
+  };
+  testRec.onerror = (e) => { output.innerHTML += '❌ Error: ' + e.error + '<br>'; };
+  testRec.onend = () => { output.innerHTML += '🔴 Gestopt<br>'; };
+
+  try {
+    testRec.start();
+    setTimeout(() => { try { testRec.stop(); } catch(e) {} }, 5000);
+  } catch(e) {
+    output.innerHTML += '❌ Kan niet starten: ' + e.message + '<br>';
+  }
+}
+
 // --- Speech Recognition Engine ---
 let speechRecognition = null;
 let speechRecognitionActive = false;
@@ -8958,14 +9037,35 @@ function initSpeechRecognition() {
   speechRecognition = new SpeechRecognition();
   speechRecognition.lang = 'nl-NL';
   speechRecognition.continuous = true;
-  speechRecognition.interimResults = false;
+  speechRecognition.interimResults = true; // Toon ook tussentijdse resultaten voor snellere feedback
   speechRecognition.maxAlternatives = 3;
+
+  speechRecognition.onstart = () => {
+    console.log('[Voice] ✅ SpeechRecognition gestart');
+  };
+
+  speechRecognition.onaudiostart = () => {
+    console.log('[Voice] 🎤 Audio capture begonnen');
+  };
+
+  speechRecognition.onsoundstart = () => {
+    console.log('[Voice] 🔊 Geluid gedetecteerd');
+  };
+
+  speechRecognition.onspeechstart = () => {
+    console.log('[Voice] 🗣️ Spraak gedetecteerd!');
+  };
 
   speechRecognition.onresult = (event) => {
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      if (event.results[i].isFinal) {
-        const transcript = event.results[i][0].transcript.trim().toLowerCase();
-        console.log('[Voice] Herkend:', transcript, '(confidence:', event.results[i][0].confidence.toFixed(2) + ')');
+      const transcript = event.results[i][0].transcript.trim().toLowerCase();
+      const isFinal = event.results[i].isFinal;
+      console.log('[Voice]', isFinal ? '✅ FINAL:' : '⏳ interim:', transcript, '(confidence:', event.results[i][0].confidence.toFixed(2) + ')');
+
+      // Toon interim resultaten op scherm zodat user weet dat mic werkt
+      if (!isFinal) {
+        showVoiceHeard('... ' + transcript);
+      } else {
         processVoiceInput(transcript);
       }
     }
@@ -8998,14 +9098,18 @@ function initSpeechRecognition() {
   };
 
   speechRecognition.onend = () => {
-    // Auto-restart met vertraging als quiz actief en mic is toegestaan
+    console.log('[Voice] 🔴 SpeechRecognition gestopt (onend) — active:', speechRecognitionActive, 'micGranted:', micPermissionGranted);
+    // Auto-restart als quiz actief en mic is toegestaan
     if (speechRecognitionActive && micPermissionGranted) {
       clearTimeout(speechRestartDelay);
       speechRestartDelay = setTimeout(() => {
         if (speechRecognitionActive) {
-          try { speechRecognition.start(); } catch(e) {}
+          console.log('[Voice] 🔄 Herstart SpeechRecognition...');
+          try { speechRecognition.start(); } catch(e) {
+            console.warn('[Voice] Herstart mislukt:', e.message);
+          }
         }
-      }, 100); // Snel herstarten — persistentMicStream voorkomt knipperen
+      }, 200);
     }
   };
 
