@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0015</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0017</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9612,7 +9612,8 @@ function showVoiceCommandIndicator(text) {
 // --- Text-to-Speech ---
 let ttsSpeaking = false;
 let ttsResumeInterval = null;
-let ttsSessionId = 0; // Tracks which speak() call is current — prevents race conditions
+let ttsSessionId = 0; // Tracks which speak() call is current
+let ttsSpeakCount = 0; // Counts total speak calls for periodic reset
 
 function speak(text, onEnd) {
   if (!('speechSynthesis' in window)) {
@@ -9620,90 +9621,106 @@ function speak(text, onEnd) {
     return;
   }
 
-  // Increment session ID — old safeOnEnd callbacks won't reset ttsSpeaking
   const myTtsSession = ++ttsSessionId;
+  ttsSpeakCount++;
 
-  // CRITICAL: Pause speech recognition while TTS is speaking!
-  // Otherwise the mic hears "1: Leeuw, 2: Cheeta" and registers an answer
+  // CRITICAL: Pause speech recognition while TTS is speaking
   ttsSpeaking = true;
   if (speechRecognition && speechRecognitionActive) {
     try { speechRecognition.stop(); } catch(e) {}
   }
 
-  // Cancel any pending TTS FIRST (before creating new utterance)
+  // Cancel + aggressive reset of speechSynthesis
   clearInterval(ttsResumeInterval);
   try { speechSynthesis.cancel(); } catch(e) {}
+
+  // Chrome TTS corruption fix: every 8 speaks, do a hard reset
+  // Chrome's speechSynthesis queue gets corrupted after many cancel/speak cycles
+  if (ttsSpeakCount % 8 === 0) {
+    console.log('[TTS] Periodieke reset na ' + ttsSpeakCount + ' speaks');
+    try {
+      speechSynthesis.cancel();
+      speechSynthesis.cancel(); // double cancel clears stuck queue
+    } catch(e) {}
+  }
 
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'nl-NL';
   u.rate = 0.95;
   u.pitch = 1.0;
-
-  // Use cached best voice, or find one now
   if (!cachedBestVoice) cachedBestVoice = selectBestDutchVoice();
   if (cachedBestVoice) u.voice = cachedBestVoice;
 
-  // Prevent double onEnd calls from TTS timeout + actual end
   let onEndCalled = false;
+  let ttsActuallyStarted = false;
+
   function safeOnEnd() {
     if (onEndCalled) return;
     onEndCalled = true;
-    // Only reset ttsSpeaking if THIS is still the active speak() session
-    // Prevents old cancel() callbacks from clearing the flag for new speech
     if (ttsSessionId === myTtsSession) {
       ttsSpeaking = false;
       clearInterval(ttsResumeInterval);
-      // Resume speech recognition after TTS finishes (+ longer delay for echo)
       setTimeout(() => {
         if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking && !speechRecRunning) {
-          console.log('[TTS] Herstart spraakherkenning na TTS...');
-          try { speechRecognition.start(); } catch(e) {
-            console.warn('[TTS] Kon spraakherkenning niet herstarten:', e.message);
-          }
+          try { speechRecognition.start(); } catch(e) {}
         }
         if (onEnd) onEnd();
-      }, 600); // 600ms delay — geeft Chrome meer tijd om mic te stabiliseren
+      }, 500);
     } else {
-      // Stale callback from cancelled utterance — only call onEnd, don't touch globals
-      console.log('[TTS] Stale safeOnEnd genegeerd (session ' + myTtsSession + ' vs current ' + ttsSessionId + ')');
-      // Don't call old onEnd callbacks — they belong to cancelled speech
+      // Stale callback — ignore
+      console.log('[TTS] Stale safeOnEnd genegeerd');
     }
   }
 
+  u.onstart = () => {
+    ttsActuallyStarted = true;
+    console.log('[TTS] ▶ Gestart: "' + text.substring(0, 40) + '..."');
+  };
   u.onend = safeOnEnd;
   u.onerror = (e) => {
-    console.warn('[TTS] Utterance error:', e.error || e);
+    console.warn('[TTS] Error:', e.error || e);
     safeOnEnd();
   };
 
-  // Chrome TTS bug workaround: speech synthesis stops after ~15s
+  // Chrome pause/resume workaround
   ttsResumeInterval = setInterval(() => {
     if (speechSynthesis.speaking) {
       speechSynthesis.resume();
     } else {
       clearInterval(ttsResumeInterval);
     }
-  }, 5000); // Check elke 5s (was 10s)
+  }, 3000);
 
-  // Chrome TTS corruption workaround: longer delay if TTS was just cancelled
+  // Start speaking after short delay
   setTimeout(() => {
+    if (onEndCalled) return; // already timed out
     try {
       speechSynthesis.speak(u);
-      console.log('[TTS] Speak: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
     } catch(e) {
       console.error('[TTS] Speak failed:', e);
       safeOnEnd();
+      return;
     }
-  }, 100); // 100ms (was 50ms) — meer ruimte na cancel()
 
-  // Safety fallback: if TTS doesn't fire onend within 12s, force continue
-  // Uses ttsSessionId so it ALWAYS works regardless of ttsSpeaking state
+    // FAST stuck detection: if TTS hasn't actually started after 2s, it's stuck
+    setTimeout(() => {
+      if (!onEndCalled && !ttsActuallyStarted && ttsSessionId === myTtsSession) {
+        console.warn('[TTS] ⚠️ Stuck na 2s — TTS nooit gestart, forceer continue');
+        try { speechSynthesis.cancel(); } catch(e) {}
+        safeOnEnd();
+      }
+    }, 2000);
+
+  }, 100);
+
+  // Final safety net: max 6s per utterance (was 12s — te lang, voelt als hang)
   setTimeout(() => {
     if (!onEndCalled && ttsSessionId === myTtsSession) {
-      console.warn('[TTS] Timeout 12s — forcing continue: "' + text.substring(0, 30) + '..."');
+      console.warn('[TTS] Timeout 6s: "' + text.substring(0, 30) + '..."');
+      try { speechSynthesis.cancel(); } catch(e) {}
       safeOnEnd();
     }
-  }, 12000);
+  }, 6000);
 }
 
 // Preload voices + select best available Dutch voice
@@ -9996,22 +10013,22 @@ function showVoiceQuizQuestion(mode) {
 
   // Speak the question FIRST — timer + mic start AFTER TTS is done
   // Always use "antwoord 1, antwoord 2, ..." — duidelijk en werkt altijd
-  const spokenOptions = 'Antwoord 1: ' + q.o[0] + '. Antwoord 2: ' + q.o[1] + '. Antwoord 3: ' + q.o[2] + '. Antwoord 4: ' + q.o[3];
+  const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
   speak(q.v + '. ' + spokenOptions, () => {
     console.log('[Quiz] TTS klaar voor vraag ' + (questionId + 1) + ', timer starten');
     startQuestionTimer();
   });
 
-  // Safety fallback: als TTS niet werkt, start timer na 8 seconden
+  // Safety fallback: als TTS vastloopt, start timer na 4 seconden
   setTimeout(() => {
     if (!voiceQuizState.active) return;
     if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
-      console.warn('[Quiz] Fallback 8s: timer handmatig starten voor vraag ' + (questionId + 1));
-      // Reset ttsSpeaking zodat spraakherkenning ook kan draaien
+      console.warn('[Quiz] Fallback 4s: timer handmatig starten voor vraag ' + (questionId + 1));
       ttsSpeaking = false;
+      try { speechSynthesis.cancel(); } catch(e) {} // force clear stuck TTS
       startQuestionTimer();
     }
-  }, 8000);
+  }, 4000);
 
   // Notify sender/lisanne if receiver quiz
   if (mode === 'recv' && conn && conn.open) {
@@ -10028,7 +10045,7 @@ function repeatCurrentQuestion() {
   clearInterval(voiceQuizState.timerInterval);
   voiceQuizState.waitingForAnswer = false; // Don't accept answers during re-read
 
-  const spokenOptions = 'Antwoord 1: ' + q.o[0] + '. Antwoord 2: ' + q.o[1] + '. Antwoord 3: ' + q.o[2] + '. Antwoord 4: ' + q.o[3];
+  const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
   const mode = voiceQuizState.mode;
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   updateMicStatus(prefix, false);
