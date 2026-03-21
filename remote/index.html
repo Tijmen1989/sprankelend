@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0013</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0015</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9388,135 +9388,171 @@ function processVoiceInput(transcript) {
     return;
   }
 
-  // Quiz answer detection — extensive matching for Dutch speech recognition quirks
-  // Maps various ways the speech API might hear 1/2/3/4
-  const answerPatterns = [
-    // Answer 1 (index 0)
-    { answer: 0, patterns: [
-      '1', 'een', 'één', 'eén', 'é é n', 'nummer 1', 'nummer een',
-      'antwoord 1', 'antwoord een', 'optie 1', 'optie een', 'de eerste'
-    ]},
-    // Answer 2 (index 1)
-    { answer: 1, patterns: [
-      '2', 'twee', 'twéé', 'nummer 2', 'nummer twee',
-      'antwoord 2', 'antwoord twee', 'optie 2', 'optie twee', 'de tweede'
-    ]},
-    // Answer 3 (index 2)
-    { answer: 2, patterns: [
-      '3', 'drie', 'dri', 'nummer 3', 'nummer drie',
-      'antwoord 3', 'antwoord drie', 'optie 3', 'optie drie', 'de derde'
-    ]},
-    // Answer 4 (index 3)
-    { answer: 3, patterns: [
-      '4', 'vier', 'veer', 'fear', 'fier', 'nummer 4', 'nummer vier',
-      'antwoord 4', 'antwoord vier', 'optie 4', 'optie vier', 'de vierde'
-    ]}
-  ];
-
+  // Quiz answer detection — smart matching that handles both number-options and text-options
   let answer = null;
-  let bestMatchLen = 0;
-
-  // Strategy: check ALL alternatives across ALL answer groups
-  // Use LAST number mentioned (if someone says "niet 2, maar 4" → pick 4)
   const words = clean.split(/\s+/);
-  let lastFoundAnswer = null;
 
-  // First: exact full-string match (highest priority)
-  for (const group of answerPatterns) {
-    for (const p of group.patterns) {
-      if (clean === p) {
-        answer = group.answer;
-        break;
-      }
+  // Helper: check if options are numeric (like "2, 3, 4, 5" or "10, 20, 30, 40")
+  const q = voiceQuizState.active ? voiceQuizState.questions[voiceQuizState.currentIndex] : null;
+  const optionsAreNumeric = q && q.o && q.o.every(o => /^\d+$/.test(o.trim()));
+
+  // Helper: Dutch number words → digit mapping
+  const dutchNumbers = {
+    'nul': '0', 'een': '1', 'één': '1', 'eén': '1',
+    'twee': '2', 'twéé': '2', 'drie': '3', 'dri': '3',
+    'vier': '4', 'veer': '4', 'fear': '4', 'fier': '4',
+    'vijf': '5', 'zes': '6', 'zeven': '7', 'acht': '8',
+    'negen': '9', 'tien': '10', 'elf': '11', 'twaalf': '12',
+    'dertien': '13', 'veertien': '14', 'vijftien': '15',
+    'zestien': '16', 'zeventien': '17', 'achttien': '18',
+    'negentien': '19', 'twintig': '20', 'dertig': '30',
+    'veertig': '40', 'vijftig': '50', 'zestig': '60',
+    'zeventig': '70', 'tachtig': '80', 'negentig': '90',
+    'honderd': '100', 'duizend': '1000'
+  };
+
+  // Helper: parse compound Dutch numbers like "tweeënvijftig" → 52
+  function parseDutchNumber(text) {
+    const t = text.replace(/[ëé]/g, 'e').replace(/-/g, '').trim();
+    // Direct digit
+    if (/^\d+$/.test(t)) return parseInt(t);
+    // Simple word
+    if (dutchNumbers[text]) return parseInt(dutchNumbers[text]);
+    // Compound: "tweeenvijftig" = 2+50, "drieentwintig" = 3+20
+    const compoundMatch = t.match(/^(een|twee|drie|vier|vijf|zes|zeven|acht|negen)en(twintig|dertig|veertig|vijftig|zestig|zeventig|tachtig|negentig)$/);
+    if (compoundMatch) {
+      const ones = dutchNumbers[compoundMatch[1]] || '0';
+      const tens = dutchNumbers[compoundMatch[2]] || '0';
+      return parseInt(tens) + parseInt(ones);
     }
-    if (answer !== null) break;
+    return null;
   }
 
-  // Helper: check if a number word is part of a compound Dutch number
-  // e.g. "twee" in "tweeënvijftig", "drie" in "drieëntwintig"
-  function isCompoundNumber(word) {
-    return /^(een|twee|drie|vier|vijf|zes|zeven|acht|negen|tien|elf|twaalf).*(tig|tien|honderd|duizend|en\w+)/.test(word)
-      || /^\d{2,}$/.test(word); // multi-digit numbers like "52"
-  }
+  // ===== STEP 1: CONTENT MATCH (highest priority) =====
+  // If user says the actual answer text, that always wins
+  // This is critical when options are numbers — "vier" should match option "4", not "select option 4"
+  if (answer === null && q && q.o) {
+    let bestContentMatch = -1;
+    let bestContentLen = 0;
 
-  // Second: find the LAST number word in the transcript
-  // This handles "uhh... vier" or "niet twee maar vier"
-  // BUT skip compound numbers like "tweeënvijftig" — those are answer content, not answer numbers
-  if (answer === null) {
-    for (let i = words.length - 1; i >= 0; i--) {
-      const w = words[i];
-      // Skip compound numbers — these are answer TEXT, not answer NUMBERS
-      if (isCompoundNumber(w)) {
-        console.log('[Voice] Skip samengesteld getal:', w);
-        continue;
-      }
-      // Direct digit check (only single digits 1-4)
-      if (w === '1' || w === '2' || w === '3' || w === '4') {
-        answer = parseInt(w) - 1;
-        break;
-      }
-      // Word check
-      // BUG FIX #11: "een" is also the Dutch article "a/an"
-      // Only match "een" as number 1 if it's the ONLY word or the LAST word
-      if ((w === 'één' || w === 'eén') || (w === 'een' && (words.length === 1 || i === words.length - 1))) { answer = 0; break; }
-      if (w === 'twee' || w === 'twéé') { answer = 1; break; }
-      if (w === 'drie' || w === 'dri') { answer = 2; break; }
-      if (w === 'vier' || w === 'veer' || w === 'fear' || w === 'fier') { answer = 3; break; }
-      // Ordinal check
-      if (w === 'eerste') { answer = 0; break; }
-      if (w === 'tweede') { answer = 1; break; }
-      if (w === 'derde') { answer = 2; break; }
-      if (w === 'vierde') { answer = 3; break; }
-    }
-  }
+    for (let i = 0; i < q.o.length; i++) {
+      const optLower = q.o[i].toLowerCase().trim();
 
-  // Third: fuzzy match — check if transcript CONTAINS a number phrase
-  // But use word-boundary matching to avoid "twee" matching inside "tweeënvijftig"
-  if (answer === null) {
-    for (const group of answerPatterns) {
-      for (const p of group.patterns) {
-        // Use word boundary regex instead of simple includes
-        const regex = new RegExp('(^|\\s)' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|\\s)');
-        if (regex.test(clean) && p.length > bestMatchLen) {
-          answer = group.answer;
-          bestMatchLen = p.length;
+      // For numeric options: convert spoken Dutch to number and compare
+      if (optionsAreNumeric) {
+        const optNum = parseInt(optLower);
+        // Try to parse what the user said as a number
+        for (const w of words) {
+          const parsed = parseDutchNumber(w);
+          if (parsed !== null && parsed === optNum) {
+            bestContentMatch = i;
+            bestContentLen = 100; // high priority
+            console.log('[Voice] Numerieke match: "' + w + '" = ' + parsed + ' → optie ' + (i + 1));
+            break;
+          }
         }
-      }
-    }
-  }
-
-  // Fourth: content match — check if transcript matches the actual answer text
-  // e.g. user says "cheeta" → match to option containing "Cheeta"
-  if (answer === null && voiceQuizState.active) {
-    const q = voiceQuizState.questions[voiceQuizState.currentIndex];
-    if (q && q.o) {
-      let bestContentMatch = -1;
-      let bestContentLen = 0;
-      for (let i = 0; i < q.o.length; i++) {
-        const optLower = q.o[i].toLowerCase();
-        // Check if user said the option text or option text is in what they said
-        if (clean.includes(optLower) || optLower.includes(clean)) {
+        // Also try the full clean string as a number
+        const fullParsed = parseDutchNumber(clean);
+        if (fullParsed !== null && fullParsed === optNum) {
+          bestContentMatch = i;
+          bestContentLen = 100;
+        }
+        // Direct digit string match
+        if (clean === optLower || clean === String(optNum)) {
+          bestContentMatch = i;
+          bestContentLen = 100;
+        }
+      } else {
+        // For text options: fuzzy text matching
+        if (clean === optLower) {
+          bestContentMatch = i;
+          bestContentLen = 100; // exact match = highest
+        } else if (clean.includes(optLower) || optLower.includes(clean)) {
           const matchLen = Math.min(clean.length, optLower.length);
-          if (matchLen > bestContentLen && matchLen >= 3) { // min 3 chars to avoid false matches
+          if (matchLen > bestContentLen && matchLen >= 3) {
             bestContentMatch = i;
             bestContentLen = matchLen;
           }
         }
-        // Also check individual words of the option
+        // Check individual words of the option
         const optWords = optLower.split(/\s+/);
         for (const ow of optWords) {
-          if (ow.length >= 3 && clean.includes(ow)) {
-            if (ow.length > bestContentLen) {
-              bestContentMatch = i;
-              bestContentLen = ow.length;
-            }
+          if (ow.length >= 3 && clean.includes(ow) && ow.length > bestContentLen) {
+            bestContentMatch = i;
+            bestContentLen = ow.length;
           }
         }
       }
-      if (bestContentMatch >= 0) {
-        answer = bestContentMatch;
-        console.log('[Voice] Content match: "' + clean + '" → optie ' + (answer + 1) + ' (' + q.o[answer] + ')');
+    }
+    if (bestContentMatch >= 0) {
+      answer = bestContentMatch;
+      console.log('[Voice] Content match: "' + clean + '" → optie ' + (answer + 1) + ' (' + q.o[answer] + ')');
+    }
+  }
+
+  // ===== STEP 2: NUMBER INDEX MATCH (only if content match didn't find anything) =====
+  // "zeg 1/2/3/4" or "optie 2" etc — but SKIP this if options are numeric
+  // (because "vier" meaning "option 4" vs "the number 4" is ambiguous, and content match is better)
+  if (answer === null && !optionsAreNumeric) {
+    const answerPatterns = [
+      { answer: 0, patterns: ['1', 'een', 'één', 'eén', 'nummer 1', 'nummer een', 'antwoord 1', 'antwoord een', 'optie 1', 'optie een', 'de eerste'] },
+      { answer: 1, patterns: ['2', 'twee', 'twéé', 'nummer 2', 'nummer twee', 'antwoord 2', 'antwoord twee', 'optie 2', 'optie twee', 'de tweede'] },
+      { answer: 2, patterns: ['3', 'drie', 'dri', 'nummer 3', 'nummer drie', 'antwoord 3', 'antwoord drie', 'optie 3', 'optie drie', 'de derde'] },
+      { answer: 3, patterns: ['4', 'vier', 'veer', 'fear', 'fier', 'nummer 4', 'nummer vier', 'antwoord 4', 'antwoord vier', 'optie 4', 'optie vier', 'de vierde'] }
+    ];
+
+    // Exact full-string match
+    for (const group of answerPatterns) {
+      for (const p of group.patterns) {
+        if (clean === p) { answer = group.answer; break; }
       }
+      if (answer !== null) break;
+    }
+
+    // Last number word in transcript
+    if (answer === null) {
+      for (let i = words.length - 1; i >= 0; i--) {
+        const w = words[i];
+        if (w === '1' || w === '2' || w === '3' || w === '4') { answer = parseInt(w) - 1; break; }
+        if ((w === 'één' || w === 'eén') || (w === 'een' && (words.length === 1 || i === words.length - 1))) { answer = 0; break; }
+        if (w === 'twee' || w === 'twéé') { answer = 1; break; }
+        if (w === 'drie' || w === 'dri') { answer = 2; break; }
+        if (w === 'vier' || w === 'veer' || w === 'fear' || w === 'fier') { answer = 3; break; }
+        if (w === 'eerste') { answer = 0; break; }
+        if (w === 'tweede') { answer = 1; break; }
+        if (w === 'derde') { answer = 2; break; }
+        if (w === 'vierde') { answer = 3; break; }
+      }
+    }
+
+    // Fuzzy word-boundary match
+    if (answer === null) {
+      let bestMatchLen = 0;
+      for (const group of answerPatterns) {
+        for (const p of group.patterns) {
+          const regex = new RegExp('(^|\\s)' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|\\s)');
+          if (regex.test(clean) && p.length > bestMatchLen) {
+            answer = group.answer;
+            bestMatchLen = p.length;
+          }
+        }
+      }
+    }
+  }
+
+  // ===== STEP 3: For numeric options, fallback to explicit "optie X" phrasing =====
+  if (answer === null && optionsAreNumeric) {
+    const explicitPatterns = [
+      { answer: 0, patterns: ['optie 1', 'optie een', 'nummer 1', 'de eerste', 'antwoord 1'] },
+      { answer: 1, patterns: ['optie 2', 'optie twee', 'nummer 2', 'de tweede', 'antwoord 2'] },
+      { answer: 2, patterns: ['optie 3', 'optie drie', 'nummer 3', 'de derde', 'antwoord 3'] },
+      { answer: 3, patterns: ['optie 4', 'optie vier', 'nummer 4', 'de vierde', 'antwoord 4'] }
+    ];
+    for (const group of explicitPatterns) {
+      for (const p of group.patterns) {
+        if (clean.includes(p)) { answer = group.answer; break; }
+      }
+      if (answer !== null) break;
     }
   }
 
@@ -9959,7 +9995,8 @@ function showVoiceQuizQuestion(mode) {
   }
 
   // Speak the question FIRST — timer + mic start AFTER TTS is done
-  const spokenOptions = q.o.map((o, i) => (i + 1) + ': ' + o).join('. ');
+  // Always use "antwoord 1, antwoord 2, ..." — duidelijk en werkt altijd
+  const spokenOptions = 'Antwoord 1: ' + q.o[0] + '. Antwoord 2: ' + q.o[1] + '. Antwoord 3: ' + q.o[2] + '. Antwoord 4: ' + q.o[3];
   speak(q.v + '. ' + spokenOptions, () => {
     console.log('[Quiz] TTS klaar voor vraag ' + (questionId + 1) + ', timer starten');
     startQuestionTimer();
@@ -9991,7 +10028,7 @@ function repeatCurrentQuestion() {
   clearInterval(voiceQuizState.timerInterval);
   voiceQuizState.waitingForAnswer = false; // Don't accept answers during re-read
 
-  const spokenOptions = q.o.map((o, i) => (i + 1) + ': ' + o).join('. ');
+  const spokenOptions = 'Antwoord 1: ' + q.o[0] + '. Antwoord 2: ' + q.o[1] + '. Antwoord 3: ' + q.o[2] + '. Antwoord 4: ' + q.o[3];
   const mode = voiceQuizState.mode;
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   updateMicStatus(prefix, false);
