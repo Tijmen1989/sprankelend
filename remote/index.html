@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0031</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0032</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -2505,6 +2505,60 @@
       <input type="range" id="recv-balance" min="0" max="100" value="50" oninput="updateRecvBalance(this.value)" style="flex:1;">
       <span style="font-size:0.75em;color:#ff9800;">B</span>
       <span id="recv-balance-display" style="font-size:0.78em;min-width:60px;text-align:center;color:#ccc;">50/50</span>
+    </div>
+  </div>
+
+  <!-- Baseline stimulatie (loop/ring) -->
+  <div class="control-card" id="baseline-card" style="border:1px solid #4caf50;">
+    <h3 style="color:#4caf50;">🔄 Baseline Stimulatie</h3>
+    <p style="color:#888;font-size:12px;margin:0 0 10px 0;">Houdt een kanaal continu actief (bijv. voor cockring/loop). Duckt automatisch bij shocks.</p>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <button id="baseline-toggle" onclick="toggleBaseline()" style="padding:8px 18px;border-radius:8px;border:2px solid #4caf50;background:transparent;color:#4caf50;font-weight:bold;cursor:pointer;font-size:0.95em;">
+        ▶ START
+      </button>
+      <span id="baseline-status" style="font-size:0.85em;color:#666;">Uit</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Kanaal</label>
+        <select id="baseline-channel" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="A">Kanaal A</option>
+          <option value="B">Kanaal B</option>
+          <option value="both">Beide</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Golfvorm</label>
+        <select id="baseline-wave" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="sine">Sine (zacht)</option>
+          <option value="triangle">Triangle (gemiddeld)</option>
+          <option value="square">Square (strak)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="font-size:0.8em;color:#bbb;">Volume <span id="baseline-vol-val" style="color:#4caf50;font-weight:bold;">10%</span></label>
+      <input type="range" id="baseline-vol" min="1" max="35" value="10" step="1" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:4px;">
+      <label style="font-size:0.8em;color:#bbb;">Frequentie <span id="baseline-freq-val" style="color:#4caf50;font-weight:bold;">70 Hz</span></label>
+      <input type="range" id="baseline-freq" min="30" max="150" value="70" step="5" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:4px;">
+      <label style="font-size:0.8em;color:#bbb;">Minimum bij ducking <span id="baseline-duck-val" style="color:#4caf50;font-weight:bold;">3%</span></label>
+      <input type="range" id="baseline-duck" min="0" max="10" value="3" step="1" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:6px;padding:6px;background:#0d1117;border-radius:6px;">
+      <div style="font-size:0.75em;color:#666;margin-bottom:3px;">Baseline niveau:</div>
+      <div style="height:6px;background:#1a1a2e;border-radius:3px;overflow:hidden;">
+        <div id="baseline-viz-bar" style="height:100%;width:0%;background:#4caf50;border-radius:3px;transition:width 0.3s;"></div>
+      </div>
     </div>
   </div>
 
@@ -5150,6 +5204,9 @@ function startReceiver() {
 function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
   if (panicCooldown) return;
 
+  // Duck baseline during shock
+  duckBaseline(duration);
+
   // Audio activation gate check
   if (!audioActivated) {
     recvLog('⚠️ Audio niet geactiveerd — tik eerst op Activeer Audio', true);
@@ -5221,6 +5278,7 @@ let holdOscNodes = null;
 let recvHoldAutoStop = null;
 function startReceiverHoldLocal(freq, volume) {
   stopReceiverHoldLocal();
+  duckBaseline(30000); // Hold can last up to 30s, duck for that
 
   // Register with state manager
   stateManager.requestContinuous('hold_mode');
@@ -5363,6 +5421,8 @@ function shouldUseStereoEngine() {
 }
 
 function doReceiverPattern(pattern, freq, volume) {
+  // Duck baseline during patterns (estimate ~3s for most patterns)
+  duckBaseline(3500);
   const display = document.getElementById('recv-pattern-display');
   const patternNames = {
     'ratata': 'Ratata',
@@ -5793,6 +5853,7 @@ function panicStop() {
 
   stateManager.stopAll();
   clearAllPatternTimeouts();
+  stopBaseline();
   stopAudioImmediately();
   stopReceiverHold();
   stopStandalone();
@@ -7390,6 +7451,246 @@ function getRecvBalanceFactors() {
     factorL: Math.min(1.0, (100 - bal) / 50),
     factorR: Math.min(1.0, bal / 50)
   };
+}
+
+// ================ BASELINE STIMULATION ENGINE ================
+// Continuous low-level stimulation on a chosen channel (e.g. for cock ring/loop)
+// Auto-ducks when shocks/patterns/hold/rewards happen, then recovers
+
+let baselineState = {
+  active: false,
+  nodes: null,       // { master, osc1, osc2, lfo, gainL, gainR, splitter, merger, limiter }
+  ducked: false,
+  duckTimeout: null,
+  vizInterval: null
+};
+
+function getBaselineConfig() {
+  return {
+    channel: document.getElementById('baseline-channel')?.value || 'A',
+    volume: parseInt(document.getElementById('baseline-vol')?.value || 10),
+    freq: parseInt(document.getElementById('baseline-freq')?.value || 70),
+    wave: document.getElementById('baseline-wave')?.value || 'sine',
+    duckMin: parseInt(document.getElementById('baseline-duck')?.value || 3)
+  };
+}
+
+function updateBaselineSetting() {
+  const cfg = getBaselineConfig();
+  document.getElementById('baseline-vol-val').textContent = cfg.volume + '%';
+  document.getElementById('baseline-freq-val').textContent = cfg.freq + ' Hz';
+  document.getElementById('baseline-duck-val').textContent = cfg.duckMin + '%';
+
+  // Live update als baseline actief is
+  if (baselineState.active && baselineState.nodes) {
+    const ctx = audioCtx;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const safetyLimit = getEffectiveSafetyLimit();
+    const vol = Math.min(cfg.volume / 100, safetyLimit);
+
+    // Update volume (alleen als niet geduckt)
+    if (!baselineState.ducked) {
+      baselineState.nodes.master.gain.linearRampToValueAtTime(vol, now + 0.3);
+    }
+
+    // Update frequentie
+    if (baselineState.nodes.osc1) {
+      baselineState.nodes.osc1.frequency.linearRampToValueAtTime(cfg.freq, now + 0.3);
+    }
+    if (baselineState.nodes.osc2) {
+      baselineState.nodes.osc2.frequency.linearRampToValueAtTime(cfg.freq * 0.5, now + 0.3);
+    }
+
+    // Update channel routing
+    const gainL = baselineState.nodes.gainL;
+    const gainR = baselineState.nodes.gainR;
+    if (gainL && gainR) {
+      gainL.gain.linearRampToValueAtTime(cfg.channel === 'B' ? 0.0 : 1.0, now + 0.2);
+      gainR.gain.linearRampToValueAtTime(cfg.channel === 'A' ? 0.0 : 1.0, now + 0.2);
+    }
+  }
+}
+
+function toggleBaseline() {
+  if (baselineState.active) {
+    stopBaseline();
+  } else {
+    startBaseline();
+  }
+}
+
+function startBaseline() {
+  if (baselineState.active) stopBaseline();
+
+  const ctx = ensureAudio();
+  const now = ctx.currentTime;
+  const cfg = getBaselineConfig();
+  const safetyLimit = getEffectiveSafetyLimit();
+  const vol = Math.min(cfg.volume / 100, safetyLimit);
+
+  // Master gain — fade in over 2 seconds
+  const master = ctx.createGain();
+  master.channelCount = 2;
+  master.channelCountMode = 'explicit';
+  master.channelInterpretation = 'speakers';
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(vol, now + 2.0);
+
+  // Channel routing
+  const splitter = ctx.createChannelSplitter(2);
+  const merger = ctx.createChannelMerger(2);
+  const gainL = ctx.createGain();
+  const gainR = ctx.createGain();
+  gainL.gain.value = cfg.channel === 'B' ? 0.0 : 1.0;
+  gainR.gain.value = cfg.channel === 'A' ? 0.0 : 1.0;
+
+  // Limiter
+  const limiter = ctx.createDynamicsCompressor();
+  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  limiter.threshold.value = threshDb;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.01;
+
+  // Routing
+  master.connect(splitter);
+  splitter.connect(gainL, 0); splitter.connect(gainR, 1);
+  gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
+  merger.connect(limiter);
+  limiter.connect(getMasterLimiter());
+
+  // Main oscillator
+  const osc1 = ctx.createOscillator();
+  osc1.type = cfg.wave;
+  osc1.frequency.value = cfg.freq;
+  const g1 = ctx.createGain(); g1.gain.value = 0.5;
+  osc1.connect(g1); g1.connect(master);
+  osc1.start(now);
+
+  // Sub oscillator for depth
+  const osc2 = ctx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.value = cfg.freq * 0.5;
+  const g2 = ctx.createGain(); g2.gain.value = 0.25;
+  osc2.connect(g2); g2.connect(master);
+  osc2.start(now);
+
+  // Gentle LFO for natural feel (not robotic constant)
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.4; // heel langzaam: 1 golf per 2.5 seconden
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = vol * 0.15; // subtiele variatie
+  lfo.connect(lfoGain);
+  lfoGain.connect(master.gain);
+  lfo.start(now);
+
+  baselineState.active = true;
+  baselineState.ducked = false;
+  baselineState.nodes = { master, osc1, osc2, lfo, lfoGain, g1, g2, gainL, gainR, splitter, merger, limiter };
+
+  // UI
+  const btn = document.getElementById('baseline-toggle');
+  btn.textContent = '⏹ STOP';
+  btn.style.borderColor = '#e94560';
+  btn.style.color = '#e94560';
+  document.getElementById('baseline-status').textContent = 'Actief';
+  document.getElementById('baseline-status').style.color = '#4caf50';
+
+  // Viz update
+  baselineState.vizInterval = setInterval(() => {
+    const bar = document.getElementById('baseline-viz-bar');
+    if (!bar || !baselineState.active) return;
+    const currentVol = baselineState.ducked ? (cfg.duckMin || 3) : cfg.volume;
+    bar.style.width = Math.min(currentVol / 35 * 100, 100) + '%';
+    bar.style.background = baselineState.ducked ? '#ff9800' : '#4caf50';
+  }, 200);
+
+  recvLog('🔄 Baseline gestart: ' + cfg.volume + '% / ' + cfg.freq + 'Hz op kanaal ' + cfg.channel);
+}
+
+function stopBaseline() {
+  if (!baselineState.active) return;
+
+  if (baselineState.vizInterval) {
+    clearInterval(baselineState.vizInterval);
+    baselineState.vizInterval = null;
+  }
+  if (baselineState.duckTimeout) {
+    clearTimeout(baselineState.duckTimeout);
+    baselineState.duckTimeout = null;
+  }
+
+  if (baselineState.nodes) {
+    try {
+      const ctx = audioCtx;
+      if (ctx) {
+        const now = ctx.currentTime;
+        // Fade out over 1 second
+        baselineState.nodes.master.gain.linearRampToValueAtTime(0, now + 1.0);
+        const nodes = baselineState.nodes;
+        setTimeout(() => {
+          try { nodes.osc1.stop(); } catch(e) {}
+          try { nodes.osc2.stop(); } catch(e) {}
+          try { nodes.lfo.stop(); } catch(e) {}
+        }, 1200);
+      }
+    } catch(e) {}
+  }
+
+  baselineState.active = false;
+  baselineState.ducked = false;
+  baselineState.nodes = null;
+
+  // UI
+  const btn = document.getElementById('baseline-toggle');
+  if (btn) {
+    btn.textContent = '▶ START';
+    btn.style.borderColor = '#4caf50';
+    btn.style.color = '#4caf50';
+  }
+  const status = document.getElementById('baseline-status');
+  if (status) { status.textContent = 'Uit'; status.style.color = '#666'; }
+  const bar = document.getElementById('baseline-viz-bar');
+  if (bar) bar.style.width = '0%';
+
+  recvLog('🔄 Baseline gestopt');
+}
+
+// Duck the baseline when other stimulation happens
+function duckBaseline(durationMs) {
+  if (!baselineState.active || !baselineState.nodes) return;
+
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const cfg = getBaselineConfig();
+  const safetyLimit = getEffectiveSafetyLimit();
+  const duckVol = Math.min(cfg.duckMin / 100, safetyLimit);
+
+  // Snel ducken (50ms)
+  baselineState.nodes.master.gain.cancelScheduledValues(now);
+  baselineState.nodes.master.gain.linearRampToValueAtTime(Math.max(duckVol, 0.001), now + 0.05);
+  baselineState.ducked = true;
+
+  // Cancel previous recovery timer
+  if (baselineState.duckTimeout) clearTimeout(baselineState.duckTimeout);
+
+  // Recover after the event + 300ms buffer
+  baselineState.duckTimeout = setTimeout(() => {
+    if (!baselineState.active || !baselineState.nodes) return;
+    const ctx2 = audioCtx;
+    if (!ctx2) return;
+    const now2 = ctx2.currentTime;
+    const normalVol = Math.min(cfg.volume / 100, getEffectiveSafetyLimit());
+    // Langzaam terugkomen (800ms)
+    baselineState.nodes.master.gain.cancelScheduledValues(now2);
+    baselineState.nodes.master.gain.linearRampToValueAtTime(normalVol, now2 + 0.8);
+    baselineState.ducked = false;
+    baselineState.duckTimeout = null;
+  }, (durationMs || 500) + 300);
 }
 
 function updateChannelBalance(prefix, value) {
@@ -11308,6 +11609,10 @@ function doQuizReward(mode) {
   }
 
   stopQuizReward(); // Stop vorige beloning
+
+  // Duck baseline during reward
+  const rewardDur = getQuizRewardDuration();
+  duckBaseline(rewardDur);
 
   const ctx = ensureAudio();
   const now = ctx.currentTime;
