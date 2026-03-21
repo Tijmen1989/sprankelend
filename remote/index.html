@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0007</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0008</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9061,7 +9061,11 @@ checkPresets();
 
 // --- Mic Test ---
 function testMicrophone() {
-  const output = document.getElementById('mic-test-output');
+  // Zoek het output element in het actieve scherm
+  const activeScreen = document.querySelector('.screen.active');
+  let output = activeScreen ? activeScreen.querySelector('[id$="-mic-test-output"], #mic-test-output') : null;
+  if (!output) output = document.getElementById('solo-mic-test-output') || document.getElementById('mic-test-output');
+  if (!output) { alert('Mic test output niet gevonden'); return; }
   output.style.display = 'block';
   output.innerHTML = '🎤 Luistert 5 seconden... zeg iets!<br>';
 
