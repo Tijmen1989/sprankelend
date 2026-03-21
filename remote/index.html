@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0030</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0031</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -11539,7 +11539,8 @@ function doQuizPunishment(mode) {
     const s = getSoloSettings();
     doSoloShock(s.freq, shockVol, shockDur, { _label: 'quiz_fout', _bypassCooldown: true });
   } else if (mode === 'recv') {
-    doReceiverShock(shockFreq, shockVol / 100, shockDur, punishVolL / 100, punishVolR / 100);
+    // doReceiverShock expects volume as percentage (0-100), not decimal
+    doReceiverShock(shockFreq, shockVol, shockDur, punishVolL, punishVolR);
   }
 
   vibrateDevice(300);
