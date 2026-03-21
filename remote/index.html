@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0032</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0033</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -1892,6 +1892,7 @@
 
       <!-- Presets -->
       <div class="cont-presets">
+        <button class="cont-preset-btn" onclick="setContPreset('solo','constant')">⚡ Constant</button>
         <button class="cont-preset-btn active" onclick="setContPreset('solo','zacht')">Zacht</button>
         <button class="cont-preset-btn" onclick="setContPreset('solo','tinteling')">Tinteling</button>
         <button class="cont-preset-btn" onclick="setContPreset('solo','massage')">Massage</button>
@@ -7281,6 +7282,7 @@ let continuousState = {
 
 // Continuous mode presets
 const contPresets = {
+  constant: { vol: 8, freq: 80, wave: 10, harmonics: 15, noise: 0, ampmod: 0, amprate: 0, freqmod: 0, drift: 0 },
   zacht:    { vol: 5, freq: 100, wave: 10, harmonics: 10, noise: 0, ampmod: 20, amprate: 3, freqmod: 10, drift: 15 },
   tinteling:{ vol: 8, freq: 350, wave: 55, harmonics: 50, noise: 25, ampmod: 45, amprate: 25, freqmod: 20, drift: 25 },
   massage:  { vol: 10, freq: 90, wave: 15, harmonics: 20, noise: 5, ampmod: 60, amprate: 4, freqmod: 25, drift: 30 },
