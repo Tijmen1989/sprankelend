@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0033</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0034</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -1873,6 +1873,60 @@
         <span class="qs-pct">100%</span>
         <span class="qs-vol" id="qs-solo-100-vol">50</span>
       </button>
+    </div>
+  </div>
+
+  <!-- Baseline stimulatie (solo) -->
+  <div class="control-card" id="solo-baseline-card" style="border:1px solid #4caf50;">
+    <h3 style="color:#4caf50;">🔄 Baseline Stimulatie</h3>
+    <p style="color:#888;font-size:12px;margin:0 0 10px 0;">Houdt een kanaal continu actief (bijv. voor cockring/loop). Duckt automatisch bij shocks en patronen.</p>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <button id="solo-baseline-toggle" onclick="toggleBaseline()" style="padding:8px 18px;border-radius:8px;border:2px solid #4caf50;background:transparent;color:#4caf50;font-weight:bold;cursor:pointer;font-size:0.95em;">
+        ▶ START
+      </button>
+      <span id="solo-baseline-status" style="font-size:0.85em;color:#666;">Uit</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Kanaal</label>
+        <select id="solo-baseline-channel" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="A">Kanaal A</option>
+          <option value="B">Kanaal B</option>
+          <option value="both">Beide</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Golfvorm</label>
+        <select id="solo-baseline-wave" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="sine">Sine (zacht)</option>
+          <option value="triangle">Triangle (gemiddeld)</option>
+          <option value="square">Square (strak)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="font-size:0.8em;color:#bbb;">Volume <span id="solo-baseline-vol-val" style="color:#4caf50;font-weight:bold;">10%</span></label>
+      <input type="range" id="solo-baseline-vol" min="1" max="35" value="10" step="1" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:4px;">
+      <label style="font-size:0.8em;color:#bbb;">Frequentie <span id="solo-baseline-freq-val" style="color:#4caf50;font-weight:bold;">70 Hz</span></label>
+      <input type="range" id="solo-baseline-freq" min="30" max="150" value="70" step="5" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:4px;">
+      <label style="font-size:0.8em;color:#bbb;">Minimum bij ducking <span id="solo-baseline-duck-val" style="color:#4caf50;font-weight:bold;">3%</span></label>
+      <input type="range" id="solo-baseline-duck" min="0" max="10" value="3" step="1" oninput="updateBaselineSetting()">
+    </div>
+
+    <div style="margin-top:6px;padding:6px;background:#0d1117;border-radius:6px;">
+      <div style="font-size:0.75em;color:#666;margin-bottom:3px;">Baseline niveau:</div>
+      <div style="height:6px;background:#1a1a2e;border-radius:3px;overflow:hidden;">
+        <div id="solo-baseline-viz-bar" style="height:100%;width:0%;background:#4caf50;border-radius:3px;transition:width 0.3s;"></div>
+      </div>
     </div>
   </div>
 
@@ -6616,6 +6670,7 @@ function soloShockEnd(e) {
 
 function startSoloHoldLocal() {
   stopSoloHoldLocal(); // stop bestaand
+  duckBaseline(30000); // Hold kan 30s duren
   const ctx = ensureAudio();
   const now = ctx.currentTime;
   const s = getSoloSettings();
@@ -6753,6 +6808,7 @@ function soloLog(msg, isShock) {
 
 let soloCooldownUntil = 0;
 function doSoloShock(freq, volume, duration, opts) {
+  duckBaseline(duration || 300);
   // Anti-stacking: handmatige klikken mogen niet stapelen
   // Patronen/games bypassen dit via opts._bypassCooldown
   if (!(opts && opts._bypassCooldown) && Date.now() < soloCooldownUntil) {
@@ -6814,6 +6870,7 @@ function soloShock(pct) {
 }
 
 function soloPattern(pattern) {
+  duckBaseline(3500);
   ensureAudio();
   const names = { 'ratata':'Ratata','golf':'Golf','hartslag':'Hartslag','opbouw':'Opbouw','staccato':'Staccato','ademhaling':'Ademhaling','pingpong':'Ping Pong','slowramp':'Langzaam↑','chaos':'Chaos' };
   const display = document.getElementById('solo-pattern-display');
@@ -6964,6 +7021,7 @@ function scheduleSoloRandom() {
 
 function panicStopSolo() {
   clearAllPatternTimeouts();
+  stopBaseline();
   stopAudioImmediately();
   stopSoloHoldLocal();
   stopSoloRandom();
@@ -7467,21 +7525,32 @@ let baselineState = {
   vizInterval: null
 };
 
+function getBaselinePrefix() {
+  // Determine which UI panel is active: solo or receiver
+  if (myRole === 'solo') return 'solo-baseline';
+  return 'baseline'; // receiver
+}
+
 function getBaselineConfig() {
+  const p = getBaselinePrefix();
   return {
-    channel: document.getElementById('baseline-channel')?.value || 'A',
-    volume: parseInt(document.getElementById('baseline-vol')?.value || 10),
-    freq: parseInt(document.getElementById('baseline-freq')?.value || 70),
-    wave: document.getElementById('baseline-wave')?.value || 'sine',
-    duckMin: parseInt(document.getElementById('baseline-duck')?.value || 3)
+    channel: document.getElementById(p + '-channel')?.value || 'A',
+    volume: parseInt(document.getElementById(p + '-vol')?.value || 10),
+    freq: parseInt(document.getElementById(p + '-freq')?.value || 70),
+    wave: document.getElementById(p + '-wave')?.value || 'sine',
+    duckMin: parseInt(document.getElementById(p + '-duck')?.value || 3)
   };
 }
 
 function updateBaselineSetting() {
+  const p = getBaselinePrefix();
   const cfg = getBaselineConfig();
-  document.getElementById('baseline-vol-val').textContent = cfg.volume + '%';
-  document.getElementById('baseline-freq-val').textContent = cfg.freq + ' Hz';
-  document.getElementById('baseline-duck-val').textContent = cfg.duckMin + '%';
+  const volEl = document.getElementById(p + '-vol-val');
+  const freqEl = document.getElementById(p + '-freq-val');
+  const duckEl = document.getElementById(p + '-duck-val');
+  if (volEl) volEl.textContent = cfg.volume + '%';
+  if (freqEl) freqEl.textContent = cfg.freq + ' Hz';
+  if (duckEl) duckEl.textContent = cfg.duckMin + '%';
 
   // Live update als baseline actief is
   if (baselineState.active && baselineState.nodes) {
@@ -7593,24 +7662,27 @@ function startBaseline() {
   baselineState.ducked = false;
   baselineState.nodes = { master, osc1, osc2, lfo, lfoGain, g1, g2, gainL, gainR, splitter, merger, limiter };
 
-  // UI
-  const btn = document.getElementById('baseline-toggle');
-  btn.textContent = '⏹ STOP';
-  btn.style.borderColor = '#e94560';
-  btn.style.color = '#e94560';
-  document.getElementById('baseline-status').textContent = 'Actief';
-  document.getElementById('baseline-status').style.color = '#4caf50';
+  // UI — update both panels (whichever exists)
+  ['baseline', 'solo-baseline'].forEach(p => {
+    const btn = document.getElementById(p + '-toggle');
+    if (btn) { btn.textContent = '⏹ STOP'; btn.style.borderColor = '#e94560'; btn.style.color = '#e94560'; }
+    const status = document.getElementById(p + '-status');
+    if (status) { status.textContent = 'Actief'; status.style.color = '#4caf50'; }
+  });
 
   // Viz update
+  const vizPrefix = getBaselinePrefix();
   baselineState.vizInterval = setInterval(() => {
-    const bar = document.getElementById('baseline-viz-bar');
+    const bar = document.getElementById(vizPrefix + '-viz-bar');
     if (!bar || !baselineState.active) return;
-    const currentVol = baselineState.ducked ? (cfg.duckMin || 3) : cfg.volume;
+    const currentCfg = getBaselineConfig();
+    const currentVol = baselineState.ducked ? (currentCfg.duckMin || 3) : currentCfg.volume;
     bar.style.width = Math.min(currentVol / 35 * 100, 100) + '%';
     bar.style.background = baselineState.ducked ? '#ff9800' : '#4caf50';
   }, 200);
 
-  recvLog('🔄 Baseline gestart: ' + cfg.volume + '% / ' + cfg.freq + 'Hz op kanaal ' + cfg.channel);
+  const logFn = myRole === 'solo' ? soloLog : recvLog;
+  logFn('🔄 Baseline gestart: ' + cfg.volume + '% / ' + cfg.freq + 'Hz op kanaal ' + cfg.channel);
 }
 
 function stopBaseline() {
@@ -7646,19 +7718,18 @@ function stopBaseline() {
   baselineState.ducked = false;
   baselineState.nodes = null;
 
-  // UI
-  const btn = document.getElementById('baseline-toggle');
-  if (btn) {
-    btn.textContent = '▶ START';
-    btn.style.borderColor = '#4caf50';
-    btn.style.color = '#4caf50';
-  }
-  const status = document.getElementById('baseline-status');
-  if (status) { status.textContent = 'Uit'; status.style.color = '#666'; }
-  const bar = document.getElementById('baseline-viz-bar');
-  if (bar) bar.style.width = '0%';
+  // UI — update both panels
+  ['baseline', 'solo-baseline'].forEach(p => {
+    const btn = document.getElementById(p + '-toggle');
+    if (btn) { btn.textContent = '▶ START'; btn.style.borderColor = '#4caf50'; btn.style.color = '#4caf50'; }
+    const status = document.getElementById(p + '-status');
+    if (status) { status.textContent = 'Uit'; status.style.color = '#666'; }
+    const bar = document.getElementById(p + '-viz-bar');
+    if (bar) bar.style.width = '0%';
+  });
 
-  recvLog('🔄 Baseline gestopt');
+  const logFn = myRole === 'solo' ? soloLog : recvLog;
+  logFn('🔄 Baseline gestopt');
 }
 
 // Duck the baseline when other stimulation happens
