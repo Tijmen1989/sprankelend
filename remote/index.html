@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0012</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0013</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9213,6 +9213,12 @@ function initSpeechRecognition() {
     console.log('[Voice] ✅ SpeechRecognition gestart');
   };
 
+  // Debounce: wacht tot Chrome klaar is met het volledige woord
+  // Voorkomt dat "tweeënvijftig" wordt opgepikt als "twee"
+  let pendingTranscript = '';
+  let pendingTimer = null;
+  const VOICE_DEBOUNCE_MS = 500; // 500ms wachten op meer spraak
+
   speechRecognition.onresult = (event) => {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript.trim().toLowerCase();
@@ -9220,8 +9226,21 @@ function initSpeechRecognition() {
       console.log('[Voice]', isFinal ? '✅ FINAL:' : '⏳ interim:', transcript, '(confidence:', event.results[i][0].confidence.toFixed(2) + ')');
       if (!isFinal) {
         showVoiceHeard('... ' + transcript);
+        // Interim results resetten de debounce timer
+        clearTimeout(pendingTimer);
       } else {
-        processVoiceInput(transcript);
+        // Voeg toe aan pending transcript (Chrome kan meerdere final results sturen)
+        pendingTranscript = (pendingTranscript + ' ' + transcript).trim();
+        showVoiceHeard(pendingTranscript);
+        // Wacht even of er nog meer komt
+        clearTimeout(pendingTimer);
+        pendingTimer = setTimeout(() => {
+          if (pendingTranscript) {
+            console.log('[Voice] Debounce klaar, verwerk:', pendingTranscript);
+            processVoiceInput(pendingTranscript);
+            pendingTranscript = '';
+          }
+        }, VOICE_DEBOUNCE_MS);
       }
     }
   };
@@ -9413,12 +9432,25 @@ function processVoiceInput(transcript) {
     if (answer !== null) break;
   }
 
+  // Helper: check if a number word is part of a compound Dutch number
+  // e.g. "twee" in "tweeënvijftig", "drie" in "drieëntwintig"
+  function isCompoundNumber(word) {
+    return /^(een|twee|drie|vier|vijf|zes|zeven|acht|negen|tien|elf|twaalf).*(tig|tien|honderd|duizend|en\w+)/.test(word)
+      || /^\d{2,}$/.test(word); // multi-digit numbers like "52"
+  }
+
   // Second: find the LAST number word in the transcript
   // This handles "uhh... vier" or "niet twee maar vier"
+  // BUT skip compound numbers like "tweeënvijftig" — those are answer content, not answer numbers
   if (answer === null) {
     for (let i = words.length - 1; i >= 0; i--) {
       const w = words[i];
-      // Direct digit check
+      // Skip compound numbers — these are answer TEXT, not answer NUMBERS
+      if (isCompoundNumber(w)) {
+        console.log('[Voice] Skip samengesteld getal:', w);
+        continue;
+      }
+      // Direct digit check (only single digits 1-4)
       if (w === '1' || w === '2' || w === '3' || w === '4') {
         answer = parseInt(w) - 1;
         break;
@@ -9439,10 +9471,13 @@ function processVoiceInput(transcript) {
   }
 
   // Third: fuzzy match — check if transcript CONTAINS a number phrase
+  // But use word-boundary matching to avoid "twee" matching inside "tweeënvijftig"
   if (answer === null) {
     for (const group of answerPatterns) {
       for (const p of group.patterns) {
-        if (clean.includes(p) && p.length > bestMatchLen) {
+        // Use word boundary regex instead of simple includes
+        const regex = new RegExp('(^|\\s)' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|\\s)');
+        if (regex.test(clean) && p.length > bestMatchLen) {
           answer = group.answer;
           bestMatchLen = p.length;
         }
