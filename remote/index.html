@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0018</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0029</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -1700,6 +1700,11 @@
       <select id="solo-ui-output-device" onchange="updateSoloUIAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
         <option value="default">Standaard audio output</option>
       </select>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+        <label style="white-space:nowrap;font-size:13px;">🔊 UI Volume:</label>
+        <input type="range" id="solo-ui-volume" min="0" max="100" value="80" oninput="updateUIVolume('solo', this.value)" style="flex:1;">
+        <span id="solo-ui-volume-display" style="font-size:13px;min-width:35px;">80%</span>
+      </div>
     </div>
     <button onclick="detectSoloAudioDevices()" class="action-btn" style="margin-top:8px;width:100%;">🔄 Detecteer audio apparaten</button>
     <button onclick="testMicrophone()" class="action-btn" style="margin-top:6px;width:100%;background:#2d5a3d;">🎤 Test microfoon</button>
@@ -1927,6 +1932,17 @@
           <input type="hidden" id="solo-cont-vol" value="8">
         </div>
         <div class="cont-row-hint">⚠️ Stappen van 2%. Continu 15% ≈ 50% bij schokken. Start op 0 en bouw langzaam op (3s fade-in).</div>
+
+        <!-- Kanaal A/B balance -->
+        <div class="cont-vol-ctrl" id="solo-cont-balance-row" style="margin-top:4px;">
+          <label style="flex:0 0 85px;font-size:0.8em;color:#bbb;">A/B Balance</label>
+          <span style="font-size:0.75em;color:#4caf50;">A</span>
+          <input type="range" id="solo-cont-balance" min="0" max="100" value="50" oninput="updateChannelBalance('solo', this.value)" style="flex:1;">
+          <span style="font-size:0.75em;color:#ff9800;">B</span>
+          <span id="solo-cont-balance-display" style="font-size:0.78em;min-width:60px;text-align:center;color:#ccc;">50/50</span>
+        </div>
+        <div class="cont-row-hint">Verschuif de intensiteit tussen kanaal A (links) en B (rechts). Midden = gelijk.</div>
+
         <div class="cont-freq-ctrl">
           <label>Frequentie</label>
           <button class="cont-freq-btn" onclick="contFreqStep('solo', -10)">−</button>
@@ -2114,7 +2130,7 @@
 
         <div class="vq-config-group">
           <label>📂 Categorieën (meerdere mogelijk)</label>
-          <div class="vq-config-chips" id="solo-vqc-categories">
+          <div class="vq-config-chips" id="solo-vqc-categories" style="flex-wrap:wrap;">
             <div class="vq-config-chip active" data-val="alles" onclick="toggleCategoryChip(this, 'solo')">🌍 Alles</div>
             <div class="vq-config-chip" data-val="aardrijkskunde" onclick="toggleCategoryChip(this, 'solo')">🗺️ Aardrijkskunde</div>
             <div class="vq-config-chip" data-val="wetenschap" onclick="toggleCategoryChip(this, 'solo')">🔬 Wetenschap</div>
@@ -2122,6 +2138,14 @@
             <div class="vq-config-chip" data-val="natuur" onclick="toggleCategoryChip(this, 'solo')">🌿 Natuur</div>
             <div class="vq-config-chip" data-val="lichaam" onclick="toggleCategoryChip(this, 'solo')">🫀 Lichaam</div>
             <div class="vq-config-chip" data-val="geschiedenis" onclick="toggleCategoryChip(this, 'solo')">📜 Geschiedenis</div>
+            <div class="vq-config-chip" data-val="thailand" onclick="toggleCategoryChip(this, 'solo')">🇹🇭 Thailand</div>
+            <div class="vq-config-chip" data-val="bdsm" onclick="toggleCategoryChip(this, 'solo')">🔥 BDSM</div>
+            <div class="vq-config-chip" data-val="relatie" onclick="toggleCategoryChip(this, 'solo')">💑 Relatie</div>
+            <div class="vq-config-chip" data-val="film" onclick="toggleCategoryChip(this, 'solo')">🎬 Film & TV</div>
+            <div class="vq-config-chip" data-val="muziek" onclick="toggleCategoryChip(this, 'solo')">🎵 Muziek</div>
+            <div class="vq-config-chip" data-val="eten" onclick="toggleCategoryChip(this, 'solo')">🍽️ Eten</div>
+            <div class="vq-config-chip" data-val="sport" onclick="toggleCategoryChip(this, 'solo')">🏆 Sport</div>
+            <div class="vq-config-chip" data-val="nederland" onclick="toggleCategoryChip(this, 'solo')">🇳🇱 Nederland</div>
           </div>
         </div>
 
@@ -2160,6 +2184,62 @@
               <option value="hard">Hard 😈</option>
               <option value="geen">Geen straf</option>
             </select>
+          </div>
+        </div>
+
+        <div class="vq-config-group" style="margin-top:6px;">
+          <label style="color:#4caf50;">🎁 Beloning bij goed antwoord</label>
+          <div class="vq-config-row">
+            <div class="vq-config-group">
+              <label>Beloningspatroon</label>
+              <select id="solo-vqc-reward">
+                <option value="massage">🌊 Massage (zacht golvend)</option>
+                <option value="tinteling">✨ Tinteling (licht prikkelend)</option>
+                <option value="hartslag">💓 Hartslag (diep ritmisch)</option>
+                <option value="geen">❌ Geen beloning</option>
+              </select>
+            </div>
+            <div class="vq-config-group">
+              <label>Beloningsduur <span class="vq-config-val" id="solo-vqc-reward-dur-val">8s</span></label>
+              <input type="range" id="solo-vqc-reward-dur" min="3" max="30" value="8" step="1" oninput="document.getElementById('solo-vqc-reward-dur-val').textContent=this.value+'s'">
+            </div>
+          </div>
+          <div class="vq-config-row">
+            <div class="vq-config-group">
+              <label>Beloningsvolume <span class="vq-config-val" id="solo-vqc-reward-vol-val">25%</span></label>
+              <input type="range" id="solo-vqc-reward-vol" min="5" max="60" value="25" step="5" oninput="document.getElementById('solo-vqc-reward-vol-val').textContent=this.value+'%'">
+            </div>
+            <div class="vq-config-group">
+              <label>Streakbonus</label>
+              <select id="solo-vqc-reward-streak">
+                <option value="3">+3s per streak</option>
+                <option value="5" selected>+5s per streak</option>
+                <option value="10">+10s per streak</option>
+                <option value="0">Geen bonus</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="vq-config-group" style="margin-top:6px;">
+          <label style="color:#ff9800;">⚡ Kanaal voor beloning/straf</label>
+          <div class="vq-config-row">
+            <div class="vq-config-group">
+              <label>Beloning op kanaal</label>
+              <select id="solo-vqc-reward-ch">
+                <option value="both">Beide (A+B)</option>
+                <option value="A">Alleen A</option>
+                <option value="B">Alleen B</option>
+              </select>
+            </div>
+            <div class="vq-config-group">
+              <label>Straf op kanaal</label>
+              <select id="solo-vqc-punish-ch">
+                <option value="both">Beide (A+B)</option>
+                <option value="A">Alleen A</option>
+                <option value="B">Alleen B</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -2364,6 +2444,11 @@
       <select id="ui-output-device" onchange="updateUIAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
         <option value="default">Standaard audio output</option>
       </select>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+        <label style="white-space:nowrap;font-size:13px;">🔊 UI Volume:</label>
+        <input type="range" id="recv-ui-volume" min="0" max="100" value="80" oninput="updateUIVolume('recv', this.value)" style="flex:1;">
+        <span id="recv-ui-volume-display" style="font-size:13px;min-width:35px;">80%</span>
+      </div>
     </div>
     <button onclick="detectAudioDevices()" class="action-btn" style="margin-top:8px;width:100%;">🔄 Detecteer audio apparaten</button>
     <button onclick="testMicrophone()" class="action-btn" style="margin-top:6px;width:100%;background:#2d5a3d;">🎤 Test microfoon</button>
@@ -2412,6 +2497,14 @@
     </div>
     <div class="channel-mode-desc" id="recv-channel-desc">
       <strong>Stereo:</strong> Beide kanalen actief. Patronen gebruiken links/rechts voor beweging en afwisseling.
+    </div>
+    <!-- A/B Balance slider (only visible in stereo) -->
+    <div id="recv-balance-row" style="margin-top:10px;display:flex;align-items:center;gap:6px;">
+      <label style="flex:0 0 85px;font-size:0.8em;color:#bbb;">A/B Balance</label>
+      <span style="font-size:0.75em;color:#4caf50;">A</span>
+      <input type="range" id="recv-balance" min="0" max="100" value="50" oninput="updateRecvBalance(this.value)" style="flex:1;">
+      <span style="font-size:0.75em;color:#ff9800;">B</span>
+      <span id="recv-balance-display" style="font-size:0.78em;min-width:60px;text-align:center;color:#ccc;">50/50</span>
     </div>
   </div>
 
@@ -3208,8 +3301,47 @@ let sessionWarningsShown = new Set();
 // Intensity reporting
 let intensityReportInterval = null;
 
-// UI Audio context (separate for beeps)
+// UI Audio context (separate for beeps) + master volume control
 let uiAudioCtx = null;
+let uiMasterGain = null;
+let uiVolumeLevel = 0.8; // Default 80%
+
+function ensureUiAudio() {
+  if (!uiAudioCtx) {
+    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Create a master gain node for all UI sounds
+    uiMasterGain = uiAudioCtx.createGain();
+    uiMasterGain.gain.value = uiVolumeLevel;
+    uiMasterGain.connect(uiAudioCtx.destination);
+  }
+  if (uiAudioCtx.state === 'suspended') uiAudioCtx.resume();
+  return uiAudioCtx;
+}
+
+// Returns the UI master gain node (all UI sounds should connect to this, not to ctx.destination)
+function getUiDestination() {
+  ensureUiAudio();
+  return uiMasterGain || uiAudioCtx.destination;
+}
+
+// Update UI volume from slider
+function updateUIVolume(prefix, value) {
+  const vol = parseInt(value);
+  uiVolumeLevel = vol / 100;
+  // Update display
+  const display = document.getElementById(prefix + '-ui-volume-display');
+  if (display) display.textContent = vol + '%';
+  // Sync the other slider if it exists
+  const otherPrefix = prefix === 'solo' ? 'recv' : 'solo';
+  const otherSlider = document.getElementById(otherPrefix + '-ui-volume');
+  const otherDisplay = document.getElementById(otherPrefix + '-ui-volume-display');
+  if (otherSlider) otherSlider.value = vol;
+  if (otherDisplay) otherDisplay.textContent = vol + '%';
+  // Apply to master gain (smooth ramp)
+  if (uiMasterGain && uiAudioCtx) {
+    uiMasterGain.gain.linearRampToValueAtTime(Math.max(uiVolumeLevel, 0.001), uiAudioCtx.currentTime + 0.1);
+  }
+}
 
 function ensureAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3236,14 +3368,18 @@ function getMasterLimiter() {
 }
 
 function getEffectiveSafetyLimit() {
+  // SAFETY: Default to 50% (not 100%) if UI element is missing or value is NaN — fail-safe
+  let rawVal = NaN;
   if (myRole === 'receiver') {
     const el = document.getElementById('safety-limit');
-    return el ? parseInt(el.value) / 100 : 1;
+    rawVal = el ? parseInt(el.value) : NaN;
   } else if (myRole === 'solo') {
     const el = document.getElementById('solo-safety-limit');
-    return el ? parseInt(el.value) / 100 : 1;
+    rawVal = el ? parseInt(el.value) : NaN;
   }
-  return 1;
+  // NaN-safe: if value corrupted or missing, default to safe 50%
+  if (isNaN(rawVal) || rawVal <= 0 || rawVal > 100) return 0.5;
+  return rawVal / 100;
 }
 
 // ==================== HEARTBEAT SYSTEM ====================
@@ -3461,6 +3597,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     if (myRole === 'sender' || myRole === 'lisanne') {
       senderHiddenSince = Date.now();
+      // SAFETY: Stop Lisanne mood loops immediately when tab hidden (phone locked)
+      // This prevents shocks continuing while Lisanne can't see what's happening
+      if (myRole === 'lisanne' && typeof lisanneStopAll === 'function' && lisanneCurrentMood) {
+        lisanneStopAll();
+        console.warn('[SAFETY] Lisanne tab hidden — mood loops stopped');
+      }
     }
     if (myRole === 'receiver') {
       ['solo', 'send'].forEach(prefix => {
@@ -3705,6 +3847,11 @@ function playToneAdvanced(freq, volume, duration, volumeL, volumeR, opts) {
   if ((volumeL !== null && volumeL !== undefined) || (volumeR !== null && volumeR !== undefined)) {
     const finalVolL = Math.min((volumeL != null ? volumeL : volume) / 100, safetyLimit);
     const finalVolR = Math.min((volumeR != null ? volumeR : volume) / 100, safetyLimit);
+    // Force masterGain to stereo so splitter gets signal on both channels
+    // Without this, mono oscillators → mono masterGain → splitter only feeds channel 0
+    masterGain.channelCount = 2;
+    masterGain.channelCountMode = 'explicit';
+    masterGain.channelInterpretation = 'speakers'; // mono→stereo: duplicate to L+R
     const splitter = ctx.createChannelSplitter(2);
     const merger = ctx.createChannelMerger(2);
     const lGain = ctx.createGain(); lGain.gain.value = finalVolL;
@@ -4291,13 +4438,22 @@ async function detectAudioDevices() {
 
 async function updateAudioRouting() {
   const deviceId = document.getElementById('stim-output-device').value;
-  if (audioCtx && audioCtx.setSinkId && deviceId !== 'default') {
+  if (!audioCtx || !audioCtx.setSinkId) {
+    recvLog('⚠️ Browser ondersteunt geen audio device selectie — standaard output wordt gebruikt');
+    return;
+  }
+  if (deviceId !== 'default') {
     try {
       await audioCtx.setSinkId(deviceId);
       recvLog('🔊 Stim output: ' + document.getElementById('stim-output-device').selectedOptions[0].text);
     } catch(e) {
       recvLog('⚠️ Kan output niet wijzigen: ' + e.message);
     }
+  }
+  // SAFETY: Warn if stim and UI output are the same device
+  const uiDeviceId = document.getElementById('ui-output-device')?.value;
+  if (uiDeviceId && deviceId === uiDeviceId && deviceId !== 'default') {
+    recvLog('⚠️ WAARSCHUWING: Stim en UI output zijn hetzelfde apparaat! TTS/geluiden gaan ook naar e-stim.');
   }
 }
 
@@ -4862,7 +5018,7 @@ function startReceiver() {
     startIntensityReporting();
 
     conn.on('data', (data) => {
-      if (panicCooldown && data.type !== 'panic') return;
+      if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
 
       // Anti-burst: reject old messages
       if (data.ts && (Date.now() - data.ts) > 3000) {
@@ -4881,12 +5037,29 @@ function startReceiver() {
         return;
       }
 
+      // SAFETY: Validate & sanitize ALL incoming numeric values from sender
+      function safeNum(val, min, max, fallback) {
+        const n = parseFloat(val);
+        if (isNaN(n) || !isFinite(n)) return fallback;
+        return Math.max(min, Math.min(max, n));
+      }
+      const safetyLimitPct = parseInt(document.getElementById('safety-limit')?.value || 80);
+
       if (data.type === 'shock') {
-        doReceiverShock(data.freq, data.volume, data.duration, data.volume_l, data.volume_r);
+        doReceiverShock(
+          safeNum(data.freq, 20, 1000, 200),
+          safeNum(data.volume, 0, safetyLimitPct, 0),
+          safeNum(data.duration, 50, 5000, 300),
+          data.volume_l != null ? safeNum(data.volume_l, 0, safetyLimitPct, 0) : null,
+          data.volume_r != null ? safeNum(data.volume_r, 0, safetyLimitPct, 0) : null
+        );
       } else if (data.type === 'pattern') {
-        doReceiverPattern(data.pattern, data.freq, data.volume);
+        // Whitelist pattern names to prevent injection
+        const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging'];
+        const safePat = allowedPatterns.includes(data.pattern) ? data.pattern : 'ratata';
+        doReceiverPattern(safePat, safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
       } else if (data.type === 'hold_start') {
-        startReceiverHold(data.freq, data.volume);
+        startReceiverHold(safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
       } else if (data.type === 'hold_stop') {
         stopReceiverHold();
       } else if (data.type === 'chat') {
@@ -4921,7 +5094,19 @@ function startReceiver() {
       } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
         handleVoiceQuizMessage(data);
       } else if (data.type === 'stereo_tone') {
-        playToneStereoAdvanced(data);
+        // Sanitize stereo tone params before passing
+        const safeData = Object.assign({}, data, {
+          freqL: safeNum(data.freqL, 20, 1000, 200),
+          freqR: safeNum(data.freqR, 20, 1000, 200),
+          volume: safeNum(data.volume, 0, safetyLimitPct, 0),
+          duration: safeNum(data.duration, 50, 5000, 300),
+          lfoRateL: safeNum(data.lfoRateL, 0, 50, 0),
+          lfoRateR: safeNum(data.lfoRateR, 0, 50, 0),
+          lfoDepthL: safeNum(data.lfoDepthL, 0, 1, 0),
+          lfoDepthR: safeNum(data.lfoDepthR, 0, 1, 0),
+          delayR: safeNum(data.delayR, 0, 2, 0)
+        });
+        playToneStereoAdvanced(safeData);
         recordIntensity(data.volume, 'stereo_tone');
       } else if (data.type === 'sender_returned') {
         recvLog('📱 Zender is terug — klaar voor commando\'s');
@@ -4948,6 +5133,8 @@ function startReceiver() {
       stopDeadManSwitch();
       stopIntensityReporting();
       recvLog('⚠️ Verbinding verbroken — alle audio gestopt voor veiligheid');
+      // Clean up old connection reference
+      conn = null;
     });
   });
 
@@ -4972,6 +5159,9 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
   const cappedL = volumeL != null ? Math.min(volumeL, limit) : null;
   const cappedR = volumeR != null ? Math.min(volumeR, limit) : null;
 
+  // Apply receiver-side A/B balance
+  const { factorL, factorR } = getRecvBalanceFactors();
+
   // Apply sensatie and channel mode
   let finalOpts = opts || {};
   finalOpts = applySensatieToOpts('recv', finalOpts);
@@ -4992,7 +5182,10 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
     playToneAdvanced(cm.freq, cappedVol, duration, cm.volumeL, cm.volumeR, cm.opts);
     recordIntensity(cappedVol, (finalOpts && finalOpts._label) || 'shock');
   } else {
-    playToneAdvanced(freq, cappedVol, duration, cappedL, cappedR, finalOpts);
+    // Apply A/B balance to per-channel volumes
+    const balL = cappedL != null ? Math.round(cappedL * factorL) : Math.round(cappedVol * factorL);
+    const balR = cappedR != null ? Math.round(cappedR * factorR) : Math.round(cappedVol * factorR);
+    playToneAdvanced(freq, cappedVol, duration, balL, balR, finalOpts);
     recordIntensity(cappedVol, (finalOpts && finalOpts._label) || 'shock');
   }
 
@@ -5043,11 +5236,27 @@ function startReceiverHoldLocal(freq, volume) {
   holdLimiter.release.value = 0.01;
   holdLimiter.connect(getMasterLimiter());
 
-  // Master gain met zachte fade-in
+  // Master gain met zachte fade-in — force stereo voor correcte splitter routing
   const master = ctx.createGain();
+  master.channelCount = 2;
+  master.channelCountMode = 'explicit';
+  master.channelInterpretation = 'speakers';
   master.gain.setValueAtTime(0, now);
   master.gain.linearRampToValueAtTime(vol * 0.7, now + 0.1);
-  master.connect(holdLimiter);
+
+  // Stereo routing met receiver A/B balance
+  const chMode = getChannelMode('recv');
+  const { factorL, factorR } = getRecvBalanceFactors();
+  const holdSplitter = ctx.createChannelSplitter(2);
+  const holdMerger = ctx.createChannelMerger(2);
+  const holdGainL = ctx.createGain();
+  holdGainL.gain.value = chMode === 'monoA' ? 1.0 : factorL;
+  const holdGainR = ctx.createGain();
+  holdGainR.gain.value = chMode === 'monoA' ? 0.0 : factorR;
+  master.connect(holdSplitter);
+  holdSplitter.connect(holdGainL, 0); holdSplitter.connect(holdGainR, 1);
+  holdGainL.connect(holdMerger, 0, 0); holdGainR.connect(holdMerger, 0, 1);
+  holdMerger.connect(holdLimiter);
 
   // Base oscillator
   const osc1 = ctx.createOscillator();
@@ -5117,10 +5326,26 @@ function stopReceiverHoldLocal() {
 }
 
 // Legacy wrappers voor PeerJS data handler
+let holdSafetyTimer = null;
+const MAX_HOLD_SECONDS = 60;
+
 function startReceiverHold(freq, volume) {
   startReceiverHoldLocal(freq, volume);
+  // SAFETY: auto-stop hold after MAX_HOLD_SECONDS to prevent indefinite stimulation
+  clearTimeout(holdSafetyTimer);
+  holdSafetyTimer = setTimeout(() => {
+    if (holdOscNodes) {
+      stopReceiverHoldLocal();
+      recvLog('⏱️ Hold automatisch gestopt na ' + MAX_HOLD_SECONDS + 's (veiligheid)', true);
+      // Notify sender that hold was auto-stopped
+      if (conn && conn.open) {
+        conn.send({ type: 'chat', text: '⏱️ Hold auto-gestopt na ' + MAX_HOLD_SECONDS + 's', ts: Date.now() });
+      }
+    }
+  }, MAX_HOLD_SECONDS * 1000);
 }
 function stopReceiverHold() {
+  clearTimeout(holdSafetyTimer);
   stopReceiverHoldLocal();
 }
 
@@ -5146,10 +5371,12 @@ function doReceiverPattern(pattern, freq, volume) {
     'stereo_drift': 'Stereo Drift',
     'stereo_pulse': 'Stereo Pulse'
   };
-  display.textContent = 'Patroon: ' + (patternNames[pattern] || pattern);
+  // SAFETY: Only display known pattern names (prevent XSS via textContent is safe, but be explicit)
+  display.textContent = 'Patroon: ' + (patternNames[pattern] || 'Onbekend');
 
-  // volume = max sterkte, alle patronen zijn relatief hieraan
-  const v = volume || 100;
+  // SAFETY: Cap volume to receiver's safety limit BEFORE pattern scaling
+  const limit = parseInt(document.getElementById('safety-limit')?.value || 80);
+  const v = Math.min(Math.max(0, volume || 0), limit);
   const useStereo = shouldUseStereoEngine();
 
   const pOpts = getPatternOpts(pattern);
@@ -5572,6 +5799,7 @@ function panicStop() {
   stopTensionMeter('solo');
   stopTensionMeter('sender');
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
+  if (triviaState.active) stopTriviaGame();
   if (typeof lisanneStopAll === 'function') lisanneStopAll();
   stopHeartbeatMonitor();
   stopDeadManSwitch();
@@ -5580,7 +5808,7 @@ function panicStop() {
   const btn = document.getElementById('panic-btn');
   btn.classList.add('cooldown');
   btn.disabled = true;
-  btn.textContent = '🛑 GESTOPT - cooldown 10s';
+  btn.textContent = '🛑 GESTOPT - cooldown 3s';
 
   if (conn && conn.open) {
     conn.send({ type: 'panic', ts: Date.now() });
@@ -5588,7 +5816,7 @@ function panicStop() {
 
   recvLog('⚠️ PANIEKKNOP GEBRUIKT!', true);
 
-  let cooldownTime = 10;
+  let cooldownTime = 3;
   const cooldownInterval = setInterval(() => {
     cooldownTime--;
     btn.textContent = '🛑 GESTOPT - cooldown ' + cooldownTime + 's';
@@ -5598,7 +5826,7 @@ function panicStop() {
     }
   }, 1000);
 
-  setTimeout(() => stopPanicCooldown(), 10000);
+  setTimeout(() => stopPanicCooldown(), 3000);
 }
 
 function stopPanicCooldown() {
@@ -5802,6 +6030,7 @@ function connectToReceiver() {
       stopDurfGame('sender');
       if (sessionEngine.active) stopSession('sender');
       sendLog('Verbinding verbroken — alles gestopt');
+      conn = null; // Clean up reference
     });
 
     conn.on('error', (err) => {
@@ -6334,23 +6563,28 @@ function startSoloHoldLocal() {
   holdLimiter.attack.value = 0.001;
   holdLimiter.release.value = 0.01;
 
-  // Channel routing
+  // Channel routing met A/B balance
   const chMode = getChannelMode('solo');
-  if (chMode === 'monoA') {
-    const splitter = ctx.createChannelSplitter(2);
-    const merger = ctx.createChannelMerger(2);
-    const gainL = ctx.createGain(); gainL.gain.value = 1.0;
-    const gainR = ctx.createGain(); gainR.gain.value = 0.0;
-    holdLimiter.connect(splitter);
-    splitter.connect(gainL, 0); splitter.connect(gainR, 1);
-    gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
-    merger.connect(getMasterLimiter());
-  } else {
-    holdLimiter.connect(getMasterLimiter());
-  }
+  const bal = channelBalance['solo'] || 50;
+  const balA = chMode === 'stereo' ? Math.min(1.0, (100 - bal) / 50) : 1.0;
+  const balB = chMode === 'stereo' ? Math.min(1.0, bal / 50) : 1.0;
+  const holdSplitter = ctx.createChannelSplitter(2);
+  const holdMerger = ctx.createChannelMerger(2);
+  const holdGainL = ctx.createGain(); holdGainL.gain.value = balA;
+  const holdGainR = ctx.createGain(); holdGainR.gain.value = chMode === 'monoA' ? 0.0 : balB;
+  holdLimiter.channelCount = 2;
+  holdLimiter.channelCountMode = 'explicit';
+  holdLimiter.channelInterpretation = 'speakers';
+  holdLimiter.connect(holdSplitter);
+  holdSplitter.connect(holdGainL, 0); holdSplitter.connect(holdGainR, 1);
+  holdGainL.connect(holdMerger, 0, 0); holdGainR.connect(holdMerger, 0, 1);
+  holdMerger.connect(getMasterLimiter());
 
-  // Master gain met zachte fade-in
+  // Master gain met zachte fade-in — force stereo voor splitter
   const master = ctx.createGain();
+  master.channelCount = 2;
+  master.channelCountMode = 'explicit';
+  master.channelInterpretation = 'speakers';
   master.gain.setValueAtTime(0, now);
   master.gain.linearRampToValueAtTime(vol * 0.7, now + 0.1);
   master.connect(holdLimiter);
@@ -6929,6 +7163,11 @@ function setChannelMode(prefix, mode) {
       desc.innerHTML = '<strong>Mono A:</strong> Alleen kanaal A. Patronen compenseren automatisch met extra volume-golven en frequentiedrift.';
     }
   }
+  // Show/hide receiver A/B balance row (only useful in stereo)
+  if (prefix === 'recv') {
+    const balRow = document.getElementById('recv-balance-row');
+    if (balRow) balRow.style.display = mode === 'stereo' ? '' : 'none';
+  }
   // If continuous mode is on, channel routing updates via contRealtimeTick() automatisch
 }
 
@@ -7017,6 +7256,9 @@ function setContChannel(prefix, mode) {
       ? 'Beide kanalen actief. Stereo geeft ruimtelijk gevoel.'
       : 'Alleen kanaal A. Freq-drift en volume-golven compenseren automatisch.';
   }
+  // Show/hide A/B balance row (only useful in stereo)
+  const balRow = document.getElementById(prefix + '-cont-balance-row');
+  if (balRow) balRow.style.display = mode === 'stereo' ? '' : 'none';
 }
 
 function readContSliders(prefix) {
@@ -7115,6 +7357,79 @@ function contFreqStep(prefix, delta) {
   generateContAdvice(prefix);
 }
 
+// ---- A/B Channel Balance ----
+// balanceValue: 0 = only A, 50 = equal, 100 = only B
+let channelBalance = { solo: 50, send: 50 };
+let recvBalance = 50; // Receiver-side A/B balance for incoming shocks/patterns/hold
+
+function updateRecvBalance(value) {
+  const val = Math.max(0, Math.min(100, parseInt(value) || 50));
+  recvBalance = val;
+  const display = document.getElementById('recv-balance-display');
+  if (display) {
+    const a = 100 - val;
+    display.textContent = a + '/' + val;
+    display.style.color = val === 50 ? '#ccc' : (val < 50 ? '#4caf50' : '#ff9800');
+  }
+  const slider = document.getElementById('recv-balance');
+  if (slider && parseInt(slider.value) !== val) slider.value = val;
+}
+
+// Returns { factorL, factorR } based on recvBalance
+function getRecvBalanceFactors() {
+  const bal = recvBalance;
+  // bal=0 → L=1.0, R=0.0 | bal=50 → L=1.0, R=1.0 | bal=100 → L=0.0, R=1.0
+  return {
+    factorL: Math.min(1.0, (100 - bal) / 50),
+    factorR: Math.min(1.0, bal / 50)
+  };
+}
+
+function updateChannelBalance(prefix, value) {
+  const val = Math.max(0, Math.min(100, parseInt(value) || 50));
+  channelBalance[prefix] = val;
+
+  // Update display
+  const display = document.getElementById(prefix + '-cont-balance-display');
+  if (display) {
+    const a = Math.round((100 - val) * 100 / 100);
+    const b = Math.round(val * 100 / 100);
+    display.textContent = a + '/' + b;
+    display.style.color = val === 50 ? '#ccc' : (val < 50 ? '#4caf50' : '#ff9800');
+  }
+
+  // Sync slider
+  const slider = document.getElementById(prefix + '-cont-balance');
+  if (slider && parseInt(slider.value) !== val) slider.value = val;
+
+  // If continuous mode is active in stereo, apply immediately with smooth ramp
+  const state = continuousState[prefix];
+  if (state && state.active && state.nodes) {
+    const ctx = audioCtx;
+    if (ctx) {
+      applyChannelBalance(prefix, state.nodes, ctx.currentTime);
+    }
+  }
+}
+
+function applyChannelBalance(prefix, nodes, now) {
+  const bal = channelBalance[prefix] || 50;
+  const chMode = getChannelMode(prefix);
+
+  if (chMode === 'monoA') {
+    // Mono A: balance has no effect (only channel A)
+    return;
+  }
+
+  // Stereo: scale gainL and gainR by balance
+  // bal=0 → L=1.0, R=0.0 | bal=50 → L=1.0, R=1.0 | bal=100 → L=0.0, R=1.0
+  const balA = Math.min(1.0, (100 - bal) / 50); // 0→1, 50→1, 100→0
+  const balB = Math.min(1.0, bal / 50);          // 0→0, 50→1, 100→1
+
+  nodes.gainL.gain.linearRampToValueAtTime(balA, now + 0.12);
+  nodes.gainR.gain.linearRampToValueAtTime(balB, now + 0.12);
+}
+
 // lerp helper for smooth transitions (from perfect flow concept)
 function lerp(current, target, speed) { return current + (target - current) * (speed || 0.03); }
 
@@ -7147,7 +7462,11 @@ function startContinuousMode(prefix) {
   const cappedVol = 0; // Start altijd op 0 — gebruiker drukt zelf op +
 
   // ---- Master gain: start op 0 (stil). Volume komt pas als je op + drukt ----
+  // Force stereo zodat ChannelSplitter signaal op beide kanalen krijgt
   const masterGain = ctx.createGain();
+  masterGain.channelCount = 2;
+  masterGain.channelCountMode = 'explicit';
+  masterGain.channelInterpretation = 'speakers';
   masterGain.gain.setValueAtTime(0, now);
 
   // ---- Hard limiter voor continue modus ----
@@ -7164,11 +7483,15 @@ function startContinuousMode(prefix) {
   const chMode = getChannelMode(prefix);
   const splitter = ctx.createChannelSplitter(2);
   const merger = ctx.createChannelMerger(2);
-  const gainL = ctx.createGain(); gainL.gain.value = 1.0;
+  // Apply A/B balance to initial gain values
+  const bal = channelBalance[prefix] || 50;
+  const balA = chMode === 'stereo' ? Math.min(1.0, (100 - bal) / 50) : 1.0;
+  const balB = chMode === 'stereo' ? Math.min(1.0, bal / 50) : 1.0;
+  const gainL = ctx.createGain(); gainL.gain.value = chMode === 'monoA' ? 1.0 : balA;
   // Anti-fase: inverteer rechterkanaal (gain = -1) voor tegengestelde stroom
   const isAntiPhase = s.antiphase && chMode === 'stereo';
   const gainR = ctx.createGain();
-  gainR.gain.value = chMode === 'monoA' ? 0.0 : (isAntiPhase ? -1.0 : 1.0);
+  gainR.gain.value = chMode === 'monoA' ? 0.0 : ((isAntiPhase ? -1.0 : 1.0) * balB);
 
   // Task 4: Stereo delay on right channel
   const stereoDelay = ctx.createDelay(0.2);
@@ -7255,7 +7578,7 @@ function startContinuousMode(prefix) {
   state.driftPhase = 0;
   state.startTime = Date.now();
   state.nodes = {
-    masterGain, gainL, gainR, splitter, merger, stereoDelay,
+    masterGain, gainL, gainR, splitter, merger, stereoDelay, isAntiPhase,
     osc1, g1, osc2, g2, osc3, g3,
     ampLfoL, ampLfoLGain, ampLfoR, ampLfoRGain, freqLfo, freqLfoGain,
     noiseSrc, noiseGain
@@ -7365,9 +7688,12 @@ function contRealtimeTick(prefix) {
   // ---- Noise ----
   n.noiseGain.gain.linearRampToValueAtTime((s.noise / 100) * 0.2, now + 0.12);
 
-  // ---- Stereo / Mono routing ----
-  // Panning/compensatie alleen als ampmod of drift > 0 (user wil beweging)
+  // ---- Stereo / Mono routing + A/B Balance ----
   const wantsMovement = (s.ampmod > 0 || s.drift > 0);
+  const bal = channelBalance[prefix] || 50;
+  const balA = Math.min(1.0, (100 - bal) / 50); // 0→1, 50→1, 100→0
+  const balB = Math.min(1.0, bal / 50);          // 0→0, 50→1, 100→1
+
   if (chMode === 'monoA') {
     if (wantsMovement) {
       const monoWave = Math.sin(Date.now() / 2500) * 0.12;
@@ -7377,16 +7703,18 @@ function contRealtimeTick(prefix) {
     }
     n.gainR.gain.linearRampToValueAtTime(0, now + 0.12);
   } else {
+    // Stereo: apply movement modulation, then multiply by balance
+    let targetL = 1.0, targetR = 1.0;
     if (wantsMovement) {
       const stereoWave = Math.sin(Date.now() / 3500);
-      const panAmount = Math.min((s.ampmod + s.drift) / 200, 0.2); // max 0.2
-      n.gainL.gain.linearRampToValueAtTime(1.0 - panAmount + panAmount * stereoWave, now + 0.12);
-      n.gainR.gain.linearRampToValueAtTime(1.0 - panAmount - panAmount * stereoWave, now + 0.12);
-    } else {
-      // Standaard: geen beweging, gelijke kanalen
-      n.gainL.gain.linearRampToValueAtTime(1.0, now + 0.12);
-      n.gainR.gain.linearRampToValueAtTime(1.0, now + 0.12);
+      const panAmount = Math.min((s.ampmod + s.drift) / 200, 0.2);
+      targetL = 1.0 - panAmount + panAmount * stereoWave;
+      targetR = 1.0 - panAmount - panAmount * stereoWave;
     }
+    // Apply A/B balance on top of movement; preserve anti-phase sign
+    const antiSign = n.isAntiPhase ? -1 : 1;
+    n.gainL.gain.linearRampToValueAtTime(targetL * balA, now + 0.12);
+    n.gainR.gain.linearRampToValueAtTime(targetR * balB * antiSign, now + 0.12);
   }
 
   // Record intensity for graph (every ~600ms)
@@ -7664,6 +7992,7 @@ function executePatternCycle(mode, pattern) {
 function stopLoopingPattern(mode) {
   if (loopState.timer) clearTimeout(loopState.timer);
   loopState = { active: false, mode: null, pattern: null, timer: null };
+  clearAllPatternTimeouts(); // FIX #15: prevent orphaned pattern callbacks
   stopCarrier();
 
   // UI verbergen voor beide modes
@@ -7821,7 +8150,7 @@ function startSession(mode, type) {
   stopContinuousMode(mode === 'solo' ? 'solo' : 'send');
   stopLoopingPattern(mode);
   const prefix = mode === 'solo' ? 'solo' : 'sender';
-  const durationMin = parseInt(document.getElementById(prefix + '-session-duration').value);
+  const durationMin = parseInt(document.getElementById(prefix + '-session-duration').value) || 5; // SAFETY: default 5 min if NaN
 
   sessionEngine = {
     active: true,
@@ -8150,7 +8479,18 @@ const triviaVragen = [
 
 let triviaState = { active: false, mode: null, questionIndex: 0, score: 0, wrong: 0, usedQuestions: [] };
 
+function stopTriviaGame() {
+  triviaState.active = false;
+  const prefix = triviaState.mode === 'solo' ? 'solo' : 'sender';
+  const display = document.getElementById(prefix + '-trivia-display');
+  if (display) display.style.display = 'none';
+  triviaState = { active: false, mode: null, questionIndex: 0, score: 0, wrong: 0, usedQuestions: [] };
+}
+
 function startTriviaGame(mode) {
+  // Mutual exclusion: stop voice quiz and old trivia
+  if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
+  if (triviaState.active) stopTriviaGame();
   triviaState = {
     active: true,
     mode: mode,
@@ -8272,19 +8612,17 @@ let warningBeepEnabled = true;
 function playWarningBeep(callback, delayMs) {
   if (!warningBeepEnabled) { if (callback) trackTimeout(callback, delayMs || 0); return; }
   // Gebruik UI audio context (laptop/telefoon speakers), NIET de e-stim output!
-  if (!uiAudioCtx) {
-    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  const ctx = uiAudioCtx;
+  const ctx = ensureUiAudio();
+  const dest = getUiDestination();
   const now = ctx.currentTime;
   const beepOsc = ctx.createOscillator();
   const beepGain = ctx.createGain();
   beepOsc.type = 'sine';
   beepOsc.frequency.value = 880;
-  beepGain.gain.setValueAtTime(0.3, now); // Luider op speakers (was 0.03 op e-stim)
+  beepGain.gain.setValueAtTime(0.3, now);
   beepGain.gain.linearRampToValueAtTime(0, now + 0.15);
   beepOsc.connect(beepGain);
-  beepGain.connect(ctx.destination);
+  beepGain.connect(dest);
   beepOsc.start(now);
   beepOsc.stop(now + 0.15);
   vibrateDevice(100);
@@ -8809,7 +9147,33 @@ function lisanneConnect() {
       btn.textContent = 'Verbonden ✓';
       document.getElementById('lisanne-controls').style.display = 'block';
 
+      // SAFETY: Lisanne-side heartbeat monitor — detect when Tim goes offline
+      let lisanneLastHeartbeat = Date.now();
+      let lisanneHeartbeatCheck = setInterval(() => {
+        const elapsed = Date.now() - lisanneLastHeartbeat;
+        if (elapsed > 15000) {
+          // Tim is offline for 15+ seconds — stop everything for safety
+          clearInterval(lisanneHeartbeatCheck);
+          lisanneStopAll();
+          dot.className = 'status-dot error';
+          document.getElementById('lisanne-status-text').textContent = '⚠️ Tim reageert niet — alles gestopt';
+        } else if (elapsed > 8000) {
+          dot.className = 'status-dot waiting';
+          document.getElementById('lisanne-status-text').textContent = 'Tim\'s verbinding onstabiel...';
+        }
+      }, 3000);
+
+      // Send heartbeat to receiver
+      const lisanneHeartbeat = setInterval(() => {
+        if (conn && conn.open) conn.send({ type: 'heartbeat', ts: Date.now() });
+      }, 3000);
+
       conn.on('data', (data) => {
+        // Track heartbeat from receiver
+        if (data.type === 'heartbeat' || data.ts) {
+          lisanneLastHeartbeat = Date.now();
+        }
+
         // Handle receiver responses
         if (data.type === 'chat') {
           showNotification('Tim: ' + data.text);
@@ -8819,6 +9183,8 @@ function lisanneConnect() {
       });
 
       conn.on('close', () => {
+        clearInterval(lisanneHeartbeatCheck);
+        clearInterval(lisanneHeartbeat);
         dot.className = 'status-dot error';
         document.getElementById('lisanne-status-text').textContent = 'Verbinding verbroken';
         lisanneStopAll();
@@ -8853,15 +9219,28 @@ function lisanneMood(mood) {
   // Configure and start based on mood
   const configScale = getConfigIntensityScale();
 
+  // SAFETY: All mood commands must check connection before sending
+  function safeSend(data) {
+    if (!conn || !conn.open) {
+      console.warn('[Lisanne] Connection lost — stopping mood');
+      lisanneStopAll();
+      const statusEl = document.getElementById('lisanne-status');
+      if (statusEl) statusEl.textContent = '⚠️ Verbinding verloren — mood gestopt';
+      return false;
+    }
+    conn.send(data);
+    return true;
+  }
+
   const moodConfigs = {
     zacht: {
       icon: '🫧', text: 'Zachte golven...',
       action: () => {
         // Send gentle wave pattern repeatedly
         const vol = Math.max(15, Math.round(intensity * 0.4 * configScale));
-        conn.send({ type: 'pattern', pattern: 'ademhaling', freq: 80, volume: vol, ts: Date.now() });
+        safeSend({ type: 'pattern', pattern: 'ademhaling', freq: 80, volume: vol, ts: Date.now() });
         // Also send stereo tone for richer experience
-        conn.send({ type: 'stereo_tone', freqL: 70, freqR: 75, volume: vol / 100, duration: 3000, waveL: 'sine', waveR: 'triangle', lfoRateL: 0.3, lfoDepthL: 0.2, lfoRateR: 0.5, lfoDepthR: 0.15, delayR: 0.04, envelope: 'smooth', ts: Date.now() });
+        safeSend({ type: 'stereo_tone', freqL: 70, freqR: 75, volume: vol / 100, duration: 3000, waveL: 'sine', waveR: 'triangle', lfoRateL: 0.3, lfoDepthL: 0.2, lfoRateR: 0.5, lfoDepthR: 0.15, delayR: 0.04, envelope: 'smooth', ts: Date.now() });
         lisanneMoodTimer = trackTimeout(() => {
           if (lisanneCurrentMood === 'zacht') lisanneMood('zacht'); // loop
         }, 5000);
@@ -8871,9 +9250,9 @@ function lisanneMood(mood) {
       icon: '💆', text: 'Diepe massage pulsen...',
       action: () => {
         const vol = Math.max(20, Math.round(intensity * 0.55 * configScale));
-        conn.send({ type: 'pattern', pattern: 'hartslag', freq: 70, volume: vol, ts: Date.now() });
+        safeSend({ type: 'pattern', pattern: 'hartslag', freq: 70, volume: vol, ts: Date.now() });
         // Also send stereo tone
-        conn.send({ type: 'stereo_tone', freqL: 60, freqR: 65, volume: vol / 100, duration: 2000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 1.2, lfoDepthL: 0.3, lfoRateR: 0.8, lfoDepthR: 0.2, delayR: 0.03, envelope: 'smooth', ts: Date.now() });
+        safeSend({ type: 'stereo_tone', freqL: 60, freqR: 65, volume: vol / 100, duration: 2000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 1.2, lfoDepthL: 0.3, lfoRateR: 0.8, lfoDepthR: 0.2, delayR: 0.03, envelope: 'smooth', ts: Date.now() });
         lisanneMoodTimer = trackTimeout(() => {
           if (lisanneCurrentMood === 'massage') lisanneMood('massage');
         }, 3000);
@@ -8887,17 +9266,17 @@ function lisanneMood(mood) {
         const roll = Math.random();
         if (roll < 0.3) {
           // Nothing — just tease message
-          conn.send({ type: 'tease', text: ['Hmm...', 'Zou ik...?', 'Of niet...', 'Maak je klaar...', '😏'][Math.floor(Math.random()*5)], ts: Date.now() });
+          safeSend({ type: 'tease', text: ['Hmm...', 'Zou ik...?', 'Of niet...', 'Maak je klaar...', '😏'][Math.floor(Math.random()*5)], ts: Date.now() });
         } else if (roll < 0.6) {
           // Quick light shock
-          conn.send({ type: 'shock', volume: Math.round(vol * 0.6), duration: 200 + Math.random() * 300, freq: 150 + Math.random() * 200, ts: Date.now() });
+          safeSend({ type: 'shock', volume: Math.round(vol * 0.6), duration: 200 + Math.random() * 300, freq: 150 + Math.random() * 200, ts: Date.now() });
         } else if (roll < 0.85) {
           // Pattern
           const pats = ['staccato', 'pingpong', 'golf'];
-          conn.send({ type: 'pattern', pattern: pats[Math.floor(Math.random()*pats.length)], freq: 200, volume: vol, ts: Date.now() });
+          safeSend({ type: 'pattern', pattern: pats[Math.floor(Math.random()*pats.length)], freq: 200, volume: vol, ts: Date.now() });
         } else {
           // Fake-out!
-          conn.send({ type: 'tease_fakeout', text: 'Nu!', ts: Date.now() });
+          safeSend({ type: 'tease_fakeout', text: 'Nu!', ts: Date.now() });
         }
         const delay = 2000 + Math.random() * 5000; // unpredictable timing
         lisanneMoodTimer = trackTimeout(() => {
@@ -8910,9 +9289,9 @@ function lisanneMood(mood) {
       action: () => {
         const vol = Math.max(30, Math.round(intensity * 0.7 * configScale));
         const pats = ['opbouw', 'golf', 'slowramp', 'hartslag'];
-        conn.send({ type: 'pattern', pattern: pats[Math.floor(Math.random()*pats.length)], freq: 150 + Math.random() * 150, volume: vol, ts: Date.now() });
+        safeSend({ type: 'pattern', pattern: pats[Math.floor(Math.random()*pats.length)], freq: 150 + Math.random() * 150, volume: vol, ts: Date.now() });
         // Escalating stereo tone
-        conn.send({ type: 'stereo_tone', freqL: 100 + Math.random() * 100, freqR: 130 + Math.random() * 120, volume: vol / 100, duration: 2500, waveL: 'sawtooth', waveR: 'square', lfoRateL: 1.5 + Math.random(), lfoDepthL: 0.25, lfoRateR: 1 + Math.random(), lfoDepthR: 0.2, delayR: 0.015, envelope: 'smooth', ts: Date.now() });
+        safeSend({ type: 'stereo_tone', freqL: 100 + Math.random() * 100, freqR: 130 + Math.random() * 120, volume: vol / 100, duration: 2500, waveL: 'sawtooth', waveR: 'square', lfoRateL: 1.5 + Math.random(), lfoDepthL: 0.25, lfoRateR: 1 + Math.random(), lfoDepthR: 0.2, delayR: 0.015, envelope: 'smooth', ts: Date.now() });
         lisanneMoodTimer = trackTimeout(() => {
           if (lisanneCurrentMood === 'opwindend') lisanneMood('opwindend');
         }, 3500 + Math.random() * 2000);
@@ -8926,20 +9305,20 @@ function lisanneMood(mood) {
         const vol = Math.max(50, Math.round(intensity * baseScale * configScale));
         const roll = Math.random();
         if (roll < 0.4) {
-          conn.send({ type: 'pattern', pattern: 'chaos', freq: 100 + Math.random() * 300, volume: vol, ts: Date.now() });
+          safeSend({ type: 'pattern', pattern: 'chaos', freq: 100 + Math.random() * 300, volume: vol, ts: Date.now() });
           // Aggressive stereo tone
-          conn.send({ type: 'stereo_tone', freqL: 200 + Math.random() * 200, freqR: 250 + Math.random() * 200, volume: vol / 100, duration: 1500, waveL: 'square', waveR: 'square', lfoRateL: 3, lfoDepthL: 0.4, lfoRateR: 2.5, lfoDepthR: 0.35, delayR: 0.02, envelope: 'punch', ts: Date.now() });
+          safeSend({ type: 'stereo_tone', freqL: 200 + Math.random() * 200, freqR: 250 + Math.random() * 200, volume: vol / 100, duration: 1500, waveL: 'square', waveR: 'square', lfoRateL: 3, lfoDepthL: 0.4, lfoRateR: 2.5, lfoDepthR: 0.35, delayR: 0.02, envelope: 'punch', ts: Date.now() });
         } else if (roll < 0.7) {
-          conn.send({ type: 'pattern', pattern: 'ratata', freq: 200, volume: vol, ts: Date.now() });
+          safeSend({ type: 'pattern', pattern: 'ratata', freq: 200, volume: vol, ts: Date.now() });
           trackTimeout(() => {
             if (lisanneCurrentMood === 'genadeloos') {
-              conn.send({ type: 'shock', volume: vol, duration: 800, freq: 250, ts: Date.now() });
+              safeSend({ type: 'shock', volume: vol, duration: 800, freq: 250, ts: Date.now() });
             }
           }, 600);
         } else {
-          conn.send({ type: 'shock', volume: vol, duration: 500 + Math.random() * 1000, freq: 100 + Math.random() * 400, ts: Date.now() });
+          safeSend({ type: 'shock', volume: vol, duration: 500 + Math.random() * 1000, freq: 100 + Math.random() * 400, ts: Date.now() });
           // Aggressive stereo tone
-          conn.send({ type: 'stereo_tone', freqL: 150 + Math.random() * 150, freqR: 200 + Math.random() * 200, volume: vol / 100, duration: 1000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 2.5, lfoDepthL: 0.35, lfoRateR: 2, lfoDepthR: 0.3, delayR: 0.025, envelope: 'punch', ts: Date.now() });
+          safeSend({ type: 'stereo_tone', freqL: 150 + Math.random() * 150, freqR: 200 + Math.random() * 200, volume: vol / 100, duration: 1000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 2.5, lfoDepthL: 0.35, lfoRateR: 2, lfoDepthR: 0.3, delayR: 0.025, envelope: 'punch', ts: Date.now() });
         }
         lisanneMoodTimer = trackTimeout(() => {
           if (lisanneCurrentMood === 'genadeloos') lisanneMood('genadeloos');
@@ -9387,22 +9766,28 @@ function initSpeechRecognition() {
     }
   };
 
+  let speechRecRestartCount = 0;
+  const SPEECH_REC_MAX_RESTARTS = 30; // Max 30 restarts per quiz (~15 min worth)
+
   speechRecognition.onend = () => {
     speechRecRunning = false;
     console.log('[Voice] 🔴 SpeechRecognition gestopt (ttsSpeaking=' + ttsSpeaking + ')');
     // Auto-restart als quiz actief EN TTS niet bezig
-    // Als TTS bezig is, herstart speak()'s safeOnEnd de recognition later
     if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking) {
+      if (speechRecRestartCount >= SPEECH_REC_MAX_RESTARTS) {
+        console.error('[Voice] Max restarts bereikt (' + SPEECH_REC_MAX_RESTARTS + ') — spraakherkenning gestopt');
+        speechRecognitionActive = false;
+        return;
+      }
+      speechRecRestartCount++;
       clearTimeout(speechRestartDelay);
       speechRestartDelay = setTimeout(() => {
         if (speechRecognitionActive && !speechRecRunning && !ttsSpeaking) {
-          console.log('[Voice] 🔄 Herstart SpeechRecognition...');
+          console.log('[Voice] 🔄 Herstart SpeechRecognition (' + speechRecRestartCount + '/' + SPEECH_REC_MAX_RESTARTS + ')');
           try { speechRecognition.start(); } catch(e) {
             console.warn('[Voice] Herstart mislukt:', e.message);
-            // Retry na 1s als het echt niet lukt
             setTimeout(() => {
               if (speechRecognitionActive && !speechRecRunning && !ttsSpeaking) {
-                console.log('[Voice] 🔄 Retry herstart...');
                 try { speechRecognition.start(); } catch(e2) {
                   console.error('[Voice] Retry ook mislukt:', e2.message);
                 }
@@ -9410,7 +9795,7 @@ function initSpeechRecognition() {
             }, 1000);
           }
         }
-      }, 500); // 500ms (was 300ms) — meer stabiele herstart
+      }, 500);
     }
   };
 
@@ -9767,8 +10152,15 @@ function speak(text, onEnd) {
   u.lang = 'nl-NL';
   u.rate = 0.95;
   u.pitch = 1.0;
+  u.volume = uiVolumeLevel; // Respect UI volume slider
   if (!cachedBestVoice) cachedBestVoice = selectBestDutchVoice();
-  if (cachedBestVoice) u.voice = cachedBestVoice;
+  if (cachedBestVoice) {
+    u.voice = cachedBestVoice;
+  } else {
+    // Fallback: force Dutch language even without specific voice
+    u.lang = 'nl-NL';
+    console.warn('[TTS] Geen Nederlandse stem gevonden — fallback naar nl-NL lang tag');
+  }
 
   let onEndCalled = false;
   let ttsActuallyStarted = false;
@@ -9832,14 +10224,16 @@ function speak(text, onEnd) {
 
   }, 100);
 
-  // Final safety net: max 6s per utterance (was 12s — te lang, voelt als hang)
+  // Final safety net: timeout gebaseerd op tekstlengte
+  // ~10 tekens/seconde + 4s marge, minimum 8s, maximum 20s
+  const ttsTimeout = Math.min(20000, Math.max(8000, Math.ceil(text.length / 10) * 1000 + 4000));
   setTimeout(() => {
     if (!onEndCalled && ttsSessionId === myTtsSession) {
-      console.warn('[TTS] Timeout 6s: "' + text.substring(0, 30) + '..."');
+      console.warn('[TTS] Timeout ' + (ttsTimeout/1000) + 's: "' + text.substring(0, 30) + '..."');
       try { speechSynthesis.cancel(); } catch(e) {}
       safeOnEnd();
     }
-  }, 6000);
+  }, ttsTimeout);
 }
 
 // Preload voices + select best available Dutch voice
@@ -9945,6 +10339,12 @@ function getQuizConfig(mode) {
     inputMode: getVal('inputmode') || 'beide',
     ttsEnabled: getVal('tts') !== 'uit',
     punishment: getVal('punishment') || 'normaal',
+    rewardPattern: getVal('reward') || 'massage',
+    rewardDuration: parseInt(getVal('reward-dur')) || 8,
+    rewardVolume: parseInt(getVal('reward-vol')) || 25,
+    rewardStreakBonus: parseInt(getVal('reward-streak')) || 5,
+    rewardChannel: getVal('reward-ch') || 'both',
+    punishChannel: getVal('punish-ch') || 'both',
   };
 }
 
@@ -9966,8 +10366,7 @@ function launchQuizFromConfig(mode) {
 // Countdown tick sound at last 5 seconds
 function playCountdownTick() {
   try {
-    const ctx = uiAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (!uiAudioCtx) uiAudioCtx = ctx;
+    const ctx = ensureUiAudio();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -9975,7 +10374,7 @@ function playCountdownTick() {
     gain.gain.value = 0.15;
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getUiDestination());
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.1);
   } catch(e) {}
@@ -9999,42 +10398,347 @@ const voiceQuizState = {
 };
 
 // --- Quiz question banks (with categories + difficulty) ---
-// cat: aardrijkskunde, wetenschap, rekenen, natuur, lichaam, geschiedenis
+// cat: aardrijkskunde, wetenschap, rekenen, natuur, lichaam, geschiedenis, thailand, bdsm, relatie, film, muziek, eten, sport, nederland
 // d: 1=makkelijk, 2=normaal, 3=moeilijk
 const voiceQuizVragen = [
-  // Makkelijk
+  // ============================================================
+  // 🌿 NATUUR
+  // ============================================================
   { v: 'Hoeveel poten heeft een hond?', o: ['2', '4', '6', '8'], a: 1, cat: 'natuur', d: 1 },
-  { v: 'Hoeveel hoeken heeft een driehoek?', o: ['2', '3', '4', '5'], a: 1, cat: 'rekenen', d: 1 },
-  { v: 'Welke kleur krijg je van rood en blauw?', o: ['Groen', 'Oranje', 'Paars', 'Bruin'], a: 2, cat: 'wetenschap', d: 1 },
-  { v: 'Hoeveel minuten heeft een uur?', o: ['30', '45', '60', '90'], a: 2, cat: 'rekenen', d: 1 },
-  { v: 'Hoeveel seconden in een minuut?', o: ['30', '60', '90', '100'], a: 1, cat: 'rekenen', d: 1 },
   { v: 'Welk seizoen komt na de zomer?', o: ['Lente', 'Herfst', 'Winter', 'Zomer'], a: 1, cat: 'natuur', d: 1 },
   { v: 'Hoeveel kleuren heeft een regenboog?', o: ['5', '6', '7', '8'], a: 2, cat: 'natuur', d: 1 },
-  { v: 'Hoeveel letters heeft het alfabet?', o: ['24', '25', '26', '28'], a: 2, cat: 'rekenen', d: 1 },
-
-  // Normaal
+  { v: 'Welk dier legt eieren en kan vliegen?', o: ['Kip', 'Hond', 'Kat', 'Paard'], a: 0, cat: 'natuur', d: 1 },
   { v: 'Welk dier is het snelst ter wereld?', o: ['Leeuw', 'Cheeta', 'Havik', 'Haas'], a: 1, cat: 'natuur', d: 2 },
-  { v: 'In welk land staat de Eiffeltoren?', o: ['Engeland', 'Frankrijk', 'Duitsland', 'Spanje'], a: 1, cat: 'aardrijkskunde', d: 2 },
-  { v: 'Wat is de hoofdstad van Japan?', o: ['Beijing', 'Seoul', 'Tokyo', 'Bangkok'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Hoeveel benen heeft een spin?', o: ['6', '8', '10', '4'], a: 1, cat: 'natuur', d: 2 },
+  { v: 'Welk dier slaapt het meest per dag?', o: ['Kat', 'Luiaard', 'Koala', 'Leeuw'], a: 2, cat: 'natuur', d: 2 },
+  { v: 'Hoe heet een groep wolven?', o: ['Kudde', 'Roedel', 'Troep', 'Zwerm'], a: 1, cat: 'natuur', d: 2 },
+  { v: 'Welke bloem draait mee met de zon?', o: ['Roos', 'Tulp', 'Zonnebloem', 'Lelie'], a: 2, cat: 'natuur', d: 2 },
+  { v: 'Welk dier heeft de langste nek?', o: ['Struisvogel', 'Giraffe', 'Kameel', 'Flamingo'], a: 1, cat: 'natuur', d: 1 },
+
+  // ============================================================
+  // 🔢 REKENEN
+  // ============================================================
+  { v: 'Hoeveel hoeken heeft een driehoek?', o: ['2', '3', '4', '5'], a: 1, cat: 'rekenen', d: 1 },
+  { v: 'Hoeveel minuten heeft een uur?', o: ['30', '45', '60', '90'], a: 2, cat: 'rekenen', d: 1 },
+  { v: 'Hoeveel seconden in een minuut?', o: ['30', '60', '90', '100'], a: 1, cat: 'rekenen', d: 1 },
+  { v: 'Hoeveel letters heeft het alfabet?', o: ['24', '25', '26', '28'], a: 2, cat: 'rekenen', d: 1 },
+  { v: 'Wat is 5 plus 7?', o: ['10', '11', '12', '13'], a: 2, cat: 'rekenen', d: 1 },
   { v: 'Hoeveel weken heeft een jaar?', o: ['48', '50', '52', '54'], a: 2, cat: 'rekenen', d: 2 },
-  { v: 'Welke planeet is het dichtst bij de zon?', o: ['Venus', 'Mercurius', 'Mars', 'Aarde'], a: 1, cat: 'wetenschap', d: 2 },
   { v: 'Hoeveel graden is een rechte hoek?', o: ['45', '90', '180', '360'], a: 1, cat: 'rekenen', d: 2 },
-  { v: 'Wat is het grootste orgaan van je lichaam?', o: ['Lever', 'Huid', 'Longen', 'Hart'], a: 1, cat: 'lichaam', d: 2 },
-  { v: 'Welk gas ademen planten in?', o: ['Zuurstof', 'Stikstof', 'CO2', 'Helium'], a: 2, cat: 'wetenschap', d: 2 },
-  { v: 'Wat is de hoofdstad van Italië?', o: ['Milaan', 'Rome', 'Venetië', 'Napels'], a: 1, cat: 'aardrijkskunde', d: 2 },
   { v: 'Wat is 7 keer 8?', o: ['48', '54', '56', '62'], a: 2, cat: 'rekenen', d: 2 },
+  { v: 'Hoeveel minuten heeft een dag?', o: ['1200', '1440', '1560', '1680'], a: 1, cat: 'rekenen', d: 3 },
+  { v: 'Hoeveel maanden hebben 31 dagen?', o: ['5', '6', '7', '8'], a: 2, cat: 'rekenen', d: 3 },
+  { v: 'Hoeveel ogen heeft een dobbelsteen totaal?', o: ['18', '21', '24', '36'], a: 1, cat: 'rekenen', d: 3 },
+  { v: 'Wat is de wortel van 144?', o: ['10', '11', '12', '14'], a: 2, cat: 'rekenen', d: 3 },
+
+  // ============================================================
+  // 🔬 WETENSCHAP
+  // ============================================================
+  { v: 'Welke kleur krijg je van rood en blauw?', o: ['Groen', 'Oranje', 'Paars', 'Bruin'], a: 2, cat: 'wetenschap', d: 1 },
+  { v: 'Wat is H2O?', o: ['Waterstofgas', 'Water', 'Zoutzuur', 'Ammoniak'], a: 1, cat: 'wetenschap', d: 1 },
+  { v: 'Welke planeet is het dichtst bij de zon?', o: ['Venus', 'Mercurius', 'Mars', 'Aarde'], a: 1, cat: 'wetenschap', d: 2 },
+  { v: 'Welk gas ademen planten in?', o: ['Zuurstof', 'Stikstof', 'CO2', 'Helium'], a: 2, cat: 'wetenschap', d: 2 },
+  { v: 'Welke planeet is het grootst?', o: ['Saturnus', 'Jupiter', 'Neptunus', 'Uranus'], a: 1, cat: 'wetenschap', d: 2 },
+  { v: 'Wat is de snelheid van licht (km/s)?', o: ['150.000', '300.000', '500.000', '1.000.000'], a: 1, cat: 'wetenschap', d: 3 },
+  { v: 'Welk element heeft symbool Fe?', o: ['Fluor', 'IJzer', 'Fosfor', 'Francium'], a: 1, cat: 'wetenschap', d: 3 },
+  { v: 'Wat is het symbool voor goud?', o: ['Ag', 'Go', 'Au', 'Gd'], a: 2, cat: 'wetenschap', d: 2 },
+  { v: 'Hoeveel chromosomen heeft een mens?', o: ['23', '42', '46', '48'], a: 2, cat: 'wetenschap', d: 3 },
+  { v: 'Welke planeet heeft de meeste manen?', o: ['Jupiter', 'Saturnus', 'Uranus', 'Neptunus'], a: 1, cat: 'wetenschap', d: 3 },
+
+  // ============================================================
+  // 🗺️ AARDRIJKSKUNDE
+  // ============================================================
+  { v: 'In welk land staat de Eiffeltoren?', o: ['Engeland', 'Frankrijk', 'Duitsland', 'Spanje'], a: 1, cat: 'aardrijkskunde', d: 1 },
+  { v: 'Wat is de hoofdstad van Japan?', o: ['Beijing', 'Seoul', 'Tokyo', 'Bangkok'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Wat is de hoofdstad van Italië?', o: ['Milaan', 'Rome', 'Venetië', 'Napels'], a: 1, cat: 'aardrijkskunde', d: 2 },
   { v: 'Hoeveel provincies heeft Nederland?', o: ['10', '11', '12', '14'], a: 2, cat: 'aardrijkskunde', d: 2 },
   { v: 'Welke oceaan is het grootst?', o: ['Atlantisch', 'Indisch', 'Stille', 'Arctisch'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Wat is de hoofdstad van Australië?', o: ['Sydney', 'Melbourne', 'Canberra', 'Perth'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Hoeveel landen heeft de EU (2024)?', o: ['25', '27', '30', '32'], a: 1, cat: 'aardrijkskunde', d: 3 },
+  { v: 'Wat is de langste rivier ter wereld?', o: ['Amazone', 'Nijl', 'Mississippi', 'Yangtze'], a: 1, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Hoeveel continenten zijn er?', o: ['5', '6', '7', '8'], a: 2, cat: 'aardrijkskunde', d: 1 },
+  { v: 'Welk land heeft de meeste inwoners?', o: ['India', 'China', 'VS', 'Indonesië'], a: 0, cat: 'aardrijkskunde', d: 2 },
+
+  // ============================================================
+  // 🫀 LICHAAM
+  // ============================================================
+  { v: 'Wat is het grootste orgaan van je lichaam?', o: ['Lever', 'Huid', 'Longen', 'Hart'], a: 1, cat: 'lichaam', d: 2 },
   { v: 'Hoeveel hartklappen heeft een mens?', o: ['2', '3', '4', '5'], a: 2, cat: 'lichaam', d: 2 },
-
-  // Moeilijk
-  { v: 'Hoeveel maanden hebben 31 dagen?', o: ['5', '6', '7', '8'], a: 2, cat: 'rekenen', d: 3 },
-  { v: 'Welk element heeft symbool Fe?', o: ['Fluor', 'IJzer', 'Fosfor', 'Francium'], a: 1, cat: 'wetenschap', d: 3 },
+  { v: 'Hoeveel tanden heeft een volwassene?', o: ['28', '30', '32', '34'], a: 2, cat: 'lichaam', d: 2 },
   { v: 'Wat is de langste bot in je lichaam?', o: ['Ruggenwervel', 'Dijbeen', 'Scheenbeen', 'Bovenarm'], a: 1, cat: 'lichaam', d: 3 },
-  { v: 'Hoeveel ogen heeft een dobbelsteen totaal?', o: ['18', '21', '24', '36'], a: 1, cat: 'rekenen', d: 3 },
+  { v: 'Hoeveel liter bloed heeft een volwassene?', o: ['3', '4', '5', '7'], a: 2, cat: 'lichaam', d: 2 },
+  { v: 'Welk orgaan maakt insuline aan?', o: ['Lever', 'Nieren', 'Alvleesklier', 'Milt'], a: 2, cat: 'lichaam', d: 3 },
+  { v: 'Hoeveel botten heeft een baby?', o: ['206', '270', '300', '350'], a: 2, cat: 'lichaam', d: 3 },
+  { v: 'Wat is de gemiddelde lichaamstemperatuur?', o: ['36.1°C', '36.6°C', '37.0°C', '37.5°C'], a: 2, cat: 'lichaam', d: 2 },
+  { v: 'Welk deel van de hersenen regelt evenwicht?', o: ['Grote hersenen', 'Kleine hersenen', 'Hersenstam', 'Hypothalamus'], a: 1, cat: 'lichaam', d: 3 },
+  { v: 'Hoeveel ribben heeft een mens?', o: ['20', '22', '24', '26'], a: 2, cat: 'lichaam', d: 2 },
 
-  // Trivia ook toevoegen met default categorie
-  ...triviaVragen.map(q => ({ v: q.v, o: q.o, a: q.a, cat: q.cat || 'wetenschap', d: q.d || 2 }))
+  // ============================================================
+  // 📜 GESCHIEDENIS
+  // ============================================================
+  { v: 'In welk jaar begon WO2?', o: ['1937', '1938', '1939', '1940'], a: 2, cat: 'geschiedenis', d: 2 },
+  { v: 'Wie schilderde de Mona Lisa?', o: ['Michelangelo', 'Rembrandt', 'Da Vinci', 'Van Gogh'], a: 2, cat: 'geschiedenis', d: 2 },
+  { v: 'In welk jaar viel de Berlijnse Muur?', o: ['1987', '1989', '1991', '1993'], a: 1, cat: 'geschiedenis', d: 2 },
+  { v: 'Wie ontdekte Amerika in 1492?', o: ['Vasco da Gama', 'Columbus', 'Magellan', 'Drake'], a: 1, cat: 'geschiedenis', d: 1 },
+  { v: 'Welk volk bouwde de piramides?', o: ['Grieken', 'Romeinen', 'Egyptenaren', 'Perzen'], a: 2, cat: 'geschiedenis', d: 1 },
+  { v: 'In welk jaar werd Nederland bevrijd?', o: ['1943', '1944', '1945', '1946'], a: 2, cat: 'geschiedenis', d: 2 },
+  { v: 'Wie was de eerste mens op de maan?', o: ['Buzz Aldrin', 'Neil Armstrong', 'Yuri Gagarin', 'John Glenn'], a: 1, cat: 'geschiedenis', d: 2 },
+  { v: 'In welke eeuw leefde Napoleon?', o: ['17e', '18e', '19e', '20e'], a: 2, cat: 'geschiedenis', d: 3 },
+  { v: 'Welk Romeins bouwwerk staat in Rome?', o: ['Parthenon', 'Colosseum', 'Taj Mahal', 'Big Ben'], a: 1, cat: 'geschiedenis', d: 1 },
+  { v: 'Wanneer eindigde WO1?', o: ['1916', '1917', '1918', '1919'], a: 2, cat: 'geschiedenis', d: 3 },
+
+  // ============================================================
+  // 🇹🇭 THAILAND
+  // ============================================================
+  { v: 'Wat is de hoofdstad van Thailand?', o: ['Chiang Mai', 'Phuket', 'Bangkok', 'Pattaya'], a: 2, cat: 'thailand', d: 1 },
+  { v: 'Hoe zeg je "hallo" in het Thai?', o: ['Sawadee', 'Khop khun', 'Aroy', 'Sabai'], a: 0, cat: 'thailand', d: 1 },
+  { v: 'Welke munt gebruikt Thailand?', o: ['Rupee', 'Dong', 'Baht', 'Ringgit'], a: 2, cat: 'thailand', d: 1 },
+  { v: 'Hoe zeg je "dankjewel" in het Thai?', o: ['Sawadee', 'Khop khun', 'Sabai dee', 'Aroy'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Welk gerecht is typisch Thais met kokosmelk en garnalen?', o: ['Pad Thai', 'Tom Kha', 'Som Tam', 'Massaman'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welke kleur staat voor maandag in Thailand?', o: ['Rood', 'Geel', 'Blauw', 'Groen'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Op welk eiland ligt Maya Bay (The Beach)?', o: ['Koh Samui', 'Koh Phi Phi', 'Koh Lanta', 'Koh Tao'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Wat betekent "Pad Thai"?', o: ['Gebakken rijst', 'Thaise roerbak', 'Noedels Thailand', 'Thaise soep'], a: 2, cat: 'thailand', d: 2 },
+  { v: 'Wat is het bekendste Thaise nachtmarkt-eten?', o: ['Sushi', 'Mango sticky rice', 'Dumplings', 'Roti'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welk festival is het Thaise waterfestival?', o: ['Loy Krathong', 'Songkran', 'Yi Peng', 'Phi Ta Khon'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Hoe heet de beroemde Thaise kickbokssport?', o: ['Karate', 'Taekwondo', 'Muay Thai', 'Kung Fu'], a: 2, cat: 'thailand', d: 1 },
+  { v: 'Wat is de bijnaam van Bangkok?', o: ['Stad der Engelen', 'Gouden Stad', 'Stad van Tempels', 'Parelstad'], a: 0, cat: 'thailand', d: 2 },
+  { v: 'Welk dier is het nationale symbool van Thailand?', o: ['Tijger', 'Olifant', 'Slang', 'Draak'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Wat is "aroy" in het Thai?', o: ['Mooi', 'Lekker', 'Groot', 'Snel'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Welke tempel is het bekendst in Bangkok?', o: ['Wat Arun', 'Wat Pho', 'Wat Phra Kaew', 'Wat Saket'], a: 2, cat: 'thailand', d: 2 },
+  { v: 'Hoeveel provincies heeft Thailand?', o: ['67', '72', '76', '81'], a: 2, cat: 'thailand', d: 3 },
+  { v: 'Welke Thaise soep is heel pittig en zuur?', o: ['Tom Kha', 'Tom Yum', 'Gaeng Keow', 'Khao Soi'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Wat is het hoogste punt van Thailand?', o: ['Doi Inthanon', 'Doi Suthep', 'Khao Sok', 'Doi Pui'], a: 0, cat: 'thailand', d: 3 },
+  { v: 'Welk fruit stinkt maar is populair in Thailand?', o: ['Jackfruit', 'Rambutan', 'Durian', 'Mangosteen'], a: 2, cat: 'thailand', d: 2 },
+  { v: 'In welk seizoen is Songkran?', o: ['Januari', 'April', 'Juli', 'Oktober'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welke Thaise curry is groen?', o: ['Massaman', 'Panang', 'Gaeng Keow Wan', 'Gaeng Ped'], a: 2, cat: 'thailand', d: 2 },
+  { v: 'Hoe heet het Thaise schrift?', o: ['Khmer', 'Thai-schrift', 'Lao', 'Devanagari'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Welk strand is het beroemdst op Phuket?', o: ['Kata Beach', 'Patong Beach', 'Karon Beach', 'Nai Harn'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Hoe heet het traditionele Thaise huis?', o: ['Bahay Kubo', 'Thai Ruen', 'Longhouse', 'Kampung'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Wat is een tuk-tuk?', o: ['Boot', 'Driewieler-taxi', 'Bus', 'Fiets'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Welke rivier stroomt door Bangkok?', o: ['Mekong', 'Chao Phraya', 'Ping', 'Nan'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Wat betekent "sabai sabai"?', o: ['Eet smakelijk', 'Relaxed', 'Bedankt', 'Goedenacht'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Hoeveel seizoenen heeft Thailand?', o: ['2', '3', '4', '5'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welke stad staat bekend als "Rose of the North"?', o: ['Phuket', 'Chiang Mai', 'Krabi', 'Ayutthaya'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Welk Thais dessert bevat kleefrijst en mango?', o: ['Tub Tim Grob', 'Khao Niao Mamuang', 'Lod Chong', 'Foi Thong'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welke taal spreekt men in Thailand?', o: ['Khmer', 'Thai', 'Laotiaans', 'Vietnamees'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Wat is het beroemdste full moon party-eiland?', o: ['Koh Samui', 'Koh Phangan', 'Koh Lipe', 'Koh Chang'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welke godsdienst is dominant in Thailand?', o: ['Islam', 'Hindoeïsme', 'Boeddhisme', 'Christendom'], a: 2, cat: 'thailand', d: 1 },
+  { v: 'Hoe heet Thaise ijsthee?', o: ['Cha Yen', 'Cha Dam', 'Nam Manao', 'Oliang'], a: 0, cat: 'thailand', d: 2 },
+  { v: 'Met welk land grenst Thailand NIET?', o: ['Laos', 'Myanmar', 'Vietnam', 'Cambodja'], a: 2, cat: 'thailand', d: 3 },
+  { v: 'Wat is Khao Soi?', o: ['Noedelsoep uit het noorden', 'Gebakken rijst', 'Groene curry', 'Vis-salade'], a: 0, cat: 'thailand', d: 3 },
+  { v: 'Hoeveel inwoners heeft Thailand (ongeveer)?', o: ['50 miljoen', '60 miljoen', '70 miljoen', '80 miljoen'], a: 2, cat: 'thailand', d: 3 },
+  { v: 'Welke bloem is het nationale symbool van Thailand?', o: ['Lotus', 'Orchidee', 'Ratchaphruek', 'Jasmijn'], a: 2, cat: 'thailand', d: 3 },
+  { v: 'Wat eet je typisch als ontbijt in Thailand?', o: ['Toast', 'Congee (rijstepap)', 'Cereal', 'Pannenkoek'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Hoe heet de Thaise groet met gevouwen handen?', o: ['Namaste', 'Wai', 'Bow', 'Salaam'], a: 1, cat: 'thailand', d: 1 },
+  { v: 'Welke oude stad was de vorige hoofdstad van Thailand?', o: ['Sukhothai', 'Ayutthaya', 'Chiang Rai', 'Lopburi'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Wat is Som Tam?', o: ['Kokossoep', 'Papajasalade', 'Noedelgerecht', 'Rijstdessert'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welk Thais eiland is het grootst?', o: ['Koh Samui', 'Phuket', 'Koh Chang', 'Koh Lanta'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Hoe heet het Thaise nieuwjaar?', o: ['Loy Krathong', 'Songkran', 'Makha Bucha', 'Visakha Bucha'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Welk dier wordt vereerd bij tempels in Thailand?', o: ['Koe', 'Slang', 'Naga', 'Aap'], a: 2, cat: 'thailand', d: 3 },
+  { v: 'Hoe heet de bekende Thaise vissaus?', o: ['Sojasaus', 'Oestersaus', 'Nam Pla', 'Sriracha'], a: 2, cat: 'thailand', d: 2 },
+  { v: 'Welk vervoer is populair op de grachten van Bangkok?', o: ['Gondel', 'Longtailboot', 'Kano', 'Veerboot'], a: 1, cat: 'thailand', d: 2 },
+  { v: 'Wat is de Thaise naam voor Thailand?', o: ['Siam', 'Prathet Thai', 'Muang Thai', 'Rattanakosin'], a: 1, cat: 'thailand', d: 3 },
+  { v: 'Welke markt in Bangkok drijft op het water?', o: ['Chatuchak', 'Damnoen Saduak', 'Maeklong', 'Khlong Toei'], a: 1, cat: 'thailand', d: 2 },
+
+  // ============================================================
+  // 🔥 BDSM
+  // ============================================================
+  { v: 'Waar staat de afkorting BDSM voor?', o: ['Bondage, Discipline, Sadisme, Masochisme', 'Binding, Dominantie, Sex, Macht', 'Bondage, Dominantie, Sadisme, Masochisme', 'Binding, Discipline, Seks, Masochisme'], a: 2, cat: 'bdsm', d: 1 },
+  { v: 'Wat is een "safeword"?', o: ['Wachtwoord voor website', 'Stopwoord tijdens spel', 'Codewoord voor toestemming', 'Naam van een techniek'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Welk kleurensysteem wordt veel gebruikt als safeword?', o: ['Rood/Blauw/Wit', 'Groen/Geel/Rood', 'Zwart/Grijs/Wit', 'Ja/Misschien/Nee'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Wat betekent "Dom" in BDSM-context?', o: ['Dominant', 'Domestiek', 'Domein', 'Dominee'], a: 0, cat: 'bdsm', d: 1 },
+  { v: 'Wat betekent "Sub" in BDSM-context?', o: ['Onderdanig', 'Substituut', 'Subtiel', 'Subjectief'], a: 0, cat: 'bdsm', d: 1 },
+  { v: 'Wat is "aftercare"?', o: ['Schoonmaken na spel', 'Nazorg en knuffelen na een sessie', 'Medische zorg', 'Onderhoud van speelgoed'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Wat is een "hard limit"?', o: ['Een fysieke grens', 'Iets wat absoluut niet mag', 'Maximum duur', 'De hardste klap'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat betekent SSC?', o: ['Safe, Sane, Consensual', 'Sexy, Strong, Careful', 'Soft, Slow, Calm', 'Submit, Serve, Care'], a: 0, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "switch"?', o: ['Lichtknop', 'Iemand die dom én sub kan zijn', 'Wisselend partner', 'Een type zweep'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is bondage?', o: ['Een type dans', 'Vastbinden of beperken van beweging', 'Een land', 'Een type massage'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Wat is een "collar" in BDSM-context?', o: ['Kledingstuk', 'Symbool van verbinding/eigendom', 'Type knoop', 'Halsketting'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "edging"?', o: ['Rand van een klif', 'Herhaaldelijk bijna klaarkomen', 'Een type knoop', 'Scherp speelgoed'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Welk materiaal wordt veel gebruikt voor bondage-touw?', o: ['Nylon', 'Jute', 'Katoen', 'Staal'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is Shibari?', o: ['Japanse vechtkunst', 'Japanse touwkunst', 'Japans eten', 'Japanse thee'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "scene"?', o: ['Film-opname', 'Een BDSM-sessie', 'Toneeloptreden', 'Ruzie'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een blinddoek in BDSM?', o: ['Straf', 'Zintuigontneming', 'Versiering', 'Veiligheidsmiddel'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Wat is een "dungeon"?', o: ['Gevangenis', 'BDSM-speelruimte', 'Kelder', 'Videogame'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "impact play"?', o: ['Sportterm', 'Slaan/tikken als spelvorm', 'Muziekgenre', 'Een videogame'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "consent" in BDSM?', o: ['Contract', 'Toestemming', 'Concentratie', 'Controle'], a: 1, cat: 'bdsm', d: 1 },
+  { v: 'Wat is een "flogger"?', o: ['Zwemmer', 'Meervoudige zweep', 'Blogger', 'Jogger'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat betekent RACK?', o: ['Risk-Aware Consensual Kink', 'Rope And Chain Kit', 'Really Awesome Cool Kink', 'Restrained And Cuffed Knees'], a: 0, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "wax play"?', o: ['Kaarsen maken', 'Warm kaarsvet op de huid druppelen', 'Vloer boenen', 'Waxen/ontharen'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "paddle"?', o: ['Kano-peddel', 'Plat slaginstrument', 'Surfplank', 'Pingpongbat'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "power exchange"?', o: ['Energiehandel', 'Bewust overdragen van controle', 'Stroom wisselen', 'Sportterm'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "subspace"?', o: ['Ruimtevaartterm', 'Trance-achtige staat van de sub', 'Onderzeese ruimte', 'Kelderruimte'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is e-stim?', o: ['E-mail versturen', 'Elektrische stimulatie', 'Elektronisch spel', 'Energiedrank'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "spreader bar"?', o: ['Barmeubel', 'Stang die benen/armen gespreid houdt', 'Broodmes', 'Gym-apparaat'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "orgasm control"?', o: ['Anticonceptie', 'Controle over wanneer iemand mag klaarkomen', 'Yoga-techniek', 'Medische term'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "sensation play"?', o: ['Zintuiglijk spel met verschillende prikkels', 'Muziekgenre', 'Theatervorm', 'Sportterm'], a: 0, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "ball gag"?', o: ['Sportuitrusting', 'Bal-mondknevel', 'Ballon', 'Grapje'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "pegging"?', o: ['Wasophangen', 'Anale penetratie met strap-on', 'Darts-term', 'Tuinieren'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is een "soft limit"?', o: ['Zachte kussens', 'Iets waar je onzeker over bent maar misschien wil proberen', 'Lage snelheid', 'Zacht materiaal'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "predicament bondage"?', o: ['Vastbinden met dilemma/oncomfortabele keuze', 'Touw voorspellen', 'Makkelijk vastbinden', 'Type knoop'], a: 0, cat: 'bdsm', d: 3 },
+  { v: 'Welke kleur kaars is het veiligst voor wax play?', o: ['Rood', 'Wit/paraffine', 'Zwart', 'Blauw'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "topping from the bottom"?', o: ['Sub die stiekem de controle neemt', 'Bovenkant van een taart', 'Omgekeerd staan', 'Type knoop'], a: 0, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "figging"?', o: ['Vijgen eten', 'Gemberwortel als stimulatie', 'Type dans', 'Vis vangen'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is een "St. Andrew\'s Cross"?', o: ['Kerkelijk symbool', 'X-vormig BDSM-kruis', 'Schotse vlag', 'Kruiswoordpuzzel'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "nipple play"?', o: ['Zuigfles-gebruik', 'Stimulatie van tepels', 'Sportterm', 'Type massage'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat moet je altijd bij de hand hebben bij bondage?', o: ['Telefoon', 'Veiligheidsschaar', 'Water', 'Muziek'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "chastity" in BDSM?', o: ['Kuisheid/onthouding met slot', 'Type knoop', 'Naam van een Dom', 'Meditatievorm'], a: 0, cat: 'bdsm', d: 3 },
+  { v: 'Wat is een "safe call"?', o: ['Veilig telefoontje regelen voor/na date', 'Bellen met 112', 'Safeword roepen', 'Rustig praten'], a: 0, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "temperature play"?', o: ['Thermostaat instellen', 'Spel met warmte en koude', 'IJsbaden', 'Koken'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "rope bunny"?', o: ['Konijntje van touw', 'Persoon die vastgebonden wordt', 'Touwverkoper', 'Type knoop'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "CNC" in BDSM-context?', o: ['Computer gestuurde machine', 'Consensual Non-Consent', 'Care Nurture Comfort', 'Control Navigate Command'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Waarom zijn metalen handboeien minder veilig dan manchetten?', o: ['Ze zijn duurder', 'Ze kunnen zenuwen beschadigen', 'Ze zijn te zwaar', 'Ze roesten'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "bratting"?', o: ['Stout/uitdagend gedrag als sub', 'Type bbq', 'Kaartspel', 'Kinderspel'], a: 0, cat: 'bdsm', d: 2 },
+  { v: 'Wat is "dom drop"?', o: ['Een dom persoon valt', 'Emotionele dip van de Dom na een sessie', 'Laten vallen', 'DJ-term'], a: 1, cat: 'bdsm', d: 3 },
+  { v: 'Wat is "negotiation" voor een scene?', o: ['Zakelijk onderhandelen', 'Grenzen en wensen bespreken', 'Prijs bepalen', 'Contract tekenen'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is een "crop" in BDSM?', o: ['Landbouwterm', 'Kort zweepje/rijzweep', 'Type oogst', 'Foto bijsnijden'], a: 1, cat: 'bdsm', d: 2 },
+  { v: 'Wat is het belangrijkste in elke BDSM-activiteit?', o: ['Uitrusting', 'Consent/toestemming', 'Ervaring', 'Locatie'], a: 1, cat: 'bdsm', d: 1 },
+
+  // ============================================================
+  // 💑 RELATIE
+  // ============================================================
+  { v: 'Wat is de belangrijkste basis van een relatie?', o: ['Geld', 'Uiterlijk', 'Vertrouwen', 'Humor'], a: 2, cat: 'relatie', d: 1 },
+  { v: 'Wat is de "love language" van cadeautjes geven?', o: ['Quality Time', 'Acts of Service', 'Receiving Gifts', 'Words of Affirmation'], a: 2, cat: 'relatie', d: 2 },
+  { v: 'Hoeveel love languages zijn er volgens Chapman?', o: ['3', '4', '5', '7'], a: 2, cat: 'relatie', d: 2 },
+  { v: 'Wat is een "date night"?', o: ['Nachtclub bezoek', 'Geplande romantische avond', 'Blind date', 'Eerste date'], a: 1, cat: 'relatie', d: 1 },
+  { v: 'Wat betekent LDR?', o: ['Long Distance Relationship', 'Love Dating Romance', 'Lekker Doen Relax', 'Late Date Running'], a: 0, cat: 'relatie', d: 2 },
+  { v: 'Wat is "quality time" als love language?', o: ['Samen winkelen', 'Onverdeelde aandacht voor elkaar', 'Lang slapen', 'Samen TV kijken'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Wat is het verschil tussen verliefdheid en liefde?', o: ['Niets', 'Verliefdheid is tijdelijk, liefde groeit', 'Liefde is minder intens', 'Verliefdheid is sterker'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Welk hormoon wordt het "knuffelhormoon" genoemd?', o: ['Dopamine', 'Serotonine', 'Oxytocine', 'Adrenaline'], a: 2, cat: 'relatie', d: 2 },
+  { v: 'Wat is een "open relatie"?', o: ['Relatie zonder deur', 'Relatie waarin intimiteit met anderen mag', 'Relatie op afstand', 'Nieuwe relatie'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Wat is het "honeymoon phase"?', o: ['Huwelijksreis', 'Begin van verliefdheid met intense gevoelens', 'Tweede jaar', 'Pensioen samen'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Wat is actief luisteren?', o: ['Hard praten', 'Aandachtig luisteren en samenvatten', 'Muziek luisteren', 'Stil zijn'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Welke dag is Valentijnsdag?', o: ['14 januari', '14 februari', '14 maart', '14 april'], a: 1, cat: 'relatie', d: 1 },
+  { v: 'Wat is polyamorie?', o: ['Veel hobby\'s', 'Meerdere romantische relaties met toestemming', 'Veel vrienden', 'Veel reizen'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Wat is een "love language"?', o: ['Taal van de liefde', 'Manier waarop je liefde uit/ontvangt', 'Frans', 'Liefdeslied'], a: 1, cat: 'relatie', d: 1 },
+  { v: 'Wat is "gaslighting" in een relatie?', o: ['Koken op gas', 'Manipulatie zodat je aan jezelf twijfelt', 'Lichtjes dimmen', 'Ruzie maken'], a: 1, cat: 'relatie', d: 3 },
+  { v: 'Wat is een gezonde manier om ruzie te maken?', o: ['Schreeuwen', 'Ik-boodschappen gebruiken', 'Wegloop', 'Negeren'], a: 1, cat: 'relatie', d: 2 },
+  { v: 'Wat is "attachment style"?', o: ['Manier van knuffelen', 'Hechtingsstijl in relaties', 'Type lijm', 'Kledingstijl'], a: 1, cat: 'relatie', d: 3 },
+  { v: 'Welk symbool staat wereldwijd voor liefde?', o: ['Ster', 'Hart', 'Cirkel', 'Bloem'], a: 1, cat: 'relatie', d: 1 },
+  { v: 'Wat is NRE?', o: ['New Relationship Energy', 'Not Really Excited', 'Nice Romantic Evening', 'Never Really Easy'], a: 0, cat: 'relatie', d: 3 },
+  { v: 'Wat is een "boundary" in een relatie?', o: ['Hek in de tuin', 'Persoonlijke grens', 'Landgrens', 'Afstand'], a: 1, cat: 'relatie', d: 2 },
+
+  // ============================================================
+  // 🎬 FILM & TV
+  // ============================================================
+  { v: 'Wie speelt Iron Man in de Marvel-films?', o: ['Chris Evans', 'Robert Downey Jr.', 'Chris Hemsworth', 'Mark Ruffalo'], a: 1, cat: 'film', d: 1 },
+  { v: 'In welke film zegt men "I\'ll be back"?', o: ['Rambo', 'Die Hard', 'Terminator', 'Rocky'], a: 2, cat: 'film', d: 1 },
+  { v: 'Hoe heet de leeuwenwelp in The Lion King?', o: ['Mufasa', 'Scar', 'Simba', 'Nala'], a: 2, cat: 'film', d: 1 },
+  { v: 'Welke kleur lightsaber heeft Darth Vader?', o: ['Blauw', 'Groen', 'Paars', 'Rood'], a: 3, cat: 'film', d: 1 },
+  { v: 'In welke film zinkt een groot schip?', o: ['Jaws', 'Titanic', 'Waterworld', 'Poseidon'], a: 1, cat: 'film', d: 1 },
+  { v: 'Hoe heet de tovenaar in Lord of the Rings?', o: ['Gandalf', 'Dumbledore', 'Merlin', 'Saruman'], a: 0, cat: 'film', d: 1 },
+  { v: 'Welke serie speelt zich af in Westeros?', o: ['The Witcher', 'Lord of the Rings', 'Game of Thrones', 'Vikings'], a: 2, cat: 'film', d: 2 },
+  { v: 'Wie regisseerde Pulp Fiction?', o: ['Spielberg', 'Scorsese', 'Tarantino', 'Nolan'], a: 2, cat: 'film', d: 2 },
+  { v: 'In welke Netflix-serie overleven spelers dodelijke spelletjes?', o: ['Alice in Borderland', 'Squid Game', 'The 100', 'Hunger Games'], a: 1, cat: 'film', d: 2 },
+  { v: 'Hoe heet de beroemde detectiveserie met Benedict Cumberbatch?', o: ['Luther', 'Sherlock', 'Poirot', 'Elementary'], a: 1, cat: 'film', d: 2 },
+  { v: 'Welke Disney-prinses heeft ijskrachten?', o: ['Belle', 'Rapunzel', 'Elsa', 'Moana'], a: 2, cat: 'film', d: 1 },
+  { v: 'In welk jaar kwam de eerste Harry Potter-film uit?', o: ['1999', '2000', '2001', '2002'], a: 2, cat: 'film', d: 2 },
+  { v: 'Welke acteur speelt Jack Sparrow?', o: ['Orlando Bloom', 'Johnny Depp', 'Brad Pitt', 'Leonardo DiCaprio'], a: 1, cat: 'film', d: 2 },
+  { v: 'Hoeveel Infinity Stones zijn er in Marvel?', o: ['4', '5', '6', '8'], a: 2, cat: 'film', d: 2 },
+  { v: 'In welke serie leeft Walter White een dubbelleven als drugsbaron?', o: ['Narcos', 'Ozark', 'Breaking Bad', 'Better Call Saul'], a: 2, cat: 'film', d: 2 },
+  { v: 'Wie speelt de Joker in The Dark Knight?', o: ['Jack Nicholson', 'Jared Leto', 'Heath Ledger', 'Joaquin Phoenix'], a: 2, cat: 'film', d: 3 },
+  { v: 'Welke Matrix-pil kies je voor de waarheid?', o: ['Blauw', 'Rood', 'Groen', 'Geel'], a: 1, cat: 'film', d: 2 },
+  { v: 'Hoe heet de robot in Star Wars die piept?', o: ['C-3PO', 'R2-D2', 'BB-8', 'K-2SO'], a: 1, cat: 'film', d: 2 },
+  { v: 'Welke Pixar-film gaat over emoties in je hoofd?', o: ['Up', 'Soul', 'Inside Out', 'Coco'], a: 2, cat: 'film', d: 2 },
+  { v: 'In welke serie is "Winter is coming" een beroemde quote?', o: ['Vikings', 'The Witcher', 'Game of Thrones', 'Outlander'], a: 2, cat: 'film', d: 2 },
+
+  // ============================================================
+  // 🎵 MUZIEK
+  // ============================================================
+  { v: 'Wie is de "King of Pop"?', o: ['Elvis', 'Prince', 'Michael Jackson', 'Freddie Mercury'], a: 2, cat: 'muziek', d: 1 },
+  { v: 'Uit welk land komen The Beatles?', o: ['VS', 'Engeland', 'Ierland', 'Australië'], a: 1, cat: 'muziek', d: 1 },
+  { v: 'Hoeveel snaren heeft een standaardgitaar?', o: ['4', '5', '6', '8'], a: 2, cat: 'muziek', d: 1 },
+  { v: 'Welk instrument bespeelt een DJ?', o: ['Piano', 'Draaitafel', 'Drums', 'Viool'], a: 1, cat: 'muziek', d: 1 },
+  { v: 'Wie zong "Bohemian Rhapsody"?', o: ['The Beatles', 'Queen', 'Led Zeppelin', 'Pink Floyd'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Welke Nederlandse DJ is wereldberoemd?', o: ['Afrojack', 'Martin Garrix', 'Tiësto', 'Alle drie'], a: 3, cat: 'muziek', d: 2 },
+  { v: 'Wat is het populairste muziekstreamingplatform?', o: ['Apple Music', 'Spotify', 'YouTube Music', 'Deezer'], a: 1, cat: 'muziek', d: 1 },
+  { v: 'Hoeveel toetsen heeft een standaard piano?', o: ['66', '76', '88', '96'], a: 2, cat: 'muziek', d: 2 },
+  { v: 'Welk genre komt uit Jamaica?', o: ['Blues', 'Jazz', 'Reggae', 'Country'], a: 2, cat: 'muziek', d: 2 },
+  { v: 'Wie is bekend van "Shape of You"?', o: ['Justin Bieber', 'Ed Sheeran', 'Shawn Mendes', 'Sam Smith'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Welk muziekinstrument is het grootst in een orkest?', o: ['Contrabas', 'Tuba', 'Harp', 'Pauken'], a: 0, cat: 'muziek', d: 2 },
+  { v: 'Wat is een "drop" in elektronische muziek?', o: ['Val', 'Hoogtepunt/beat-inzet', 'Stil moment', 'Refrein'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Welke zangeres is "Queen B"?', o: ['Rihanna', 'Beyoncé', 'Lady Gaga', 'Adele'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Uit welk land komt K-pop?', o: ['Japan', 'China', 'Zuid-Korea', 'Thailand'], a: 2, cat: 'muziek', d: 1 },
+  { v: 'Wie componeerde de Negende Symfonie?', o: ['Mozart', 'Bach', 'Beethoven', 'Chopin'], a: 2, cat: 'muziek', d: 3 },
+  { v: 'Welk festival is het grootste in Nederland?', o: ['Lowlands', 'Pinkpop', 'Mysteryland', 'Defqon.1'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Hoeveel leden had ABBA?', o: ['3', '4', '5', '6'], a: 1, cat: 'muziek', d: 2 },
+  { v: 'Welk genre staat bekend om "808" drums?', o: ['Rock', 'Hip-hop/Trap', 'Jazz', 'Country'], a: 1, cat: 'muziek', d: 3 },
+  { v: 'Wie zong "No Woman No Cry"?', o: ['Bob Marley', 'Peter Tosh', 'Jimmy Cliff', 'Shaggy'], a: 0, cat: 'muziek', d: 2 },
+  { v: 'Welk Nederlands lied wordt op Koningsdag gezongen?', o: ['Wilhelmus', 'Het is een nacht', 'Oranje boven', 'Alle drie'], a: 3, cat: 'muziek', d: 2 },
+
+  // ============================================================
+  // 🍽️ ETEN & DRINKEN
+  // ============================================================
+  { v: 'Van welk land komt sushi?', o: ['China', 'Japan', 'Korea', 'Thailand'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Welk fruit is geel en krom?', o: ['Appel', 'Banaan', 'Mango', 'Citroen'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Wat is de basis van guacamole?', o: ['Tomaat', 'Avocado', 'Paprika', 'Komkommer'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Welk land is beroemd om pizza?', o: ['Spanje', 'Griekenland', 'Italië', 'Frankrijk'], a: 2, cat: 'eten', d: 1 },
+  { v: 'Wat is het meest gegeten fruit ter wereld?', o: ['Appel', 'Banaan', 'Sinaasappel', 'Mango'], a: 1, cat: 'eten', d: 2 },
+  { v: 'Van welk dier komt biefstuk?', o: ['Varken', 'Koe', 'Kip', 'Lam'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Welke kaas komt uit Nederland?', o: ['Brie', 'Gouda', 'Mozzarella', 'Cheddar'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Wat is de scherpste peper ter wereld (2024)?', o: ['Habanero', 'Ghost Pepper', 'Carolina Reaper', 'Pepper X'], a: 3, cat: 'eten', d: 3 },
+  { v: 'Welke drank wordt gemaakt van druiven?', o: ['Bier', 'Wijn', 'Whisky', 'Rum'], a: 1, cat: 'eten', d: 1 },
+  { v: 'Van welk land komen croissants?', o: ['Italië', 'België', 'Frankrijk', 'Oostenrijk'], a: 3, cat: 'eten', d: 3 },
+  { v: 'Welke kleur heeft wasabi?', o: ['Rood', 'Geel', 'Groen', 'Bruin'], a: 2, cat: 'eten', d: 1 },
+  { v: 'Wat is umami?', o: ['Zout', 'Zoet', 'Hartig/de vijfde smaak', 'Bitter'], a: 2, cat: 'eten', d: 2 },
+  { v: 'Welk Nederlands gerecht eet je met stamppot?', o: ['Rookworst', 'Frikandel', 'Kroket', 'Haring'], a: 0, cat: 'eten', d: 1 },
+  { v: 'Wat is de hoofdingrediënt van hummus?', o: ['Linzen', 'Kikkererwten', 'Bonen', 'Erwten'], a: 1, cat: 'eten', d: 2 },
+  { v: 'Welke noot zit in pesto?', o: ['Walnoot', 'Cashew', 'Pijnboompit', 'Amandel'], a: 2, cat: 'eten', d: 2 },
+  { v: 'Van welk land komt kimchi?', o: ['Japan', 'China', 'Korea', 'Vietnam'], a: 2, cat: 'eten', d: 2 },
+  { v: 'Hoeveel smaken kan de tong onderscheiden?', o: ['3', '4', '5', '7'], a: 2, cat: 'eten', d: 2 },
+  { v: 'Wat is de meest gedronken drank ter wereld?', o: ['Koffie', 'Thee', 'Water', 'Cola'], a: 1, cat: 'eten', d: 2 },
+  { v: 'Welk land is bekend om tapas?', o: ['Italië', 'Portugal', 'Spanje', 'Griekenland'], a: 2, cat: 'eten', d: 2 },
+  { v: 'Wat is truffel?', o: ['Chocolade', 'Ondergrondse paddenstoel', 'Kaas', 'Noot'], a: 1, cat: 'eten', d: 2 },
+
+  // ============================================================
+  // 🏆 SPORT
+  // ============================================================
+  { v: 'Hoeveel spelers staan er in een voetbalteam?', o: ['9', '10', '11', '12'], a: 2, cat: 'sport', d: 1 },
+  { v: 'Welke sport speel je op Wimbledon?', o: ['Golf', 'Tennis', 'Cricket', 'Polo'], a: 1, cat: 'sport', d: 1 },
+  { v: 'Hoeveel ringen heeft het Olympisch logo?', o: ['3', '4', '5', '6'], a: 2, cat: 'sport', d: 1 },
+  { v: 'In welke sport gebruik je een shuttle?', o: ['Tennis', 'Badminton', 'Squash', 'Tafeltennis'], a: 1, cat: 'sport', d: 1 },
+  { v: 'Hoeveel sets moet je winnen in tennis (heren Grand Slam)?', o: ['2', '3', '4', '5'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Welk land won het WK voetbal 2022?', o: ['Brazilië', 'Frankrijk', 'Argentinië', 'Kroatië'], a: 2, cat: 'sport', d: 2 },
+  { v: 'Hoeveel holes heeft een standaard golfbaan?', o: ['9', '12', '16', '18'], a: 3, cat: 'sport', d: 2 },
+  { v: 'Welke sport beoefent Max Verstappen?', o: ['MotoGP', 'Formule 1', 'Rally', 'NASCAR'], a: 1, cat: 'sport', d: 1 },
+  { v: 'In welke sport scoor je een "homerun"?', o: ['Cricket', 'Baseball', 'Softbal', 'Rugby'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Hoeveel kwarten heeft een basketbalwedstrijd?', o: ['2', '3', '4', '5'], a: 2, cat: 'sport', d: 2 },
+  { v: 'Welke Nederlander heeft de meeste F1-titels?', o: ['Jos Verstappen', 'Max Verstappen', 'Niki Lauda', 'Jan Lammers'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Wat is de langste atletiek-discipline?', o: ['10.000 meter', 'Halve marathon', 'Marathon', '100 km'], a: 2, cat: 'sport', d: 2 },
+  { v: 'In welke stad werden de Olympische Spelen 2024 gehouden?', o: ['Tokyo', 'Los Angeles', 'Parijs', 'Londen'], a: 2, cat: 'sport', d: 2 },
+  { v: 'Welke voetbalclub speelt in Camp Nou?', o: ['Real Madrid', 'Barcelona', 'Atlético Madrid', 'Sevilla'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Hoeveel spelers staan er op een basketbalveld per team?', o: ['4', '5', '6', '7'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Welke zwemslag is het snelst?', o: ['Schoolslag', 'Rugslag', 'Vlinderslag', 'Vrije slag'], a: 3, cat: 'sport', d: 2 },
+  { v: 'Wie heeft de meeste Ballon d\'Or gewonnen?', o: ['Ronaldo', 'Messi', 'Neymar', 'Modric'], a: 1, cat: 'sport', d: 2 },
+  { v: 'In welke sport wordt een "puck" gebruikt?', o: ['Lacrosse', 'IJshockey', 'Hockey', 'Curling'], a: 1, cat: 'sport', d: 1 },
+  { v: 'Wat is een "hat-trick" in voetbal?', o: ['3 assists', '3 goals door 1 speler', '3 gele kaarten', '3 hoekschoppen'], a: 1, cat: 'sport', d: 2 },
+  { v: 'Welk land heeft het meeste WK-voetbaltitels?', o: ['Duitsland', 'Italië', 'Argentinië', 'Brazilië'], a: 3, cat: 'sport', d: 2 },
+
+  // ============================================================
+  // 🇳🇱 NEDERLAND
+  // ============================================================
+  { v: 'Wat is de hoofdstad van Nederland?', o: ['Den Haag', 'Amsterdam', 'Rotterdam', 'Utrecht'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Welke bloem is typisch Nederlands?', o: ['Roos', 'Tulp', 'Zonnebloem', 'Lelie'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Hoeveel provincies heeft Nederland?', o: ['10', '11', '12', '14'], a: 2, cat: 'nederland', d: 1 },
+  { v: 'Op welke dag vieren we Koningsdag?', o: ['27 maart', '27 april', '30 april', '5 mei'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Waar zit de Nederlandse regering?', o: ['Amsterdam', 'Den Haag', 'Utrecht', 'Leiden'], a: 1, cat: 'nederland', d: 2 },
+  { v: 'Welke rivier stroomt door Rotterdam?', o: ['Rijn', 'Maas', 'IJssel', 'Waal'], a: 1, cat: 'nederland', d: 2 },
+  { v: 'Hoe heet het bekendste Nederlandse schilderij?', o: ['Melkmeisje', 'Nachtwacht', 'Zonnebloemen', 'Sterrennacht'], a: 1, cat: 'nederland', d: 2 },
+  { v: 'Wat eet je traditioneel met Sinterklaas?', o: ['Oliebollen', 'Pepernoten', 'Poffertjes', 'Stroopwafels'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Welke stad staat bekend als havenstad?', o: ['Amsterdam', 'Rotterdam', 'Den Helder', 'Vlissingen'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Hoeveel meter onder zeeniveau ligt het laagste punt?', o: ['3 meter', '5 meter', '7 meter', '10 meter'], a: 2, cat: 'nederland', d: 3 },
+  { v: 'Welke Nederlandse uitvinding beschermt tegen water?', o: ['Brug', 'Dijk', 'Dam', 'Sluis'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'In welk jaar werden de Deltawerken voltooid?', o: ['1986', '1990', '1997', '2002'], a: 2, cat: 'nederland', d: 3 },
+  { v: 'Wat is een typisch Nederlands ontbijt?', o: ['Croissant', 'Boterham met hagelslag', 'Pancakes', 'Muesli'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Welke sport is het populairst in Nederland?', o: ['Hockey', 'Voetbal', 'Schaatsen', 'Tennis'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Hoe heet het beroemde Hollandse koekje bij koffie?', o: ['Speculaas', 'Stroopwafel', 'Gevulde koek', 'Boterkoek'], a: 1, cat: 'nederland', d: 1 },
+  { v: 'Welke Nederlandse schilder mist een oor?', o: ['Rembrandt', 'Vermeer', 'Van Gogh', 'Mondriaan'], a: 2, cat: 'nederland', d: 2 },
+  { v: 'Wat is een polder?', o: ['Berg', 'Drooggemalen land', 'Bos', 'Strand'], a: 1, cat: 'nederland', d: 2 },
+  { v: 'Welke stad is bekend om de kaasmarkt?', o: ['Gouda', 'Alkmaar', 'Edam', 'Alle drie'], a: 3, cat: 'nederland', d: 2 },
+  { v: 'Hoeveel Waddeneilanden heeft Nederland?', o: ['3', '4', '5', '6'], a: 2, cat: 'nederland', d: 2 },
+  { v: 'Welke Nederlandse wetenschapper ontdekte de microscoop?', o: ['Huygens', 'Van Leeuwenhoek', 'Erasmus', 'Boerhaave'], a: 1, cat: 'nederland', d: 3 },
+
+  // NOTE: triviaVragen no longer merged — all questions are directly in this array with categories
 ];
 
 // Filter vragen op config
@@ -10053,14 +10757,93 @@ function filterQuizQuestions(config) {
     if (target) pool = pool.filter(q => q.d === target);
   }
 
-  // Shuffle en beperk tot count
-  pool = shuffleArray(pool);
-  return pool.slice(0, config.count);
+  // SAFETY: If filters result in 0 questions, fall back to full pool
+  if (pool.length === 0) {
+    console.warn('[Quiz] Geen vragen na filteren — fallback naar volledige pool');
+    pool = shuffleArray([...voiceQuizVragen]);
+  } else {
+    pool = shuffleArray(pool);
+  }
+
+  // Ensure count is at least 1
+  const count = Math.max(1, config.count || 10);
+  return pool.slice(0, count);
 }
+
+// --- Bluetooth / Audio Device Safety ---
+// If a Bluetooth headphone disconnects mid-quiz, TTS audio could suddenly
+// play through laptop speakers → into the e-stim 2B. DANGEROUS!
+// We detect device changes and pause the quiz immediately.
+let lastAudioDeviceCount = 0;
+let bluetoothSafetyActive = false;
+
+function initBluetoothSafety() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+
+  // Count current audio output devices
+  navigator.mediaDevices.enumerateDevices().then(devices => {
+    lastAudioDeviceCount = devices.filter(d => d.kind === 'audiooutput').length;
+  });
+
+  // Listen for device changes
+  navigator.mediaDevices.addEventListener('devicechange', async () => {
+    if (!bluetoothSafetyActive) return;
+
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const currentCount = devices.filter(d => d.kind === 'audiooutput').length;
+
+      // Device was REMOVED (count decreased)
+      if (currentCount < lastAudioDeviceCount) {
+        console.warn('[SAFETY] Audio device disconnected! Pausing quiz to prevent e-stim accident.');
+
+        // Immediately stop all audio
+        try { speechSynthesis.cancel(); } catch(e) {}
+
+        // Stop quiz if active
+        if (voiceQuizState.active) {
+          const mode = voiceQuizState.mode || 'solo';
+          stopVoiceQuiz(mode);
+
+          const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
+          logFn('⚠️ VEILIGHEID: Audio-apparaat losgekoppeld! Quiz gestopt om e-stim ongeval te voorkomen.', true);
+
+          // Also show alert
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+
+          // Show warning on screen
+          const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+          const display = document.getElementById(prefix + '-vq-display');
+          if (display) {
+            display.style.display = 'block';
+            const questionEl = document.getElementById(prefix + '-vq-question');
+            if (questionEl) {
+              questionEl.innerHTML = '⚠️ <span style="color:#e94560;">Audio-apparaat losgekoppeld!</span><br><small>Quiz gestopt voor veiligheid. Sluit je koptelefoon opnieuw aan en start de quiz opnieuw.</small>';
+            }
+          }
+        }
+      }
+
+      lastAudioDeviceCount = currentCount;
+    } catch(e) {
+      console.error('[SAFETY] Error checking devices:', e);
+    }
+  });
+}
+
+// Initialize on first user interaction
+document.addEventListener('click', function initBtSafety() {
+  initBluetoothSafety();
+  document.removeEventListener('click', initBtSafety);
+}, { once: true });
 
 // --- Start Voice Quiz ---
 function startVoiceQuiz(mode, useCustom, config) {
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
+  if (triviaState.active) stopTriviaGame(); // Mutual exclusion
+
+  // Enable Bluetooth safety monitoring during quiz
+  bluetoothSafetyActive = true;
 
   // BUG FIX #7: integrate with stateManager — stop other audio sources
   stateManager.requestAutopilot('voice_quiz', null, mode === 'solo' ? 'solo' : 'sender');
@@ -10101,17 +10884,24 @@ function startVoiceQuiz(mode, useCustom, config) {
   const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
   logFn('🎤 Voice Quiz! ' + qs.length + ' vragen', true);
 
-  // Request mic permission (once, then cached)
-  startListening().then(micAvailable => {
-    if (micAvailable) {
-      logFn('🎤 Microfoon actief — antwoord met stem (1/2/3/4)');
-    } else {
-      updateMicStatus(prefix, false);
-      logFn('📱 Geen microfoon — tik op het juiste antwoord');
-      const hint = document.querySelector('#' + prefix + '-vq-display .vq-voice-hint');
-      if (hint) hint.innerHTML = 'Tik op het juiste antwoord (microfoon niet beschikbaar)';
-    }
-  });
+  // Request mic permission (alleen als spraak is ingeschakeld)
+  const useVoice = config.inputMode !== 'tikken';
+  if (useVoice) {
+    startListening().then(micAvailable => {
+      if (micAvailable) {
+        logFn('🎤 Microfoon actief — antwoord met stem of tik');
+      } else {
+        updateMicStatus(prefix, false);
+        logFn('📱 Geen microfoon — tik op het juiste antwoord');
+        const hint = document.querySelector('#' + prefix + '-vq-display .vq-voice-hint');
+        if (hint) hint.innerHTML = 'Tik op het juiste antwoord (microfoon niet beschikbaar)';
+      }
+    });
+  } else {
+    logFn('📱 Tikken-modus — tik op het juiste antwoord');
+    const hint = document.querySelector('#' + prefix + '-vq-display .vq-voice-hint');
+    if (hint) hint.innerHTML = 'Tik op het juiste antwoord';
+  }
 
   // Show countdown before starting (3... 2... 1... GO!)
   const questionEl = document.getElementById(prefix + '-vq-question');
@@ -10152,9 +10942,11 @@ function startVoiceQuiz(mode, useCustom, config) {
 function stopVoiceQuiz(mode) {
   voiceQuizState.active = false;
   voiceQuizState.waitingForAnswer = false;
+  bluetoothSafetyActive = false;
   clearInterval(voiceQuizState.timerInterval);
   clearInterval(ttsResumeInterval);
   stopListening();
+  stopQuizReward(); // Stop any running reward
   try { speechSynthesis.cancel(); } catch(e) {}
   stateManager.clearAutopilot('voice_quiz');
 
@@ -10196,13 +10988,19 @@ function showVoiceQuizQuestion(mode) {
 
   const optionsEl = document.getElementById(prefix + '-vq-options');
   optionsEl.innerHTML = '';
+  const inputMode = (voiceQuizState.config && voiceQuizState.config.inputMode) || 'beide';
   q.o.forEach((opt, i) => {
     const div = document.createElement('div');
     div.className = 'vq-option';
     div.id = prefix + '-vq-opt-' + i;
     div.innerHTML = '<span class="vq-option-num">' + (i + 1) + '</span> ' + opt;
-    // Fallback: click option too
-    div.onclick = () => { if (voiceQuizState.waitingForAnswer) handleVoiceQuizAnswer(i); };
+    // Klik-handler alleen als tikken is toegestaan
+    if (inputMode !== 'spraak') {
+      div.onclick = () => { if (voiceQuizState.waitingForAnswer) handleVoiceQuizAnswer(i); };
+    } else {
+      div.style.cursor = 'default';
+      div.style.opacity = '0.7';
+    }
     optionsEl.appendChild(div);
   });
 
@@ -10270,16 +11068,20 @@ function showVoiceQuizQuestion(mode) {
       startQuestionTimer();
     });
 
-    // Safety fallback: als TTS vastloopt, start timer na 4 seconden
+    // Safety fallback: als TTS vastloopt, start timer
+    // Timeout gebaseerd op tekstlengte: ~10 tekens per seconde + 3s marge
+    const fullText = q.v + '. ' + spokenOptions;
+    const estimatedSpeakTime = Math.max(8, Math.ceil(fullText.length / 10) + 3);
+    console.log('[Quiz] TTS fallback timeout:', estimatedSpeakTime + 's voor', fullText.length, 'tekens');
     setTimeout(() => {
       if (!voiceQuizState.active) return;
       if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
-        console.warn('[Quiz] Fallback 4s: timer starten voor vraag ' + (questionId + 1));
+        console.warn('[Quiz] Fallback ' + estimatedSpeakTime + 's: timer starten voor vraag ' + (questionId + 1));
         ttsSpeaking = false;
         try { speechSynthesis.cancel(); } catch(e) {}
         startQuestionTimer();
       }
-    }, 4000);
+    }, estimatedSpeakTime * 1000);
   } else {
     // TTS uit — start timer meteen
     startQuestionTimer();
@@ -10295,10 +11097,10 @@ function repeatCurrentQuestion() {
   if (!voiceQuizState.active) return;
   const q = voiceQuizState.questions[voiceQuizState.currentIndex];
   if (!q) return;
-  // BUG FIX #6: Pause the timer while TTS repeats, then resume
+  const questionId = voiceQuizState.currentIndex; // Guard tegen stale callbacks
   const savedTime = voiceQuizState.timerSeconds;
   clearInterval(voiceQuizState.timerInterval);
-  voiceQuizState.waitingForAnswer = false; // Don't accept answers during re-read
+  voiceQuizState.waitingForAnswer = false;
 
   const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
   const mode = voiceQuizState.mode;
@@ -10307,24 +11109,38 @@ function repeatCurrentQuestion() {
   const mic = document.getElementById(prefix + '-vq-mic');
   if (mic) mic.querySelector('span').textContent = 'Herhaalt...';
 
-  speak(q.v + '. ' + spokenOptions, () => {
-    // Restore timer with saved time
-    if (!voiceQuizState.active) return;
+  const ttsOn = !voiceQuizState.config || voiceQuizState.config.ttsEnabled !== false;
+  function resumeTimer() {
+    if (!voiceQuizState.active || voiceQuizState.currentIndex !== questionId) return;
     voiceQuizState.timerSeconds = savedTime;
     voiceQuizState.waitingForAnswer = true;
     updateMicStatus(prefix, true);
     const timerBar = document.getElementById(prefix + '-vq-timer');
 
+    clearInterval(voiceQuizState.timerInterval); // SAFETY: prevent timer leak
     voiceQuizState.timerInterval = setInterval(() => {
+      if (!voiceQuizState.active || voiceQuizState.currentIndex !== questionId) {
+        clearInterval(voiceQuizState.timerInterval); return;
+      }
       voiceQuizState.timerSeconds--;
       const pct = (voiceQuizState.timerSeconds / voiceQuizState.timerMax) * 100;
       if (timerBar) { timerBar.style.width = pct + '%'; if (pct < 30) timerBar.className = 'vq-timer-fill urgent'; }
+      if (voiceQuizState.timerSeconds <= 5 && voiceQuizState.timerSeconds > 0) {
+        vibrateDevice(50);
+        playCountdownTick();
+      }
       if (voiceQuizState.timerSeconds <= 0) {
         clearInterval(voiceQuizState.timerInterval);
         handleVoiceQuizAnswer(-1);
       }
     }, 1000);
-  });
+  }
+
+  if (ttsOn) {
+    speak(q.v + '. ' + spokenOptions, resumeTimer);
+  } else {
+    resumeTimer();
+  }
 }
 
 // --- Handle Answer ---
@@ -10336,6 +11152,7 @@ function handleVoiceQuizAnswer(answerIndex) {
   const mode = voiceQuizState.mode;
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   const q = voiceQuizState.questions[voiceQuizState.currentIndex];
+  if (!q) { finishVoiceQuiz(mode); return; } // SAFETY: bounds check
   const correct = q.a;
   const isCorrect = answerIndex === correct;
   const isTimeout = answerIndex === -1;
@@ -10353,13 +11170,17 @@ function handleVoiceQuizAnswer(answerIndex) {
   const feedback = document.getElementById(prefix + '-vq-feedback');
   const display = document.getElementById(prefix + '-vq-display');
 
+  const ttsOn = !voiceQuizState.config || voiceQuizState.config.ttsEnabled !== false;
+  function quizSpeak(text) { if (ttsOn) speak(text); }
+
   if (isTimeout) {
     voiceQuizState.wrong++;
     voiceQuizState.streak = 0;
     feedback.textContent = '⏰ Te laat! Het was: ' + q.o[correct];
     feedback.className = 'vq-feedback bad';
+    feedback.style.display = 'block';
     display.classList.add('wrong-answer');
-    speak('Te laat. Het antwoord was ' + q.o[correct]);
+    quizSpeak('Te laat. Het antwoord was ' + q.o[correct]);
     doQuizPunishment(mode);
   } else if (isCorrect) {
     voiceQuizState.score++;
@@ -10367,15 +11188,17 @@ function handleVoiceQuizAnswer(answerIndex) {
     if (voiceQuizState.streak > voiceQuizState.maxStreak) voiceQuizState.maxStreak = voiceQuizState.streak;
     feedback.textContent = '✅ Goed!' + (voiceQuizState.streak >= 3 ? ' 🔥 ' + voiceQuizState.streak + 'x streak!' : '');
     feedback.className = 'vq-feedback good';
-    speak(voiceQuizState.streak >= 3 ? 'Goed! ' + voiceQuizState.streak + ' op een rij!' : 'Goed!');
+    feedback.style.display = 'block';
+    quizSpeak(voiceQuizState.streak >= 3 ? 'Goed! ' + voiceQuizState.streak + ' op een rij!' : 'Goed!');
     doQuizReward(mode);
   } else {
     voiceQuizState.wrong++;
     voiceQuizState.streak = 0;
     feedback.textContent = '❌ Fout! Het was: ' + q.o[correct];
     feedback.className = 'vq-feedback bad';
+    feedback.style.display = 'block';
     display.classList.add('wrong-answer');
-    speak('Fout. Het antwoord was ' + q.o[correct]);
+    quizSpeak('Fout. Het antwoord was ' + q.o[correct]);
     doQuizPunishment(mode);
   }
 
@@ -10401,11 +11224,21 @@ function handleVoiceQuizAnswer(answerIndex) {
   else if (isCorrect) logFn('🎤 ✅ Goed! Score: ' + voiceQuizState.score + '/' + (voiceQuizState.score + voiceQuizState.wrong));
   else logFn('🎤 ❌ Fout! Score: ' + voiceQuizState.score + '/' + (voiceQuizState.score + voiceQuizState.wrong), true);
 
-  // Next question after delay (wait for TTS feedback to finish)
+  // Next question after delay — wait for reward/punishment to finish
   voiceQuizState.currentIndex++;
-  const nextQuestionDelay = isCorrect ? 2000 : 3500; // longer for wrong (TTS reads correct answer)
+  const expectedIndex = voiceQuizState.currentIndex;
+  let nextQuestionDelay;
+  if (isCorrect) {
+    // Wait for reward duration + 2s buffer, minimum 2s
+    const rewardDur = getQuizRewardDuration();
+    nextQuestionDelay = rewardDur > 0 ? rewardDur + 2000 : 2000;
+  } else {
+    nextQuestionDelay = 3500;
+  }
   setTimeout(() => {
-    if (!voiceQuizState.active) return; // Quiz was stopped during delay
+    if (!voiceQuizState.active) return;
+    if (voiceQuizState.currentIndex !== expectedIndex) return;
+    stopQuizReward(); // Ensure reward is stopped before next question
     display.classList.remove('wrong-answer');
     if (voiceQuizState.currentIndex >= voiceQuizState.questions.length) {
       finishVoiceQuiz(mode);
@@ -10426,58 +11259,280 @@ function updateStreakDisplay(prefix) {
 }
 
 // --- Quiz Rewards & Punishments ---
-function doQuizReward(mode) {
-  // Beloning: kort rust + eventueel zachte toon
-  if (voiceQuizState.streak >= 5) {
-    // Super streak = extra rust (geen stim)
-    const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
-    logFn('🏆 5x streak bonus: 5 seconden rust!');
-    // No stim for 5 seconds
-  } else if (voiceQuizState.streak >= 3) {
-    // Streak bonus: gentle tone
-    playToneAdvanced({
-      freq: 80,
-      volume: 15,
-      duration: 800,
-      wave: 'sine',
-      envelope: 'smooth',
-      fadeIn: 200,
-      fadeOut: 300
-    });
+let quizRewardNodes = null;
+let quizRewardTimeout = null;
+
+function stopQuizReward() {
+  if (quizRewardTimeout) { clearTimeout(quizRewardTimeout); quizRewardTimeout = null; }
+  if (quizRewardNodes) {
+    try {
+      const ctx = audioCtx || ensureAudio();
+      const now = ctx.currentTime;
+      quizRewardNodes.master.gain.linearRampToValueAtTime(0, now + 0.5);
+      const nodes = quizRewardNodes;
+      setTimeout(() => {
+        try { nodes.osc1.stop(); } catch(e) {}
+        try { nodes.osc2.stop(); } catch(e) {}
+        try { if (nodes.lfo) nodes.lfo.stop(); } catch(e) {}
+      }, 600);
+    } catch(e) {}
+    quizRewardNodes = null;
   }
 }
 
+// Returns the reward duration in ms (with streak bonus)
+function getQuizRewardDuration() {
+  const config = voiceQuizState.config || {};
+  if (config.rewardPattern === 'geen') return 0;
+  const baseDur = (config.rewardDuration || 8) * 1000;
+  const streakBonus = (config.rewardStreakBonus || 5) * 1000;
+  const streak = Math.max(0, voiceQuizState.streak - 1); // bonus start bij 2e goede
+  const maxDur = 60000; // max 60s
+  return Math.min(baseDur + streak * streakBonus, maxDur);
+}
+
+function doQuizReward(mode) {
+  const config = voiceQuizState.config || {};
+  const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
+
+  if (config.rewardPattern === 'geen') {
+    logFn('🎁 Goed! (geen beloning ingesteld)');
+    return;
+  }
+
+  stopQuizReward(); // Stop vorige beloning
+
+  const ctx = ensureAudio();
+  const now = ctx.currentTime;
+  const safetyLimit = getEffectiveSafetyLimit();
+  const vol = Math.min((config.rewardVolume || 25) / 100, safetyLimit);
+  const duration = getQuizRewardDuration();
+
+  if (duration <= 0) return;
+
+  const streakInfo = voiceQuizState.streak >= 2
+    ? ' (streak ' + voiceQuizState.streak + 'x → ' + Math.round(duration / 1000) + 's)'
+    : ' (' + Math.round(duration / 1000) + 's)';
+  logFn('🎁 Beloning: ' + (config.rewardPattern || 'massage') + streakInfo);
+
+  // Channel routing based on config
+  const ch = config.rewardChannel || 'both';
+  const splitter = ctx.createChannelSplitter(2);
+  const merger = ctx.createChannelMerger(2);
+  const gainL = ctx.createGain();
+  const gainR = ctx.createGain();
+  gainL.gain.value = ch === 'B' ? 0.0 : 1.0;
+  gainR.gain.value = ch === 'A' ? 0.0 : 1.0;
+
+  // Also apply receiver balance if in recv mode
+  if (mode === 'recv') {
+    const { factorL, factorR } = getRecvBalanceFactors();
+    gainL.gain.value *= factorL;
+    gainR.gain.value *= factorR;
+  }
+
+  // Master gain with fade-in and fade-out
+  // Force stereo so splitter gets signal on both channels (mono oscillators → stereo masterGain)
+  const master = ctx.createGain();
+  master.channelCount = 2;
+  master.channelCountMode = 'explicit';
+  master.channelInterpretation = 'speakers';
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(vol, now + 1.0); // 1s fade-in
+  // Schedule fade-out
+  const fadeOutStart = now + duration / 1000 - 1.5;
+  if (fadeOutStart > now + 1.5) {
+    master.gain.setValueAtTime(vol, fadeOutStart);
+    master.gain.linearRampToValueAtTime(0, fadeOutStart + 1.5);
+  }
+
+  // Limiter
+  const limiter = ctx.createDynamicsCompressor();
+  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  limiter.threshold.value = threshDb;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.01;
+
+  // Routing: master → splitter → gainL/R → merger → limiter → output
+  master.connect(splitter);
+  splitter.connect(gainL, 0); splitter.connect(gainR, 1);
+  gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
+  merger.connect(limiter);
+  limiter.connect(getMasterLimiter());
+
+  let osc1, osc2, lfo;
+  const pattern = config.rewardPattern || 'massage';
+
+  if (pattern === 'massage') {
+    // Zachte sinusgolf met langzame amplitude-modulatie — voelt als diepe massage
+    osc1 = ctx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 75;
+    const g1 = ctx.createGain(); g1.gain.value = 0.5;
+    osc1.connect(g1); g1.connect(master);
+    osc1.start(now);
+
+    osc2 = ctx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.value = 37.5; // sub-harmonische
+    const g2 = ctx.createGain(); g2.gain.value = 0.3;
+    osc2.connect(g2); g2.connect(master);
+    osc2.start(now);
+
+    // Langzame LFO voor golf-effect (2 Hz = 2 golven per seconde)
+    lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 2.0;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = vol * 0.35; // 35% modulatie-diepte
+    lfo.connect(lfoGain);
+    lfoGain.connect(master.gain);
+    lfo.start(now);
+
+  } else if (pattern === 'tinteling') {
+    // Hogere frequentie, lichtere druk — tinteling/buzzing
+    osc1 = ctx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 320;
+    const g1 = ctx.createGain(); g1.gain.value = 0.4;
+    osc1.connect(g1); g1.connect(master);
+    osc1.start(now);
+
+    osc2 = ctx.createOscillator();
+    osc2.type = 'sawtooth';
+    osc2.frequency.value = 325; // lichte beating
+    const g2 = ctx.createGain(); g2.gain.value = 0.15;
+    osc2.connect(g2); g2.connect(master);
+    osc2.start(now);
+
+    // Snellere LFO voor buzz-effect
+    lfo = ctx.createOscillator();
+    lfo.type = 'triangle';
+    lfo.frequency.value = 8;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = vol * 0.25;
+    lfo.connect(lfoGain);
+    lfoGain.connect(master.gain);
+    lfo.start(now);
+
+  } else if (pattern === 'hartslag') {
+    // Diep ritmisch patroon — als een langzaam kloppend hart
+    osc1 = ctx.createOscillator();
+    osc1.type = 'square';
+    osc1.frequency.value = 55;
+    const g1 = ctx.createGain(); g1.gain.value = 0.4;
+    osc1.connect(g1); g1.connect(master);
+    osc1.start(now);
+
+    osc2 = ctx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = 27.5; // octaaf lager
+    const g2 = ctx.createGain(); g2.gain.value = 0.35;
+    osc2.connect(g2); g2.connect(master);
+    osc2.start(now);
+
+    // Hele langzame LFO (~1.1 Hz = hartslagritme)
+    lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 1.1;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = vol * 0.5; // diepe modulatie
+    lfo.connect(lfoGain);
+    lfoGain.connect(master.gain);
+    lfo.start(now);
+  }
+
+  quizRewardNodes = { master, osc1, osc2, lfo, gainL, gainR };
+
+  // Auto-stop na reward duur
+  quizRewardTimeout = setTimeout(() => {
+    stopQuizReward();
+  }, duration + 500);
+
+  // Show reward countdown in feedback
+  showRewardCountdown(mode, duration);
+}
+
+function showRewardCountdown(mode, durationMs) {
+  const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+  const feedback = document.getElementById(prefix + '-vq-feedback');
+  if (!feedback) return;
+
+  let remaining = Math.ceil(durationMs / 1000);
+  const pattern = voiceQuizState.config?.rewardPattern || 'massage';
+  const patternNames = { massage: '🌊 Massage', tinteling: '✨ Tinteling', hartslag: '💓 Hartslag' };
+
+  const countdownInterval = setInterval(() => {
+    if (!voiceQuizState.active || remaining <= 0) {
+      clearInterval(countdownInterval);
+      if (feedback) {
+        feedback.textContent = '✅ Beloning klaar!';
+        feedback.className = 'vq-feedback good';
+      }
+      return;
+    }
+    remaining--;
+    feedback.textContent = (patternNames[pattern] || '🎁 Beloning') + ' — nog ' + remaining + 's';
+    feedback.className = 'vq-feedback good';
+    feedback.style.display = 'block';
+  }, 1000);
+}
+
 function doQuizPunishment(mode) {
-  // Straf escaleert per fout antwoord
+  const config = voiceQuizState.config || {};
+  const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
+
+  // Check of straf is uitgeschakeld
+  if (config.punishment === 'geen') {
+    logFn('🎤 Fout — geen straf (uitgeschakeld in config)');
+    vibrateDevice(200); // Nog wel trillen als feedback
+    return;
+  }
+
   const wrongCount = voiceQuizState.wrong;
   const safetyLimit = getEffectiveSafetyLimit() * 100;
 
+  // Straf-intensiteit gebaseerd op config
+  let multiplier = 1.0;
+  if (config.punishment === 'mild') multiplier = 0.5;
+  else if (config.punishment === 'hard') multiplier = 1.5;
+
   // Escalating punishment
-  let shockVol = Math.min(15 + wrongCount * 10, 80, safetyLimit);
-  let shockDur = Math.min(300 + wrongCount * 100, 1500);
+  let shockVol = Math.min(Math.round((15 + wrongCount * 10) * multiplier), 80, safetyLimit);
+  let shockDur = Math.min(Math.round((300 + wrongCount * 100) * multiplier), 1500);
   let shockFreq = 200;
+
+  logFn('⚡ Straf: ' + shockVol + '% / ' + shockDur + 'ms (fout #' + wrongCount + ', modus: ' + (config.punishment || 'normaal') + ')');
 
   if (wrongCount >= 5) {
     // After 5 wrong: pattern punishment
     const patterns = ['ratata', 'staccato', 'chaos'];
     const pattern = patterns[wrongCount % patterns.length];
+    logFn('⚡ Patroon-straf: ' + pattern);
     if (mode === 'solo') {
       const s = getSoloSettings();
       doSoloPattern(pattern, s.freq, shockVol);
     } else if (mode === 'recv') {
-      // BUG FIX #4: doReceiverPattern expects volume as percentage (0-100)
       doReceiverPattern(pattern, shockFreq, shockVol);
     }
+    vibrateDevice(500);
     return;
   }
 
+  // Per-channel punishment: compute volumeL/volumeR based on punish channel config
+  const punishCh = config.punishChannel || 'both';
+  const punishVolL = punishCh === 'B' ? 0 : shockVol;
+  const punishVolR = punishCh === 'A' ? 0 : shockVol;
+
   // Normal shock punishment
+  ensureAudio();
   if (mode === 'solo') {
     const s = getSoloSettings();
     doSoloShock(s.freq, shockVol, shockDur, { _label: 'quiz_fout', _bypassCooldown: true });
   } else if (mode === 'recv') {
-    // doReceiverShock expects volume as fraction (0-1)
-    doReceiverShock(shockFreq, shockVol / 100, shockDur);
+    doReceiverShock(shockFreq, shockVol / 100, shockDur, punishVolL / 100, punishVolR / 100);
   }
 
   vibrateDevice(300);
