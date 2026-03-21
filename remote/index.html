@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0011</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0012</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9568,9 +9568,9 @@ function speak(text, onEnd) {
   u.rate = 0.95;
   u.pitch = 1.0;
 
-  const voices = speechSynthesis.getVoices();
-  const nlVoice = voices.find(v => v.lang.startsWith('nl'));
-  if (nlVoice) u.voice = nlVoice;
+  // Use cached best voice, or find one now
+  if (!cachedBestVoice) cachedBestVoice = selectBestDutchVoice();
+  if (cachedBestVoice) u.voice = cachedBestVoice;
 
   // Prevent double onEnd calls from TTS timeout + actual end
   let onEndCalled = false;
@@ -9635,10 +9635,51 @@ function speak(text, onEnd) {
   }, 12000);
 }
 
-// Preload voices
+// Preload voices + select best available Dutch voice
+let cachedBestVoice = null;
+
+function selectBestDutchVoice() {
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  // Ranked preference list — best sounding first
+  const preferenceOrder = [
+    // Google Neural/WaveNet voices (Chrome desktop — most natural)
+    v => v.name.includes('Google') && v.lang.startsWith('nl') && v.name.includes('Neural'),
+    v => v.name.includes('Google') && v.lang.startsWith('nl') && v.name.includes('WaveNet'),
+    v => v.name.includes('Google') && v.lang.startsWith('nl'),
+    // macOS high-quality voices
+    v => v.name.includes('Xander') && v.lang.startsWith('nl'),
+    v => v.name.includes('Claire') && v.lang.startsWith('nl'),
+    v => v.name.includes('Ellen') && v.lang.startsWith('nl'),
+    // Microsoft voices (Edge/Windows)
+    v => v.name.includes('Microsoft') && v.lang.startsWith('nl') && v.name.includes('Online'),
+    v => v.name.includes('Microsoft') && v.lang.startsWith('nl'),
+    // Any NL-NL voice (prefer nl-NL over nl-BE)
+    v => v.lang === 'nl-NL',
+    // Any Dutch voice
+    v => v.lang.startsWith('nl'),
+  ];
+
+  for (const test of preferenceOrder) {
+    const match = voices.find(test);
+    if (match) {
+      console.log('[TTS] Beste stem geselecteerd:', match.name, '(' + match.lang + ')');
+      return match;
+    }
+  }
+  console.log('[TTS] Geen Nederlandse stem gevonden, gebruik default');
+  return null;
+}
+
 if ('speechSynthesis' in window) {
   speechSynthesis.getVoices();
-  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => {
+    const voices = speechSynthesis.getVoices();
+    cachedBestVoice = selectBestDutchVoice();
+    console.log('[TTS] Beschikbare stemmen:', voices.length);
+  };
+  cachedBestVoice = selectBestDutchVoice();
 }
 
 // --- Voice Quiz State ---
