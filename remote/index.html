@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0008</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0009</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9069,6 +9069,14 @@ function testMicrophone() {
   output.style.display = 'block';
   output.innerHTML = '🎤 Luistert 5 seconden... zeg iets!<br>';
 
+  // BELANGRIJK: Stop eerst de actieve quiz-spraakherkenning (Chrome staat maar 1 tegelijk toe!)
+  const wasActive = speechRecognitionActive;
+  if (speechRecognition && speechRecRunning) {
+    try { speechRecognition.stop(); } catch(e) {}
+    speechRecognitionActive = false; // Voorkom auto-restart tijdens test
+    output.innerHTML += '⏸️ Quiz-herkenning gepauzeerd voor test<br>';
+  }
+
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { output.innerHTML += '❌ SpeechRecognition niet beschikbaar'; return; }
 
@@ -9089,14 +9097,29 @@ function testMicrophone() {
     }
   };
   testRec.onerror = (e) => { output.innerHTML += '❌ Error: ' + e.error + '<br>'; };
-  testRec.onend = () => { output.innerHTML += '🔴 Gestopt<br>'; };
+  testRec.onend = () => {
+    output.innerHTML += '🔴 Test gestopt<br>';
+    // Herstart quiz-herkenning als die actief was
+    if (wasActive) {
+      speechRecognitionActive = true;
+      setTimeout(() => {
+        if (speechRecognition && speechRecognitionActive) {
+          try { speechRecognition.start(); } catch(e) {}
+          output.innerHTML += '▶️ Quiz-herkenning weer actief<br>';
+        }
+      }, 500);
+    }
+  };
 
-  try {
-    testRec.start();
-    setTimeout(() => { try { testRec.stop(); } catch(e) {} }, 5000);
-  } catch(e) {
-    output.innerHTML += '❌ Kan niet starten: ' + e.message + '<br>';
-  }
+  // Kleine delay zodat de vorige herkenning echt gestopt is
+  setTimeout(() => {
+    try {
+      testRec.start();
+      setTimeout(() => { try { testRec.stop(); } catch(e) {} }, 5000);
+    } catch(e) {
+      output.innerHTML += '❌ Kan niet starten: ' + e.message + '<br>';
+    }
+  }, 300);
 }
 
 // --- Speech Recognition Engine ---
