@@ -805,6 +805,44 @@
   .trivia-option.wrong { border-color: #e94560; background: rgba(233,69,96,0.3); color: #e94560; }
   .trivia-option:disabled { cursor: default; opacity: 0.7; }
 
+  /* Voice Quiz Config */
+  .vq-config {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 16px; padding: 20px; margin: 10px 0;
+    border: 2px solid #4488ff;
+  }
+  .vq-config h3 { color: #4488ff; text-align: center; margin: 0 0 16px 0; font-size: 1.1em; }
+  .vq-config-group { margin-bottom: 14px; }
+  .vq-config-group label {
+    display: block; color: #aaa; font-size: 0.85em; margin-bottom: 6px; font-weight: 600;
+  }
+  .vq-config-group select, .vq-config-group input[type="range"] {
+    width: 100%; padding: 8px 10px; border-radius: 8px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #fff; font-size: 0.95em;
+  }
+  .vq-config-group select option { background: #1a1a2e; color: #fff; }
+  .vq-config-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .vq-config-chip {
+    padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #ccc;
+    transition: all 0.15s; user-select: none;
+  }
+  .vq-config-chip.active { background: rgba(68,136,255,0.25); border-color: #4488ff; color: #4488ff; }
+  .vq-config-chip:hover { border-color: #4488ff; }
+  .vq-config-start {
+    width: 100%; padding: 14px; margin-top: 16px; border-radius: 12px;
+    background: linear-gradient(135deg, #4488ff, #2d6be0); border: none;
+    color: #fff; font-size: 1.1em; font-weight: bold; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .vq-config-start:hover { transform: scale(1.02); }
+  .vq-config-start:active { transform: scale(0.98); }
+  .vq-config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vq-config-val { color: #4488ff; font-weight: bold; float: right; }
+
   /* Voice Quiz */
   .voice-quiz-display {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -1515,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0017</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0018</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -2047,7 +2085,88 @@
         <div id="solo-trivia-question" class="trivia-question"></div>
         <div id="solo-trivia-options" class="trivia-options"></div>
       </div>
-      <button class="game-btn" onclick="startVoiceQuiz('solo')" id="solo-voice-quiz-btn" style="border-color:#4488ff;color:#4488ff;">🎤 Voice Quiz</button>
+      <button class="game-btn" onclick="showQuizConfig('solo')" id="solo-voice-quiz-btn" style="border-color:#4488ff;color:#4488ff;">🎤 Voice Quiz</button>
+
+      <!-- Quiz configuratie -->
+      <div id="solo-vq-config" class="vq-config" style="display:none;">
+        <h3>🎤 Quiz Instellingen</h3>
+
+        <div class="vq-config-row">
+          <div class="vq-config-group">
+            <label>📊 Aantal vragen <span class="vq-config-val" id="solo-vqc-count-val">10</span></label>
+            <input type="range" id="solo-vqc-count" min="5" max="30" value="10" step="5" oninput="document.getElementById('solo-vqc-count-val').textContent=this.value">
+          </div>
+          <div class="vq-config-group">
+            <label>⏱️ Tijd per vraag <span class="vq-config-val" id="solo-vqc-time-val">20s</span></label>
+            <input type="range" id="solo-vqc-time" min="5" max="45" value="20" step="5" oninput="document.getElementById('solo-vqc-time-val').textContent=this.value+'s'">
+          </div>
+        </div>
+
+        <div class="vq-config-group">
+          <label>🎯 Moeilijkheid</label>
+          <div class="vq-config-chips" id="solo-vqc-difficulty">
+            <div class="vq-config-chip active" data-val="makkelijk" onclick="selectChip(this)">😊 Makkelijk</div>
+            <div class="vq-config-chip" data-val="normaal" onclick="selectChip(this)">🤔 Normaal</div>
+            <div class="vq-config-chip" data-val="moeilijk" onclick="selectChip(this)">🧠 Moeilijk</div>
+            <div class="vq-config-chip" data-val="mix" onclick="selectChip(this)">🎲 Mix</div>
+          </div>
+        </div>
+
+        <div class="vq-config-group">
+          <label>📂 Categorieën (meerdere mogelijk)</label>
+          <div class="vq-config-chips" id="solo-vqc-categories">
+            <div class="vq-config-chip active" data-val="alles" onclick="toggleCategoryChip(this, 'solo')">🌍 Alles</div>
+            <div class="vq-config-chip" data-val="aardrijkskunde" onclick="toggleCategoryChip(this, 'solo')">🗺️ Aardrijkskunde</div>
+            <div class="vq-config-chip" data-val="wetenschap" onclick="toggleCategoryChip(this, 'solo')">🔬 Wetenschap</div>
+            <div class="vq-config-chip" data-val="rekenen" onclick="toggleCategoryChip(this, 'solo')">🔢 Rekenen</div>
+            <div class="vq-config-chip" data-val="natuur" onclick="toggleCategoryChip(this, 'solo')">🌿 Natuur</div>
+            <div class="vq-config-chip" data-val="lichaam" onclick="toggleCategoryChip(this, 'solo')">🫀 Lichaam</div>
+            <div class="vq-config-chip" data-val="geschiedenis" onclick="toggleCategoryChip(this, 'solo')">📜 Geschiedenis</div>
+          </div>
+        </div>
+
+        <div class="vq-config-row">
+          <div class="vq-config-group">
+            <label>✏️ Antwoordtype</label>
+            <select id="solo-vqc-answertype">
+              <option value="gesloten">Meerkeuze (gesloten)</option>
+              <option value="open">Open antwoord</option>
+              <option value="mix">Mix (beide)</option>
+            </select>
+          </div>
+          <div class="vq-config-group">
+            <label>🎤 Invoermethode</label>
+            <select id="solo-vqc-inputmode">
+              <option value="beide">Spraak + tikken</option>
+              <option value="spraak">Alleen spraak</option>
+              <option value="tikken">Alleen tikken</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="vq-config-row">
+          <div class="vq-config-group">
+            <label>🔊 Voorlezen</label>
+            <select id="solo-vqc-tts">
+              <option value="aan">Aan</option>
+              <option value="uit">Uit (alleen tekst)</option>
+            </select>
+          </div>
+          <div class="vq-config-group">
+            <label>⚡ Straf bij fout</label>
+            <select id="solo-vqc-punishment">
+              <option value="normaal">Normaal</option>
+              <option value="mild">Mild</option>
+              <option value="hard">Hard 😈</option>
+              <option value="geen">Geen straf</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="vq-config-start" onclick="launchQuizFromConfig('solo')">🚀 Start Quiz!</button>
+        <button class="game-btn" onclick="document.getElementById('solo-vq-config').style.display='none'" style="border-color:#666;color:#666;margin-top:8px;font-size:0.85em;">Annuleren</button>
+      </div>
+
       <div id="solo-vq-display" class="voice-quiz-display" style="display:none;">
         <div class="vq-header">
           <div id="solo-vq-score" class="vq-score">Vraag 1/10</div>
@@ -9770,6 +9889,98 @@ if ('speechSynthesis' in window) {
   cachedBestVoice = selectBestDutchVoice();
 }
 
+// --- Quiz Config UI Functions ---
+function showQuizConfig(mode) {
+  const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+  const cfg = document.getElementById(prefix + '-vq-config');
+  if (cfg) cfg.style.display = cfg.style.display === 'none' ? 'block' : 'none';
+}
+
+function selectChip(el) {
+  // Single-select: deselect siblings, select this one
+  el.parentElement.querySelectorAll('.vq-config-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleCategoryChip(el, mode) {
+  const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+  const container = document.getElementById(prefix + '-vqc-categories');
+  const allesChip = container.querySelector('[data-val="alles"]');
+
+  if (el.dataset.val === 'alles') {
+    // Klik op "Alles" → deselecteer rest, selecteer alles
+    container.querySelectorAll('.vq-config-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    // Klik op specifieke categorie → toggle, deselecteer "Alles"
+    el.classList.toggle('active');
+    if (allesChip) allesChip.classList.remove('active');
+    // Als niks geselecteerd → activeer Alles weer
+    const anyActive = container.querySelectorAll('.vq-config-chip.active:not([data-val="alles"])').length > 0;
+    if (!anyActive && allesChip) allesChip.classList.add('active');
+  }
+}
+
+function getQuizConfig(mode) {
+  const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+  const getVal = (id) => { const el = document.getElementById(prefix + '-vqc-' + id); return el ? el.value : null; };
+  const getChip = (id) => {
+    const el = document.getElementById(prefix + '-vqc-' + id);
+    if (!el) return null;
+    const active = el.querySelector('.vq-config-chip.active');
+    return active ? active.dataset.val : null;
+  };
+  const getChips = (id) => {
+    const el = document.getElementById(prefix + '-vqc-' + id);
+    if (!el) return [];
+    return [...el.querySelectorAll('.vq-config-chip.active')].map(c => c.dataset.val);
+  };
+
+  return {
+    count: parseInt(getVal('count')) || 10,
+    timePerQuestion: parseInt(getVal('time')) || 20,
+    difficulty: getChip('difficulty') || 'mix',
+    categories: getChips('categories'),
+    answerType: getVal('answertype') || 'gesloten',
+    inputMode: getVal('inputmode') || 'beide',
+    ttsEnabled: getVal('tts') !== 'uit',
+    punishment: getVal('punishment') || 'normaal',
+  };
+}
+
+function launchQuizFromConfig(mode) {
+  const config = getQuizConfig(mode);
+  const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
+
+  // Hide config
+  const cfg = document.getElementById(prefix + '-vq-config');
+  if (cfg) cfg.style.display = 'none';
+
+  // Store config in quiz state
+  voiceQuizState.config = config;
+
+  // Start the quiz with config
+  startVoiceQuiz(mode, false, config);
+}
+
+// Countdown tick sound at last 5 seconds
+function playCountdownTick() {
+  try {
+    const ctx = uiAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (!uiAudioCtx) uiAudioCtx = ctx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880; // A5 — scherp tick geluid
+    gain.gain.value = 0.15;
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
+}
+
 // --- Voice Quiz State ---
 const voiceQuizState = {
   active: false,
@@ -9787,53 +9998,90 @@ const voiceQuizState = {
   customQuestions: { solo: [], sender: [], lisanne: [] }
 };
 
-// --- Quiz question banks ---
+// --- Quiz question banks (with categories + difficulty) ---
+// cat: aardrijkskunde, wetenschap, rekenen, natuur, lichaam, geschiedenis
+// d: 1=makkelijk, 2=normaal, 3=moeilijk
 const voiceQuizVragen = [
-  // More quiz questions optimized for voice answers
-  { v: 'Hoeveel kleuren heeft een regenboog?', o: ['5', '6', '7', '8'], a: 2 },
-  { v: 'Welk dier is het snelst ter wereld?', o: ['Leeuw', 'Cheeta', 'Havik', 'Haas'], a: 1 },
-  { v: 'Hoeveel letters heeft het alfabet?', o: ['24', '25', '26', '28'], a: 2 },
-  { v: 'In welk land staat de Eiffeltoren?', o: ['Engeland', 'Frankrijk', 'Duitsland', 'Spanje'], a: 1 },
-  { v: 'Hoeveel minuten heeft een uur?', o: ['30', '45', '60', '90'], a: 2 },
-  { v: 'Wat is de hoofdstad van Japan?', o: ['Beijing', 'Seoul', 'Tokyo', 'Bangkok'], a: 2 },
-  { v: 'Hoeveel poten heeft een hond?', o: ['2', '4', '6', '8'], a: 1 },
-  { v: 'Welke kleur krijg je van rood en blauw?', o: ['Groen', 'Oranje', 'Paars', 'Bruin'], a: 2 },
-  { v: 'Hoeveel weken heeft een jaar?', o: ['48', '50', '52', '54'], a: 2 },
-  { v: 'Welke planeet is het dichtst bij de zon?', o: ['Venus', 'Mercurius', 'Mars', 'Aarde'], a: 1 },
-  { v: 'Hoeveel graden is een rechte hoek?', o: ['45', '90', '180', '360'], a: 1 },
-  { v: 'Wat is het grootste orgaan van je lichaam?', o: ['Lever', 'Huid', 'Longen', 'Hart'], a: 1 },
-  { v: 'Hoeveel maanden hebben 31 dagen?', o: ['5', '6', '7', '8'], a: 2 },
-  { v: 'Welk gas ademen planten in?', o: ['Zuurstof', 'Stikstof', 'CO2', 'Helium'], a: 2 },
-  { v: 'Hoeveel hoeken heeft een driehoek?', o: ['2', '3', '4', '5'], a: 1 },
-  { v: 'Wat is de hoofdstad van Italië?', o: ['Milaan', 'Rome', 'Venetië', 'Napels'], a: 1 },
-  { v: 'Hoeveel seconden in een minuut?', o: ['30', '60', '90', '100'], a: 1 },
-  { v: 'Welk element heeft symbool Fe?', o: ['Fluor', 'IJzer', 'Fosfor', 'Francium'], a: 1 },
-  { v: 'Hoeveel hartklappen heeft een mens?', o: ['2', '3', '4', '5'], a: 2 },
-  { v: 'Wat is 7 keer 8?', o: ['48', '54', '56', '62'], a: 2 },
-  { v: 'Welk seizoen komt na de zomer?', o: ['Lente', 'Herfst', 'Winter', 'Zomer'], a: 1 },
-  { v: 'Hoeveel provincies heeft Nederland?', o: ['10', '11', '12', '14'], a: 2 },
-  { v: 'Wat is de langste bot in je lichaam?', o: ['Ruggenwervel', 'Dijbeen', 'Scheenbeen', 'Bovenarm'], a: 1 },
-  { v: 'Hoeveel ogen heeft een dobbelsteen totaal?', o: ['18', '21', '24', '36'], a: 1 },
-  { v: 'Welke oceaan is het grootst?', o: ['Atlantisch', 'Indisch', 'Stille', 'Arctisch'], a: 2 },
-  ...triviaVragen.map(q => ({ v: q.v, o: q.o, a: q.a })) // Include existing trivia too
+  // Makkelijk
+  { v: 'Hoeveel poten heeft een hond?', o: ['2', '4', '6', '8'], a: 1, cat: 'natuur', d: 1 },
+  { v: 'Hoeveel hoeken heeft een driehoek?', o: ['2', '3', '4', '5'], a: 1, cat: 'rekenen', d: 1 },
+  { v: 'Welke kleur krijg je van rood en blauw?', o: ['Groen', 'Oranje', 'Paars', 'Bruin'], a: 2, cat: 'wetenschap', d: 1 },
+  { v: 'Hoeveel minuten heeft een uur?', o: ['30', '45', '60', '90'], a: 2, cat: 'rekenen', d: 1 },
+  { v: 'Hoeveel seconden in een minuut?', o: ['30', '60', '90', '100'], a: 1, cat: 'rekenen', d: 1 },
+  { v: 'Welk seizoen komt na de zomer?', o: ['Lente', 'Herfst', 'Winter', 'Zomer'], a: 1, cat: 'natuur', d: 1 },
+  { v: 'Hoeveel kleuren heeft een regenboog?', o: ['5', '6', '7', '8'], a: 2, cat: 'natuur', d: 1 },
+  { v: 'Hoeveel letters heeft het alfabet?', o: ['24', '25', '26', '28'], a: 2, cat: 'rekenen', d: 1 },
+
+  // Normaal
+  { v: 'Welk dier is het snelst ter wereld?', o: ['Leeuw', 'Cheeta', 'Havik', 'Haas'], a: 1, cat: 'natuur', d: 2 },
+  { v: 'In welk land staat de Eiffeltoren?', o: ['Engeland', 'Frankrijk', 'Duitsland', 'Spanje'], a: 1, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Wat is de hoofdstad van Japan?', o: ['Beijing', 'Seoul', 'Tokyo', 'Bangkok'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Hoeveel weken heeft een jaar?', o: ['48', '50', '52', '54'], a: 2, cat: 'rekenen', d: 2 },
+  { v: 'Welke planeet is het dichtst bij de zon?', o: ['Venus', 'Mercurius', 'Mars', 'Aarde'], a: 1, cat: 'wetenschap', d: 2 },
+  { v: 'Hoeveel graden is een rechte hoek?', o: ['45', '90', '180', '360'], a: 1, cat: 'rekenen', d: 2 },
+  { v: 'Wat is het grootste orgaan van je lichaam?', o: ['Lever', 'Huid', 'Longen', 'Hart'], a: 1, cat: 'lichaam', d: 2 },
+  { v: 'Welk gas ademen planten in?', o: ['Zuurstof', 'Stikstof', 'CO2', 'Helium'], a: 2, cat: 'wetenschap', d: 2 },
+  { v: 'Wat is de hoofdstad van Italië?', o: ['Milaan', 'Rome', 'Venetië', 'Napels'], a: 1, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Wat is 7 keer 8?', o: ['48', '54', '56', '62'], a: 2, cat: 'rekenen', d: 2 },
+  { v: 'Hoeveel provincies heeft Nederland?', o: ['10', '11', '12', '14'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Welke oceaan is het grootst?', o: ['Atlantisch', 'Indisch', 'Stille', 'Arctisch'], a: 2, cat: 'aardrijkskunde', d: 2 },
+  { v: 'Hoeveel hartklappen heeft een mens?', o: ['2', '3', '4', '5'], a: 2, cat: 'lichaam', d: 2 },
+
+  // Moeilijk
+  { v: 'Hoeveel maanden hebben 31 dagen?', o: ['5', '6', '7', '8'], a: 2, cat: 'rekenen', d: 3 },
+  { v: 'Welk element heeft symbool Fe?', o: ['Fluor', 'IJzer', 'Fosfor', 'Francium'], a: 1, cat: 'wetenschap', d: 3 },
+  { v: 'Wat is de langste bot in je lichaam?', o: ['Ruggenwervel', 'Dijbeen', 'Scheenbeen', 'Bovenarm'], a: 1, cat: 'lichaam', d: 3 },
+  { v: 'Hoeveel ogen heeft een dobbelsteen totaal?', o: ['18', '21', '24', '36'], a: 1, cat: 'rekenen', d: 3 },
+
+  // Trivia ook toevoegen met default categorie
+  ...triviaVragen.map(q => ({ v: q.v, o: q.o, a: q.a, cat: q.cat || 'wetenschap', d: q.d || 2 }))
 ];
 
+// Filter vragen op config
+function filterQuizQuestions(config) {
+  let pool = [...voiceQuizVragen];
+
+  // Filter op categorie
+  if (!config.categories.includes('alles')) {
+    pool = pool.filter(q => config.categories.includes(q.cat));
+  }
+
+  // Filter op moeilijkheid
+  if (config.difficulty !== 'mix') {
+    const dMap = { makkelijk: 1, normaal: 2, moeilijk: 3 };
+    const target = dMap[config.difficulty];
+    if (target) pool = pool.filter(q => q.d === target);
+  }
+
+  // Shuffle en beperk tot count
+  pool = shuffleArray(pool);
+  return pool.slice(0, config.count);
+}
+
 // --- Start Voice Quiz ---
-function startVoiceQuiz(mode, useCustom) {
+function startVoiceQuiz(mode, useCustom, config) {
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
 
   // BUG FIX #7: integrate with stateManager — stop other audio sources
   stateManager.requestAutopilot('voice_quiz', null, mode === 'solo' ? 'solo' : 'sender');
 
-  // BUG FIX #8: use custom questions if ANY exist (even 1), fallback to trivia to fill up
+  // Use config from config menu, or defaults
+  if (!config) config = { count: 10, timePerQuestion: 20, difficulty: 'mix', categories: ['alles'], answerType: 'gesloten', inputMode: 'beide', ttsEnabled: true, punishment: 'normaal' };
+  voiceQuizState.config = config;
+
+  // Select questions based on config
   let qs;
   const custom = voiceQuizState.customQuestions[mode] || [];
   if (useCustom && custom.length > 0) {
-    // Mix custom questions with trivia if needed to get to at least 5
-    const trivia = shuffleArray([...voiceQuizVragen]).slice(0, Math.max(0, 5 - custom.length));
+    const trivia = shuffleArray([...voiceQuizVragen]).slice(0, Math.max(0, config.count - custom.length));
     qs = shuffleArray([...custom, ...trivia]);
   } else {
-    qs = shuffleArray([...voiceQuizVragen]).slice(0, 10);
+    qs = filterQuizQuestions(config);
+    // Fallback: not enough after filtering → fill from full pool
+    if (qs.length < config.count) {
+      const extra = shuffleArray([...voiceQuizVragen]).filter(q => !qs.includes(q)).slice(0, config.count - qs.length);
+      qs = shuffleArray([...qs, ...extra]);
+    }
   }
 
   voiceQuizState.active = true;
@@ -9845,6 +10093,7 @@ function startVoiceQuiz(mode, useCustom) {
   voiceQuizState.streak = 0;
   voiceQuizState.maxStreak = 0;
   voiceQuizState.waitingForAnswer = false;
+  voiceQuizState.timerMax = config.timePerQuestion;
 
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   document.getElementById(prefix + '-vq-display').style.display = 'block';
@@ -10002,6 +10251,7 @@ function showVoiceQuizQuestion(mode) {
 
       if (voiceQuizState.timerSeconds <= 5 && voiceQuizState.timerSeconds > 0) {
         vibrateDevice(50);
+        playCountdownTick(); // 🔊 tick-tick-tick geluid
       }
 
       if (voiceQuizState.timerSeconds <= 0) {
@@ -10012,23 +10262,28 @@ function showVoiceQuizQuestion(mode) {
   }
 
   // Speak the question FIRST — timer + mic start AFTER TTS is done
-  // Always use "antwoord 1, antwoord 2, ..." — duidelijk en werkt altijd
-  const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
-  speak(q.v + '. ' + spokenOptions, () => {
-    console.log('[Quiz] TTS klaar voor vraag ' + (questionId + 1) + ', timer starten');
-    startQuestionTimer();
-  });
-
-  // Safety fallback: als TTS vastloopt, start timer na 4 seconden
-  setTimeout(() => {
-    if (!voiceQuizState.active) return;
-    if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
-      console.warn('[Quiz] Fallback 4s: timer handmatig starten voor vraag ' + (questionId + 1));
-      ttsSpeaking = false;
-      try { speechSynthesis.cancel(); } catch(e) {} // force clear stuck TTS
+  const ttsOn = !voiceQuizState.config || voiceQuizState.config.ttsEnabled !== false;
+  if (ttsOn) {
+    const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
+    speak(q.v + '. ' + spokenOptions, () => {
+      console.log('[Quiz] TTS klaar voor vraag ' + (questionId + 1) + ', timer starten');
       startQuestionTimer();
-    }
-  }, 4000);
+    });
+
+    // Safety fallback: als TTS vastloopt, start timer na 4 seconden
+    setTimeout(() => {
+      if (!voiceQuizState.active) return;
+      if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
+        console.warn('[Quiz] Fallback 4s: timer starten voor vraag ' + (questionId + 1));
+        ttsSpeaking = false;
+        try { speechSynthesis.cancel(); } catch(e) {}
+        startQuestionTimer();
+      }
+    }, 4000);
+  } else {
+    // TTS uit — start timer meteen
+    startQuestionTimer();
+  }
 
   // Notify sender/lisanne if receiver quiz
   if (mode === 'recv' && conn && conn.open) {
