@@ -1553,7 +1553,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0029</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0030</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -3847,15 +3847,18 @@ function playToneAdvanced(freq, volume, duration, volumeL, volumeR, opts) {
   if ((volumeL !== null && volumeL !== undefined) || (volumeR !== null && volumeR !== undefined)) {
     const finalVolL = Math.min((volumeL != null ? volumeL : volume) / 100, safetyLimit);
     const finalVolR = Math.min((volumeR != null ? volumeR : volume) / 100, safetyLimit);
+    // Use ratios relative to masterGain to avoid double-attenuation
+    // masterGain already applies vol (from envelope), lGain/rGain scale per-channel
+    const ratioL = vol > 0.001 ? Math.min(finalVolL / vol, 2.0) : 0;
+    const ratioR = vol > 0.001 ? Math.min(finalVolR / vol, 2.0) : 0;
     // Force masterGain to stereo so splitter gets signal on both channels
-    // Without this, mono oscillators → mono masterGain → splitter only feeds channel 0
     masterGain.channelCount = 2;
     masterGain.channelCountMode = 'explicit';
     masterGain.channelInterpretation = 'speakers'; // mono→stereo: duplicate to L+R
     const splitter = ctx.createChannelSplitter(2);
     const merger = ctx.createChannelMerger(2);
-    const lGain = ctx.createGain(); lGain.gain.value = finalVolL;
-    const rGain = ctx.createGain(); rGain.gain.value = finalVolR;
+    const lGain = ctx.createGain(); lGain.gain.value = ratioL;
+    const rGain = ctx.createGain(); rGain.gain.value = ratioR;
     masterGain.connect(splitter);
     splitter.connect(lGain, 0);
     splitter.connect(rGain, 1);
@@ -5181,11 +5184,15 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
     const cm = applyChannelMode('recv', cappedVol, 0, freq, finalOpts);
     playToneAdvanced(cm.freq, cappedVol, duration, cm.volumeL, cm.volumeR, cm.opts);
     recordIntensity(cappedVol, (finalOpts && finalOpts._label) || 'shock');
-  } else {
-    // Apply A/B balance to per-channel volumes
+  } else if (factorL < 1.0 || factorR < 1.0 || cappedL != null || cappedR != null) {
+    // A/B balance is active OR Lisanne sent per-channel volumes — use stereo routing
     const balL = cappedL != null ? Math.round(cappedL * factorL) : Math.round(cappedVol * factorL);
     const balR = cappedR != null ? Math.round(cappedR * factorR) : Math.round(cappedVol * factorR);
     playToneAdvanced(freq, cappedVol, duration, balL, balR, finalOpts);
+    recordIntensity(cappedVol, (finalOpts && finalOpts._label) || 'shock');
+  } else {
+    // Balance is 50/50, no per-channel volumes — simple mono routing (no double-attenuation)
+    playToneAdvanced(freq, cappedVol, duration, null, null, finalOpts);
     recordIntensity(cappedVol, (finalOpts && finalOpts._label) || 'shock');
   }
 
