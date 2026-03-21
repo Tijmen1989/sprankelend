@@ -1646,6 +1646,27 @@
   <!-- Panic button -->
   <button class="panic-btn" onclick="panicStopSolo()">🛑 STOP / Paniekknop</button>
 
+  <!-- Audio routing (ook in solo) -->
+  <div class="control-card" id="solo-audio-routing-section" style="border:2px solid #f39c12;">
+    <h3>🔊 Audio Routing — BELANGRIJK</h3>
+    <p style="color:#f39c12;font-size:13px;margin:0 0 12px 0;">⚠️ Stel in welk apparaat het e-stim signaal ontvangt en waar je beeps/spraak hoort</p>
+    <div class="control-group">
+      <label><strong>E-stim signaal</strong> → naar je 2B device:</label>
+      <select id="solo-stim-output-device" onchange="updateSoloAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
+        <option value="default">Standaard audio output</option>
+      </select>
+    </div>
+    <div class="control-group" style="margin-top:10px;">
+      <label><strong>Beeps & spraak</strong> → naar je speakers/koptelefoon:</label>
+      <select id="solo-ui-output-device" onchange="updateSoloUIAudioRouting()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;margin-top:6px;">
+        <option value="default">Standaard audio output</option>
+      </select>
+    </div>
+    <button onclick="detectSoloAudioDevices()" class="action-btn" style="margin-top:8px;width:100%;">🔄 Detecteer audio apparaten</button>
+    <button onclick="testMicrophone()" class="action-btn" style="margin-top:6px;width:100%;background:#2d5a3d;">🎤 Test microfoon</button>
+    <div id="solo-mic-test-output" style="display:none;margin-top:8px;padding:8px;background:#1a1a2e;border-radius:6px;font-size:13px;color:#e0e0e0;max-height:120px;overflow-y:auto;"></div>
+  </div>
+
   <!-- Solo schokknop + hold -->
   <div class="shock-section">
     <button id="solo-shock-btn" class="shock-btn"
@@ -4175,6 +4196,57 @@ async function updateUIAudioRouting() {
   }
 }
 
+// ---- Solo Audio Routing (mirrors receiver routing) ----
+async function detectSoloAudioDevices() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter(d => d.kind === 'audiooutput');
+
+    ['solo-stim-output-device', 'solo-ui-output-device'].forEach(selectId => {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML = '<option value="default">Standaard audio output</option>';
+      outputs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.deviceId;
+        opt.textContent = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+        sel.appendChild(opt);
+      });
+    });
+    soloLog('🔊 ' + outputs.length + ' audio apparaten gevonden');
+  } catch(e) {
+    soloLog('⚠️ Kan audio apparaten niet detecteren: ' + e.message);
+  }
+}
+
+async function updateSoloAudioRouting() {
+  const deviceId = document.getElementById('solo-stim-output-device').value;
+  if (audioCtx && audioCtx.setSinkId && deviceId !== 'default') {
+    try {
+      await audioCtx.setSinkId(deviceId);
+      soloLog('🔊 Stim output: ' + document.getElementById('solo-stim-output-device').selectedOptions[0].text);
+    } catch(e) {
+      soloLog('⚠️ Kan output niet wijzigen: ' + e.message);
+    }
+  }
+}
+
+async function updateSoloUIAudioRouting() {
+  const deviceId = document.getElementById('solo-ui-output-device').value;
+  if (!uiAudioCtx) {
+    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (uiAudioCtx.setSinkId && deviceId !== 'default') {
+    try {
+      await uiAudioCtx.setSinkId(deviceId);
+      soloLog('🔔 UI geluid output: ' + document.getElementById('solo-ui-output-device').selectedOptions[0].text);
+    } catch(e) {
+      soloLog('⚠️ Kan UI output niet wijzigen: ' + e.message);
+    }
+  }
+}
+
 // ---- PeerJS Connection ----
 let peer = null;
 let conn = null;
@@ -4196,8 +4268,11 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   // Auto-detect audio apparaten als we naar receiver of solo scherm gaan
-  if (id === 'receiver-screen' || id === 'solo-screen') {
+  if (id === 'receiver-screen' || id === 'receiver') {
     detectAudioDevices();
+  }
+  if (id === 'solo-screen' || id === 'solo') {
+    if (typeof detectSoloAudioDevices === 'function') detectSoloAudioDevices();
   }
 }
 
@@ -9026,7 +9101,10 @@ let voiceCommandCallback = null;
 
 let micPermissionGranted = false;
 let speechRestartDelay = null;
-let persistentMicStream = null; // Houdt mic-indicator stabiel (geen knipperen)
+let persistentMicStream = null;
+let voiceActivityDetector = null; // Analyser die geluid detecteert voordat SpeechRecognition start
+let vadAnimFrame = null;
+let speechRecRunning = false; // Track of SpeechRecognition daadwerkelijk draait
 
 function initSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -9037,23 +9115,12 @@ function initSpeechRecognition() {
   speechRecognition = new SpeechRecognition();
   speechRecognition.lang = 'nl-NL';
   speechRecognition.continuous = true;
-  speechRecognition.interimResults = true; // Toon ook tussentijdse resultaten voor snellere feedback
+  speechRecognition.interimResults = true;
   speechRecognition.maxAlternatives = 3;
 
   speechRecognition.onstart = () => {
+    speechRecRunning = true;
     console.log('[Voice] ✅ SpeechRecognition gestart');
-  };
-
-  speechRecognition.onaudiostart = () => {
-    console.log('[Voice] 🎤 Audio capture begonnen');
-  };
-
-  speechRecognition.onsoundstart = () => {
-    console.log('[Voice] 🔊 Geluid gedetecteerd');
-  };
-
-  speechRecognition.onspeechstart = () => {
-    console.log('[Voice] 🗣️ Spraak gedetecteerd!');
   };
 
   speechRecognition.onresult = (event) => {
@@ -9061,8 +9128,6 @@ function initSpeechRecognition() {
       const transcript = event.results[i][0].transcript.trim().toLowerCase();
       const isFinal = event.results[i].isFinal;
       console.log('[Voice]', isFinal ? '✅ FINAL:' : '⏳ interim:', transcript, '(confidence:', event.results[i][0].confidence.toFixed(2) + ')');
-
-      // Toon interim resultaten op scherm zodat user weet dat mic werkt
       if (!isFinal) {
         showVoiceHeard('... ' + transcript);
       } else {
@@ -9073,11 +9138,10 @@ function initSpeechRecognition() {
 
   speechRecognition.onerror = (event) => {
     console.warn('[Voice] Error:', event.error);
-    // NOT-ALLOWED = user denied mic or browser blocked it → stop trying!
     if (event.error === 'not-allowed') {
       micPermissionGranted = false;
       speechRecognitionActive = false;
-      console.warn('[Voice] Microfoon geweigerd — stopt met proberen');
+      speechRecRunning = false;
       showNotification('Microfoon geblokkeerd. Gebruik knoppen om te antwoorden.');
       const mode = voiceQuizState.mode;
       if (mode) {
@@ -9086,30 +9150,25 @@ function initSpeechRecognition() {
       }
       return;
     }
-    // no-speech / aborted: herstart met vertraging (voorkomt rapid-fire herstart)
-    if ((event.error === 'no-speech' || event.error === 'aborted') && speechRecognitionActive && micPermissionGranted) {
-      clearTimeout(speechRestartDelay);
-      speechRestartDelay = setTimeout(() => {
-        if (speechRecognitionActive) {
-          try { speechRecognition.start(); } catch(e) {}
-        }
-      }, 500);
-    }
+    // no-speech / aborted: herstart via onend handler
+    speechRecRunning = false;
+    console.log('[Voice] Error (niet-kritiek):', event.error, '— herstart via onend');
   };
 
   speechRecognition.onend = () => {
-    console.log('[Voice] 🔴 SpeechRecognition gestopt (onend) — active:', speechRecognitionActive, 'micGranted:', micPermissionGranted);
-    // Auto-restart als quiz actief en mic is toegestaan
+    speechRecRunning = false;
+    console.log('[Voice] 🔴 SpeechRecognition gestopt');
+    // Auto-restart als quiz actief
     if (speechRecognitionActive && micPermissionGranted) {
       clearTimeout(speechRestartDelay);
       speechRestartDelay = setTimeout(() => {
-        if (speechRecognitionActive) {
+        if (speechRecognitionActive && !speechRecRunning) {
           console.log('[Voice] 🔄 Herstart SpeechRecognition...');
           try { speechRecognition.start(); } catch(e) {
             console.warn('[Voice] Herstart mislukt:', e.message);
           }
         }
-      }, 200);
+      }, 300);
     }
   };
 
