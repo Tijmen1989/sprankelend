@@ -1515,7 +1515,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0009</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0011</div>
   <p>Kies je rol</p>
 
   <button class="mode-btn" onclick="startSolo()">
@@ -9067,59 +9067,121 @@ function testMicrophone() {
   if (!output) output = document.getElementById('solo-mic-test-output') || document.getElementById('mic-test-output');
   if (!output) { alert('Mic test output niet gevonden'); return; }
   output.style.display = 'block';
-  output.innerHTML = '🎤 Luistert 5 seconden... zeg iets!<br>';
+  output.innerHTML = '';
 
-  // BELANGRIJK: Stop eerst de actieve quiz-spraakherkenning (Chrome staat maar 1 tegelijk toe!)
+  // Stop ALLES wat met speech recognition te maken heeft
   const wasActive = speechRecognitionActive;
-  if (speechRecognition && speechRecRunning) {
-    try { speechRecognition.stop(); } catch(e) {}
-    speechRecognitionActive = false; // Voorkom auto-restart tijdens test
-    output.innerHTML += '⏸️ Quiz-herkenning gepauzeerd voor test<br>';
+  speechRecognitionActive = false;
+  clearTimeout(speechRestartDelay);
+  if (speechRecognition) {
+    try { speechRecognition.abort(); } catch(e) {}
   }
 
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { output.innerHTML += '❌ SpeechRecognition niet beschikbaar'; return; }
+  const log = (msg) => { output.innerHTML += msg + '<br>'; output.scrollTop = output.scrollHeight; };
 
-  const testRec = new SR();
-  testRec.lang = 'nl-NL';
-  testRec.continuous = true;
-  testRec.interimResults = true;
-  testRec.maxAlternatives = 3;
+  log('🎤 <b>Mic Test</b> — luistert 8 seconden...');
+  log('ℹ️ Browser: ' + navigator.userAgent.split(' ').slice(-2).join(' '));
 
-  testRec.onstart = () => { output.innerHTML += '✅ Gestart<br>'; };
-  testRec.onaudiostart = () => { output.innerHTML += '🎤 Audio capture actief<br>'; };
-  testRec.onspeechstart = () => { output.innerHTML += '🗣️ Spraak gedetecteerd!<br>'; };
-  testRec.onresult = (e) => {
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      output.innerHTML += (e.results[i].isFinal ? '✅ ' : '⏳ ') + '"' + t + '" (conf: ' + e.results[i][0].confidence.toFixed(2) + ')<br>';
-      output.scrollTop = output.scrollHeight;
-    }
-  };
-  testRec.onerror = (e) => { output.innerHTML += '❌ Error: ' + e.error + '<br>'; };
-  testRec.onend = () => {
-    output.innerHTML += '🔴 Test gestopt<br>';
-    // Herstart quiz-herkenning als die actief was
-    if (wasActive) {
-      speechRecognitionActive = true;
-      setTimeout(() => {
-        if (speechRecognition && speechRecognitionActive) {
-          try { speechRecognition.start(); } catch(e) {}
-          output.innerHTML += '▶️ Quiz-herkenning weer actief<br>';
+  // Stap 1: Check mic-toestemming via getUserMedia
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    log('✅ Mic toestemming OK');
+    const tracks = stream.getAudioTracks();
+    log('🎤 Mic device: ' + (tracks[0]?.label || 'onbekend'));
+
+    // Stap 2: Check geluidsniveau via AnalyserNode
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = actx.createMediaStreamSource(stream);
+    const analyser = actx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    let peakLevel = 0;
+    const levelCheck = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray);
+      const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+      if (avg > peakLevel) peakLevel = avg;
+      const bars = '█'.repeat(Math.min(Math.round(avg / 5), 20));
+      const levelEl = document.getElementById('mic-level-display');
+      if (levelEl) levelEl.textContent = bars + ' ' + Math.round(avg);
+    }, 100);
+
+    log('📊 Geluidsniveau: <span id="mic-level-display">wacht...</span>');
+    log('🗣️ Praat nu! Je zou balkjes moeten zien bewegen.');
+
+    // Stap 3: Start SpeechRecognition na 500ms
+    setTimeout(() => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { log('❌ SpeechRecognition API niet beschikbaar'); return; }
+
+      const testRec = new SR();
+      testRec.lang = 'nl-NL';
+      testRec.continuous = false; // NIET continuous — voorkomt Chrome bugs
+      testRec.interimResults = true;
+      testRec.maxAlternatives = 3;
+
+      let gotResult = false;
+      let attempts = 0;
+      const maxAttempts = 3;
+
+      testRec.onstart = () => { log('✅ Spraakherkenning gestart (poging ' + (attempts + 1) + ')'); };
+      testRec.onspeechstart = () => { log('🗣️ Spraak gedetecteerd!'); };
+      testRec.onresult = (e) => {
+        gotResult = true;
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          const conf = e.results[i][0].confidence.toFixed(2);
+          log((e.results[i].isFinal ? '✅ ' : '⏳ ') + '"' + t + '" (conf: ' + conf + ')');
         }
-      }, 500);
-    }
-  };
+      };
+      testRec.onerror = (e) => {
+        if (e.error === 'no-speech') {
+          log('⏳ Geen spraak gehoord — probeer opnieuw te praten');
+        } else if (e.error === 'aborted') {
+          log('⚠️ Herkenning afgebroken (Chrome bug?) — herstart...');
+        } else {
+          log('❌ Error: ' + e.error);
+        }
+      };
+      testRec.onend = () => {
+        attempts++;
+        if (!gotResult && attempts < maxAttempts) {
+          // Herstart als we nog niks gehoord hebben
+          setTimeout(() => { try { testRec.start(); } catch(e) {} }, 200);
+        } else {
+          // Klaar
+          clearInterval(levelCheck);
+          stream.getTracks().forEach(t => t.stop());
+          actx.close();
+          log('─────────────────');
+          if (gotResult) {
+            log('✅ <b>Mic werkt!</b> Spraakherkenning herkent je stem.');
+          } else {
+            log('⚠️ <b>Mic hoort geluid maar spraakherkenning herkent niks.</b>');
+            log('💡 Probeer: dichter bij mic praten, achtergrondgeluid verminderen');
+            if (peakLevel < 10) log('⚠️ Geluidsniveau heel laag — mic staat misschien gedempt?');
+          }
+          // Herstart quiz als die actief was
+          if (wasActive) {
+            speechRecognitionActive = true;
+            setTimeout(() => {
+              if (speechRecognition) try { speechRecognition.start(); } catch(e) {}
+            }, 500);
+          }
+        }
+      };
 
-  // Kleine delay zodat de vorige herkenning echt gestopt is
-  setTimeout(() => {
-    try {
-      testRec.start();
-      setTimeout(() => { try { testRec.stop(); } catch(e) {} }, 5000);
-    } catch(e) {
-      output.innerHTML += '❌ Kan niet starten: ' + e.message + '<br>';
-    }
-  }, 300);
+      try { testRec.start(); } catch(e) { log('❌ Kan niet starten: ' + e.message); }
+    }, 500);
+
+    // Auto-stop na 8 seconden
+    setTimeout(() => { clearInterval(levelCheck); stream.getTracks().forEach(t => t.stop()); }, 8500);
+
+  }).catch(e => {
+    log('❌ Mic niet beschikbaar: ' + e.message);
+    log('💡 Check of je mic-toestemming hebt gegeven in Chrome (adresbalk → camera/mic icoon)');
+  });
+
 }
 
 // --- Speech Recognition Engine ---
@@ -9180,23 +9242,37 @@ function initSpeechRecognition() {
     }
     // no-speech / aborted: herstart via onend handler
     speechRecRunning = false;
-    console.log('[Voice] Error (niet-kritiek):', event.error, '— herstart via onend');
+    if (event.error === 'aborted') {
+      console.log('[Voice] Aborted — wordt herstart door onend als TTS niet bezig is');
+    } else {
+      console.log('[Voice] Error (niet-kritiek):', event.error, '— herstart via onend');
+    }
   };
 
   speechRecognition.onend = () => {
     speechRecRunning = false;
-    console.log('[Voice] 🔴 SpeechRecognition gestopt');
-    // Auto-restart als quiz actief
-    if (speechRecognitionActive && micPermissionGranted) {
+    console.log('[Voice] 🔴 SpeechRecognition gestopt (ttsSpeaking=' + ttsSpeaking + ')');
+    // Auto-restart als quiz actief EN TTS niet bezig
+    // Als TTS bezig is, herstart speak()'s safeOnEnd de recognition later
+    if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking) {
       clearTimeout(speechRestartDelay);
       speechRestartDelay = setTimeout(() => {
-        if (speechRecognitionActive && !speechRecRunning) {
+        if (speechRecognitionActive && !speechRecRunning && !ttsSpeaking) {
           console.log('[Voice] 🔄 Herstart SpeechRecognition...');
           try { speechRecognition.start(); } catch(e) {
             console.warn('[Voice] Herstart mislukt:', e.message);
+            // Retry na 1s als het echt niet lukt
+            setTimeout(() => {
+              if (speechRecognitionActive && !speechRecRunning && !ttsSpeaking) {
+                console.log('[Voice] 🔄 Retry herstart...');
+                try { speechRecognition.start(); } catch(e2) {
+                  console.error('[Voice] Retry ook mislukt:', e2.message);
+                }
+              }
+            }, 1000);
           }
         }
-      }, 300);
+      }, 500); // 500ms (was 300ms) — meer stabiele herstart
     }
   };
 
@@ -9374,6 +9450,41 @@ function processVoiceInput(transcript) {
     }
   }
 
+  // Fourth: content match — check if transcript matches the actual answer text
+  // e.g. user says "cheeta" → match to option containing "Cheeta"
+  if (answer === null && voiceQuizState.active) {
+    const q = voiceQuizState.questions[voiceQuizState.currentIndex];
+    if (q && q.o) {
+      let bestContentMatch = -1;
+      let bestContentLen = 0;
+      for (let i = 0; i < q.o.length; i++) {
+        const optLower = q.o[i].toLowerCase();
+        // Check if user said the option text or option text is in what they said
+        if (clean.includes(optLower) || optLower.includes(clean)) {
+          const matchLen = Math.min(clean.length, optLower.length);
+          if (matchLen > bestContentLen && matchLen >= 3) { // min 3 chars to avoid false matches
+            bestContentMatch = i;
+            bestContentLen = matchLen;
+          }
+        }
+        // Also check individual words of the option
+        const optWords = optLower.split(/\s+/);
+        for (const ow of optWords) {
+          if (ow.length >= 3 && clean.includes(ow)) {
+            if (ow.length > bestContentLen) {
+              bestContentMatch = i;
+              bestContentLen = ow.length;
+            }
+          }
+        }
+      }
+      if (bestContentMatch >= 0) {
+        answer = bestContentMatch;
+        console.log('[Voice] Content match: "' + clean + '" → optie ' + (answer + 1) + ' (' + q.o[answer] + ')');
+      }
+    }
+  }
+
   if (answer !== null && voiceQuizState.active) {
     showVoiceCommandIndicator('Antwoord: ' + (answer + 1));
     handleVoiceQuizAnswer(answer);
@@ -9430,6 +9541,7 @@ function showVoiceCommandIndicator(text) {
 // --- Text-to-Speech ---
 let ttsSpeaking = false;
 let ttsResumeInterval = null;
+let ttsSessionId = 0; // Tracks which speak() call is current — prevents race conditions
 
 function speak(text, onEnd) {
   if (!('speechSynthesis' in window)) {
@@ -9437,12 +9549,19 @@ function speak(text, onEnd) {
     return;
   }
 
+  // Increment session ID — old safeOnEnd callbacks won't reset ttsSpeaking
+  const myTtsSession = ++ttsSessionId;
+
   // CRITICAL: Pause speech recognition while TTS is speaking!
   // Otherwise the mic hears "1: Leeuw, 2: Cheeta" and registers an answer
   ttsSpeaking = true;
   if (speechRecognition && speechRecognitionActive) {
     try { speechRecognition.stop(); } catch(e) {}
   }
+
+  // Cancel any pending TTS FIRST (before creating new utterance)
+  clearInterval(ttsResumeInterval);
+  try { speechSynthesis.cancel(); } catch(e) {}
 
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'nl-NL';
@@ -9453,46 +9572,64 @@ function speak(text, onEnd) {
   const nlVoice = voices.find(v => v.lang.startsWith('nl'));
   if (nlVoice) u.voice = nlVoice;
 
-  // BUG FIX #3: prevent double onEnd calls from TTS timeout + actual end
+  // Prevent double onEnd calls from TTS timeout + actual end
   let onEndCalled = false;
   function safeOnEnd() {
     if (onEndCalled) return;
     onEndCalled = true;
-    ttsSpeaking = false;
-    clearInterval(ttsResumeInterval);
-    // Resume speech recognition after TTS finishes (+ delay for echo)
-    setTimeout(() => {
-      if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking) {
-        try { speechRecognition.start(); } catch(e) {}
-      }
-      if (onEnd) onEnd();
-    }, 400);
+    // Only reset ttsSpeaking if THIS is still the active speak() session
+    // Prevents old cancel() callbacks from clearing the flag for new speech
+    if (ttsSessionId === myTtsSession) {
+      ttsSpeaking = false;
+      clearInterval(ttsResumeInterval);
+      // Resume speech recognition after TTS finishes (+ longer delay for echo)
+      setTimeout(() => {
+        if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking && !speechRecRunning) {
+          console.log('[TTS] Herstart spraakherkenning na TTS...');
+          try { speechRecognition.start(); } catch(e) {
+            console.warn('[TTS] Kon spraakherkenning niet herstarten:', e.message);
+          }
+        }
+        if (onEnd) onEnd();
+      }, 600); // 600ms delay — geeft Chrome meer tijd om mic te stabiliseren
+    } else {
+      // Stale callback from cancelled utterance — only call onEnd, don't touch globals
+      console.log('[TTS] Stale safeOnEnd genegeerd (session ' + myTtsSession + ' vs current ' + ttsSessionId + ')');
+      // Don't call old onEnd callbacks — they belong to cancelled speech
+    }
   }
 
   u.onend = safeOnEnd;
-  u.onerror = safeOnEnd;
-
-  speechSynthesis.cancel();
+  u.onerror = (e) => {
+    console.warn('[TTS] Utterance error:', e.error || e);
+    safeOnEnd();
+  };
 
   // Chrome TTS bug workaround: speech synthesis stops after ~15s
-  clearInterval(ttsResumeInterval);
   ttsResumeInterval = setInterval(() => {
     if (speechSynthesis.speaking) {
       speechSynthesis.resume();
     } else {
       clearInterval(ttsResumeInterval);
     }
-  }, 10000);
+  }, 5000); // Check elke 5s (was 10s)
 
-  // Small delay after cancel to prevent Chrome bug
+  // Chrome TTS corruption workaround: longer delay if TTS was just cancelled
   setTimeout(() => {
-    speechSynthesis.speak(u);
-  }, 50);
+    try {
+      speechSynthesis.speak(u);
+      console.log('[TTS] Speak: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
+    } catch(e) {
+      console.error('[TTS] Speak failed:', e);
+      safeOnEnd();
+    }
+  }, 100); // 100ms (was 50ms) — meer ruimte na cancel()
 
   // Safety fallback: if TTS doesn't fire onend within 12s, force continue
+  // Uses ttsSessionId so it ALWAYS works regardless of ttsSpeaking state
   setTimeout(() => {
-    if (ttsSpeaking && !onEndCalled) {
-      console.warn('[TTS] Timeout — forcing continue');
+    if (!onEndCalled && ttsSessionId === myTtsSession) {
+      console.warn('[TTS] Timeout 12s — forcing continue: "' + text.substring(0, 30) + '..."');
       safeOnEnd();
     }
   }, 12000);
@@ -9753,7 +9890,15 @@ function showVoiceQuizQuestion(mode) {
   });
 
   // Safety fallback: als TTS niet werkt, start timer na 8 seconden
-  setTimeout(() => { startQuestionTimer(); }, 8000);
+  setTimeout(() => {
+    if (!voiceQuizState.active) return;
+    if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
+      console.warn('[Quiz] Fallback 8s: timer handmatig starten voor vraag ' + (questionId + 1));
+      // Reset ttsSpeaking zodat spraakherkenning ook kan draaien
+      ttsSpeaking = false;
+      startQuestionTimer();
+    }
+  }, 8000);
 
   // Notify sender/lisanne if receiver quiz
   if (mode === 'recv' && conn && conn.open) {
