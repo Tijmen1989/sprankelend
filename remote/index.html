@@ -4232,11 +4232,14 @@ function playToneStereoAdvanced(params) {
   const now = ctx.currentTime;
   const safetyLimit = getEffectiveSafetyLimit();
 
-  // Default params
+  // Default params — NOTE: do NOT use ...params spread here, it would bypass safety limit
+  const rawVol = params.volume != null ? params.volume : 50;
+  // Handle both 0-1 and 0-100 scales: if value > 1 treat as percentage, else as gain
+  const volDecimal = rawVol > 1 ? rawVol / 100 : rawVol;
   const p = {
     freqL: params.freqL || 200,
     freqR: params.freqR || 200,
-    volume: Math.min((params.volume || 50) / 100, safetyLimit),
+    volume: Math.min(volDecimal, safetyLimit),
     duration: params.duration || 1000,
     waveL: params.waveL || 'square',
     waveR: params.waveR || 'sawtooth',
@@ -4246,7 +4249,6 @@ function playToneStereoAdvanced(params) {
     lfoDepthR: params.lfoDepthR || 0,    // 0-1
     delayR: params.delayR || 0,          // seconds - phase delay on right channel
     envelope: params.envelope || 'smooth', // smooth, punch, fade
-    ...params
   };
 
   const durSec = p.duration / 1000;
@@ -6290,8 +6292,8 @@ function panicStop() {
   stopCarrier();
   stopContinuousMode('solo');
   stopContinuousMode('send');
-  stopDurfGame('solo');
-  stopDurfGame('sender');
+  stopDurfGame('solo', true);
+  stopDurfGame('sender', true);
   stopTensionMeter('solo');
   stopTensionMeter('sender');
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
@@ -6324,7 +6326,11 @@ function panicStop() {
     }
   }, 1000);
 
-  setTimeout(() => stopPanicCooldown(), 3000);
+  // Safety net: ensure cooldown always ends even if interval is lost
+  setTimeout(() => {
+    clearInterval(cooldownInterval);
+    stopPanicCooldown();
+  }, 3500);
 }
 
 function stopPanicCooldown() {
@@ -7468,7 +7474,7 @@ function panicStopSolo() {
   stopLoopingPattern('solo');
   stopCarrier();
   stopContinuousMode('solo');
-  stopDurfGame('solo');
+  stopDurfGame('solo', true);
   stopTensionMeter('solo');
   stopBreathingSync('solo');
   if (voiceQuizState.active && voiceQuizState.mode === 'solo') stopVoiceQuiz('solo');
@@ -8796,7 +8802,7 @@ function startLoopingPattern(mode, pattern) {
 }
 
 function executePatternCycle(mode, pattern) {
-  if (!loopState.active || loopState.pattern !== pattern) return;
+  if (!loopState.active || loopState.pattern !== pattern || loopState.mode !== mode) return;
 
   // Patroon uitvoeren
   if (mode === 'solo') {
@@ -9090,16 +9096,19 @@ function startSession(mode, type) {
 
 function updateSessionUI(mode, progress, elapsed) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
-  document.getElementById(prefix + '-session-progress').style.width = (progress * 100) + '%';
+  const progressEl = document.getElementById(prefix + '-session-progress');
+  if (progressEl) progressEl.style.width = (progress * 100) + '%';
 
   const elapsedMin = Math.floor(elapsed / 60000);
   const elapsedSec = Math.floor((elapsed % 60000) / 1000);
-  document.getElementById(prefix + '-session-elapsed').textContent = elapsedMin + ':' + (elapsedSec < 10 ? '0' : '') + elapsedSec;
+  const elapsedEl = document.getElementById(prefix + '-session-elapsed');
+  if (elapsedEl) elapsedEl.textContent = elapsedMin + ':' + (elapsedSec < 10 ? '0' : '') + elapsedSec;
 
   const remaining = Math.max(0, sessionEngine.duration - elapsed);
   const remMin = Math.floor(remaining / 60000);
   const remSec = Math.floor((remaining % 60000) / 1000);
-  document.getElementById(prefix + '-session-remaining').textContent = remMin + ':' + (remSec < 10 ? '0' : '') + remSec;
+  const remEl = document.getElementById(prefix + '-session-remaining');
+  if (remEl) remEl.textContent = remMin + ':' + (remSec < 10 ? '0' : '') + remSec;
 }
 
 function stopSession(mode) {
@@ -9218,6 +9227,7 @@ function startDurfGame(mode) {
   const display = document.getElementById(prefix + '-durf-display');
   const bar = document.getElementById(prefix + '-durf-bar');
   const pct = document.getElementById(prefix + '-durf-pct');
+  if (!display || !bar || !pct) return;
   display.style.display = 'block';
   bar.style.width = '0%';
   pct.textContent = '0%';
@@ -9245,8 +9255,17 @@ function startDurfGame(mode) {
   }, 100); // 10 seconden totaal (100 stappen × 100ms)
 }
 
-function stopDurfGame(mode) {
+function stopDurfGame(mode, silent) {
   if (!durfState.active) return;
+  if (silent) {
+    // Silent stop: clear interval without firing shock (used by panic stop)
+    clearInterval(durfState.interval);
+    durfState.active = false;
+    const prefix = mode === 'solo' ? 'solo' : 'sender';
+    const display = document.getElementById(prefix + '-durf-display');
+    if (display) display.style.display = 'none';
+    return;
+  }
   fireDurfResult(mode, durfState.value);
 }
 
@@ -9342,8 +9361,12 @@ function shuffleArray(arr) {
 
 function showTriviaQuestion(mode) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
+  if (triviaState.questionIndex >= triviaState.usedQuestions.length) {
+    stopTriviaGame(); return;
+  }
   const qi = triviaState.usedQuestions[triviaState.questionIndex];
   const q = triviaVragen[qi];
+  if (!q) { stopTriviaGame(); return; }
   const scoreEl = document.getElementById(prefix + '-trivia-score');
   const questionEl = document.getElementById(prefix + '-trivia-question');
   const optionsEl = document.getElementById(prefix + '-trivia-options');
@@ -10221,6 +10244,9 @@ function lisanneRandomTease() {
 function lisanneStopAll() {
   lisanneCurrentMood = null;
   if (lisanneMoodTimer) { clearTimeout(lisanneMoodTimer); lisanneMoodTimer = null; }
+  if (lisanneTimerInterval) { clearInterval(lisanneTimerInterval); lisanneTimerInterval = null; }
+  const timerStatus = document.getElementById('lisanne-timer-status');
+  if (timerStatus) timerStatus.style.display = 'none';
   clearAllPatternTimeouts();
   if (conn && conn.open) {
     conn.send({ type: 'panic', ts: Date.now() });
