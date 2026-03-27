@@ -44,6 +44,33 @@
   .mode-btn .mode-label { font-weight: bold; display: block; margin-bottom: 4px; }
   .mode-btn .mode-desc { font-size: 0.8em; color: #888; }
 
+  /* Wizard styles */
+  .wizard-step-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #333;
+    transition: background 0.3s;
+  }
+  .wizard-step-dot.active {
+    background: #f39c12;
+  }
+  .wizard-step-dot.done {
+    background: #4caf50;
+  }
+  .wizard-step {
+    width: 100%;
+    max-width: 480px;
+    text-align: left;
+  }
+  .electrode-opt-btn {
+    transition: all 0.3s;
+  }
+  .electrode-opt-btn.selected {
+    border-color: #f39c12 !important;
+    background: #1a1a3e !important;
+  }
+
   /* Common styles */
   .header {
     text-align: center;
@@ -1552,31 +1579,172 @@
 
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
-  <h1>E-Stim Remote</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0034</div>
-  <p>Kies je rol</p>
+  <h1>⚡ Sprankelend</h1>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0041</div>
 
-  <button class="mode-btn" onclick="startSolo()">
-    <span class="mode-icon">&#9889;</span>
-    <span class="mode-label">Solo</span>
-    <span class="mode-desc">Alles zelf bedienen, geen verbinding nodig</span>
-  </button>
+  <!-- Progress indicator -->
+  <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
+    <div class="wizard-step-dot active" id="wiz-dot-1"></div>
+    <div class="wizard-step-dot" id="wiz-dot-2"></div>
+    <div class="wizard-step-dot" id="wiz-dot-3"></div>
+    <div class="wizard-step-dot" id="wiz-dot-4"></div>
+    <div class="wizard-step-dot" id="wiz-dot-5"></div>
+  </div>
 
-  <button class="mode-btn" onclick="startReceiver()">
-    <span class="mode-icon">&#128225;</span>
-    <span class="mode-label">Ontvanger</span>
-    <span class="mode-desc">Wacht op verbinding met Lisanne</span>
-  </button>
+  <!-- Step 1: Audio Setup -->
+  <div id="wiz-step-1" class="wizard-step" style="display:block;">
+    <h2 style="font-size:1.1em;margin:0 0 12px;color:#f39c12;">🔊 Stap 1: Audio</h2>
 
-  <button class="mode-btn" onclick="showScreen('sender-choice')">
-    <span class="mode-icon">&#127918;</span>
-    <span class="mode-label">Zender (Lisanne)</span>
-    <span class="mode-desc">Bedien de 2B op afstand</span>
-  </button>
+    <div style="padding:12px;background:#1a1a2e;border-radius:8px;border:1px solid #333;margin-bottom:12px;">
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85em;color:#ccc;display:block;margin-bottom:4px;"><strong>E-stim signaal</strong> → naar je 2B:</label>
+        <select id="setup-stim-device" onchange="updateGlobalStimDevice()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#0f0f23;color:#e0e0e0;">
+          <option value="default">Standaard audio output</option>
+        </select>
+        <div id="setup-stim-warning" style="display:none;color:#e94560;font-size:0.78em;margin-top:4px;">⚠️ Bluetooth heeft vertraging en compressie — gebruik de 3.5mm kabel!</div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85em;color:#ccc;display:block;margin-bottom:4px;"><strong>Beeps & spraak</strong> → naar speakers/koptelefoon:</label>
+        <select id="setup-ui-device" onchange="updateGlobalUIDevice()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#0f0f23;color:#e0e0e0;">
+          <option value="default">Standaard audio output</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="white-space:nowrap;font-size:0.85em;color:#ccc;">🔊 UI Volume:</label>
+        <input type="range" id="setup-ui-volume" min="0" max="100" value="80" oninput="updateGlobalUIVolume(this.value)" style="flex:1;">
+        <span id="setup-ui-volume-display" style="font-size:0.85em;min-width:35px;color:#fff;">80%</span>
+      </div>
+    </div>
+
+    <button onclick="detectGlobalAudioDevices()" style="width:100%;padding:10px;font-size:0.9em;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:6px;cursor:pointer;margin-bottom:8px;">🔄 Detecteer audio apparaten</button>
+    <div id="setup-device-status" style="font-size:0.8em;color:#888;text-align:center;margin-bottom:12px;"></div>
+
+    <button onclick="wizardNext(2)" style="width:100%;padding:12px;font-size:1em;background:#f39c12;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Volgende →</button>
+  </div>
+
+  <!-- Step 2: MacBook & 2B Check -->
+  <div id="wiz-step-2" class="wizard-step" style="display:none;">
+    <h2 style="font-size:1.1em;margin:0 0 12px;color:#f39c12;">📋 Stap 2: Checklist</h2>
+
+    <div style="padding:12px;background:#1a1a2e;border-radius:8px;border:1px solid #333;margin-bottom:12px;">
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:bold;color:#4caf50;margin-bottom:6px;">📱 MacBook</div>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-vol" style="width:18px;height:18px;"> Volume op 10 van 16 balkjes
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-dnd" style="width:18px;height:18px;"> Do Not Disturb AAN
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-cable" style="width:18px;height:18px;"> 3.5mm kabel aangesloten (geen Bluetooth)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-apps" style="width:18px;height:18px;"> Andere geluid-apps gesloten
+        </label>
+      </div>
+
+      <div>
+        <div style="font-weight:bold;color:#ff9800;margin-bottom:6px;">🔌 E-Stim 2B</div>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-stereo" style="width:18px;height:18px;"> Modus: Stereo
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-adj" style="width:18px;height:18px;"> Adjustment: 20-30
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:0.9em;color:#ccc;cursor:pointer;">
+          <input type="checkbox" id="wiz-check-knobs" style="width:18px;height:18px;"> Knoppen A/B op comfortabel niveau
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="wizardNext(1)" style="flex:1;padding:12px;font-size:1em;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:8px;cursor:pointer;">← Vorige</button>
+      <button onclick="wizardNext(3)" style="flex:2;padding:12px;font-size:1em;background:#f39c12;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Channel Test -->
+  <div id="wiz-step-3" class="wizard-step" style="display:none;">
+    <h2 style="font-size:1.1em;margin:0 0 12px;color:#f39c12;">🔊 Stap 3: Kanaaltest</h2>
+
+    <div style="padding:12px;background:#1a1a2e;border-radius:8px;border:1px solid #333;margin-bottom:12px;">
+      <p style="color:#aaa;font-size:0.85em;margin:0 0 12px;">Test of beide kanalen werken. Check op het 2B LCD dat de bars op ¾ staan.</p>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="diagTestChannel('A')" style="flex:1;padding:10px;background:#4caf50;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:bold;">Test A</button>
+        <button onclick="diagTestChannel('B')" style="flex:1;padding:10px;background:#ff9800;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:bold;">Test B</button>
+        <button onclick="diagTestChannel('both')" style="flex:1;padding:10px;background:#4488ff;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:bold;">Beide</button>
+      </div>
+      <div id="setup-test-status" style="font-size:0.85em;color:#888;text-align:center;min-height:20px;"></div>
+    </div>
+
+    <p style="color:#666;font-size:0.8em;text-align:center;margin:0 0 12px;">Voel je niks? Ga terug en check je kabelverbinding en 2B instellingen.</p>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="wizardNext(2)" style="flex:1;padding:12px;font-size:1em;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:8px;cursor:pointer;">← Vorige</button>
+      <button onclick="wizardNext(4)" style="flex:2;padding:12px;font-size:1em;background:#f39c12;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Electrode Setup -->
+  <div id="wiz-step-4" class="wizard-step" style="display:none;">
+    <h2 style="font-size:1.1em;margin:0 0 12px;color:#f39c12;">🔌 Stap 4: Elektrodes</h2>
+
+    <div style="padding:12px;background:#1a1a2e;border-radius:8px;border:1px solid #333;margin-bottom:12px;">
+      <p style="color:#aaa;font-size:0.85em;margin:0 0 12px;">Welke elektrodes gebruik je?</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="selectElectrodeConfig('loops_plug')" class="electrode-opt-btn" id="elec-opt-lp" style="padding:12px;background:#0f0f23;border:2px solid #333;color:#e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9em;text-align:center;">
+          🔗+🔌<br><strong>Loop + Plug</strong><br><span style="font-size:0.75em;color:#888;">A=Loop, B=Plug</span>
+        </button>
+        <button onclick="selectElectrodeConfig('loops_only')" class="electrode-opt-btn" id="elec-opt-lo" style="padding:12px;background:#0f0f23;border:2px solid #333;color:#e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9em;text-align:center;">
+          🔗<br><strong>Alleen Loop</strong><br><span style="font-size:0.75em;color:#888;">Kanaal A</span>
+        </button>
+        <button onclick="selectElectrodeConfig('plug_only')" class="electrode-opt-btn" id="elec-opt-po" style="padding:12px;background:#0f0f23;border:2px solid #333;color:#e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9em;text-align:center;">
+          🔌<br><strong>Alleen Plug</strong><br><span style="font-size:0.75em;color:#888;">Kanaal B</span>
+        </button>
+        <button onclick="selectElectrodeConfig('custom')" class="electrode-opt-btn" id="elec-opt-cu" style="padding:12px;background:#0f0f23;border:2px solid #333;color:#e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9em;text-align:center;">
+          ⚙️<br><strong>Handmatig</strong><br><span style="font-size:0.75em;color:#888;">Zelf instellen</span>
+        </button>
+      </div>
+      <div id="wiz-electrode-status" style="font-size:0.85em;color:#4caf50;text-align:center;margin-top:8px;min-height:20px;"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="wizardNext(3)" style="flex:1;padding:12px;font-size:1em;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:8px;cursor:pointer;">← Vorige</button>
+      <button onclick="wizardNext(5)" id="wiz-electrode-next" style="flex:2;padding:12px;font-size:1em;background:#f39c12;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Mode Selection -->
+  <div id="wiz-step-5" class="wizard-step" style="display:none;">
+    <h2 style="font-size:1.1em;margin:0 0 12px;color:#f39c12;">⚡ Stap 5: Kies modus</h2>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="startSolo()" class="mode-btn" style="padding:16px;background:linear-gradient(135deg,#1a1a3e,#2a2a5e);border:2px solid #4488ff;color:#e0e0e0;border-radius:12px;cursor:pointer;text-align:left;">
+        <div style="font-size:1.1em;font-weight:bold;color:#4488ff;">🎮 Solo</div>
+        <div style="font-size:0.8em;color:#888;margin-top:4px;">Alles zelf bedienen — schokken, patronen, quiz</div>
+      </button>
+
+      <button onclick="startReceiver()" class="mode-btn" style="padding:16px;background:linear-gradient(135deg,#1a1a3e,#2a3e2a);border:2px solid #4caf50;color:#e0e0e0;border-radius:12px;cursor:pointer;text-align:left;">
+        <div style="font-size:1.1em;font-weight:bold;color:#4caf50;">📡 Ontvanger</div>
+        <div style="font-size:0.8em;color:#888;margin-top:4px;">Lisanne stuurt je schokken van afstand</div>
+      </button>
+
+      <button onclick="showScreen('sender-choice')" class="mode-btn" style="padding:16px;background:linear-gradient(135deg,#1a1a3e,#3e2a2a);border:2px solid #e94560;color:#e0e0e0;border-radius:12px;cursor:pointer;text-align:left;">
+        <div style="font-size:1.1em;font-weight:bold;color:#e94560;">📱 Zender (Lisanne)</div>
+        <div style="font-size:0.8em;color:#888;margin-top:4px;">Stuur schokken naar je partner</div>
+      </button>
+    </div>
+
+    <button onclick="wizardNext(4)" style="width:100%;margin-top:12px;padding:10px;font-size:0.9em;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:8px;cursor:pointer;">← Vorige</button>
+  </div>
 </div>
 
-<!-- ELECTRODE SETUP WIZARD -->
-<div id="electrode-setup" class="screen">
+<!-- ELECTRODE SETUP WIZARD (OLD - HIDDEN, functionality moved to wizard step 4) -->
+<div id="electrode-setup" class="screen" style="display:none !important;">
   <div class="header">
     <h2>⚡ Electrode Setup</h2>
     <div class="subtitle">Configureer je electrodes voor optimale en veilige stimulatie</div>
@@ -1686,7 +1854,7 @@
   <button class="panic-btn" onclick="panicStopSolo()">🛑 STOP / Paniekknop</button>
 
   <!-- Audio routing (ook in solo) -->
-  <div class="control-card" id="solo-audio-routing-section" style="border:2px solid #f39c12;">
+  <div class="control-card" id="solo-audio-routing-section" style="border:2px solid #f39c12;display:none;">
     <h3>🔊 Audio Routing — BELANGRIJK</h3>
     <p style="color:#f39c12;font-size:13px;margin:0 0 12px 0;">⚠️ Stel in welk apparaat het e-stim signaal ontvangt en waar je beeps/spraak hoort</p>
     <div class="control-group">
@@ -2127,35 +2295,42 @@
   <!-- Games -->
   <div class="control-card">
     <h3 onclick="toggleCollapsible(this)">
-      <span class="toggle-icon">▶</span> Spelletjes
+      <span class="toggle-icon">▶</span> Spelletjes & Modi
     </h3>
     <div class="collapsible-content open">
-      <button class="game-btn" onclick="soloDice()">🎲 Dobbelsteen</button>
+      <!-- Random modus -->
+      <div style="margin-bottom:12px;padding:10px;background:#0f0f23;border-radius:8px;border:1px solid #333;">
+        <div class="toggle-row" style="margin-bottom:8px;">
+          <label style="font-weight:bold;">🎲 Random schokken</label>
+          <div id="solo-random-toggle" class="toggle" onclick="toggleSoloRandom()"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Min interval</label>
+            <input type="range" id="solo-rand-min" min="1" max="30" value="5" oninput="updateSoloLabels()" style="width:100%;">
+            <span id="solo-rand-min-label" class="value" style="font-size:0.8em;">5 min</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Max interval</label>
+            <input type="range" id="solo-rand-max" min="1" max="60" value="15" oninput="updateSoloLabels()" style="width:100%;">
+            <span id="solo-rand-max-label" class="value" style="font-size:0.8em;">15 min</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Min volume</label>
+            <input type="range" id="solo-rand-vol-min" min="0" max="100" value="20" oninput="updateSoloLabels()" style="width:100%;">
+            <span id="solo-rand-vol-min-label" class="value" style="font-size:0.8em;">20%</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Max volume</label>
+            <input type="range" id="solo-rand-vol-max" min="0" max="100" value="80" oninput="updateSoloLabels()" style="width:100%;">
+            <span id="solo-rand-vol-max-label" class="value" style="font-size:0.8em;">80%</span>
+          </div>
+        </div>
+        <div id="solo-rand-next" style="color:#666;font-size:0.8em;margin-top:6px;text-align:center;"></div>
+      </div>
+
       <button class="game-btn" onclick="soloCountdown()">⏱️ Countdown</button>
       <div id="solo-countdown-display" class="countdown-display" style="display: none;">-</div>
-      <button class="game-btn" onclick="soloReaction()">⚡ Reactiespel</button>
-      <div id="solo-reaction-container" style="display: none;">
-        <button class="reaction-button" onclick="soloReactionHit()">DRUK NU! ⚡</button>
-      </div>
-      <button class="game-btn" onclick="startRouletteGame('solo')" id="solo-roulette-btn">🎰 Roulette</button>
-      <div id="solo-roulette-display" class="roulette-display" style="display: none;">
-        <div id="solo-roulette-slot" class="roulette-slot"></div>
-        <div id="solo-roulette-result" class="roulette-result"></div>
-      </div>
-      <button class="game-btn" onclick="startDurfGame('solo')" id="solo-durf-btn">🔥 Durf-meter</button>
-      <div id="solo-durf-display" class="durf-display" style="display: none;">
-        <div class="durf-bar-container">
-          <div id="solo-durf-bar" class="durf-bar-fill"></div>
-          <div id="solo-durf-pct" class="durf-pct">0%</div>
-        </div>
-        <button class="durf-stop-btn" onclick="stopDurfGame('solo')">STOP!</button>
-      </div>
-      <button class="game-btn" onclick="startTriviaGame('solo')" id="solo-trivia-btn">🧠 Trivia</button>
-      <div id="solo-trivia-display" class="trivia-display" style="display: none;">
-        <div id="solo-trivia-score" class="trivia-score"></div>
-        <div id="solo-trivia-question" class="trivia-question"></div>
-        <div id="solo-trivia-options" class="trivia-options"></div>
-      </div>
       <button class="game-btn" onclick="showQuizConfig('solo')" id="solo-voice-quiz-btn" style="border-color:#4488ff;color:#4488ff;">🎤 Voice Quiz</button>
 
       <!-- Quiz configuratie -->
@@ -2239,6 +2414,16 @@
               <option value="hard">Hard 😈</option>
               <option value="geen">Geen straf</option>
             </select>
+          </div>
+        </div>
+        <div class="vq-config-row" style="margin-top:4px;">
+          <div class="vq-config-group">
+            <label>Strafvolume <span class="vq-config-val" id="solo-vqc-punish-vol-val">47%</span></label>
+            <input type="range" id="solo-vqc-punish-vol" min="10" max="80" value="47" step="1" oninput="document.getElementById('solo-vqc-punish-vol-val').textContent=this.value+'%'">
+          </div>
+          <div class="vq-config-group">
+            <label>Strafduur <span class="vq-config-val" id="solo-vqc-punish-dur-val">650ms</span></label>
+            <input type="range" id="solo-vqc-punish-dur" min="200" max="2000" value="650" step="50" oninput="document.getElementById('solo-vqc-punish-dur-val').textContent=this.value+'ms'">
           </div>
         </div>
 
@@ -2342,30 +2527,7 @@
     </div>
   </div>
 
-  <div class="anticipation-card" id="solo-anticipation">
-    <h3>🎭 Anticipatie</h3>
-    <button class="mystery-box-btn" onclick="mysteryBox('solo')">❓ Mystery Box</button>
-    <button class="game-btn" onclick="edgingPattern('solo')" style="border-color:#9c27b0;color:#9c27b0;">🌊 Edging (opbouw → stop → BAM)</button>
-    <button class="game-btn" onclick="uncertainCountdown('solo')" style="border-color:#ff9800;color:#ff9800;">⏳ Onzeker Aftellen</button>
-    <button class="game-btn" onclick="startTensionMeter('solo')" style="border-color:#e94560;color:#e94560;">📈 Spanning-meter</button>
-    <button class="game-btn" onclick="startBreathingSync('solo')" style="border-color:#4caf50;color:#4caf50;">🫁 Ademhaling Sync</button>
-    <button class="game-btn" onclick="waitGame('solo')" style="border-color:#ff9800;color:#ff9800;">⏱️ Hoelang Durf Je Wachten?</button>
-    <button class="game-btn" onclick="bastardClimaxPattern('solo')" style="border-color:#ff2020;color:#ff2020;" data-stereo-only title="665Hz anti-fase climax (Bastard-style)">🔥 Bastard Climax</button>
-    <button class="game-btn" onclick="bastardPumpPattern('solo')" style="border-color:#ff6b6b;color:#ff6b6b;" data-stereo-only title="Dual-freq pumping (Bastard 7min zone)">💪 Dual Pump</button>
-    <div id="solo-tension-meter" style="display:none;">
-      <div class="tension-meter"><div id="solo-tension-fill" class="tension-fill"></div><div id="solo-tension-label" class="tension-label">0%</div></div>
-      <button class="game-btn" onclick="stopTensionMeter('solo')" style="border-color:#666;color:#666;margin-top:6px;">Stop spanning-meter</button>
-    </div>
-    <div id="solo-breathing-container" class="breathing-circle-container" style="display:none;">
-      <div id="solo-breathing-circle" class="breathing-circle">Adem in...</div>
-      <button class="game-btn" onclick="stopBreathingSync('solo')" style="border-color:#666;color:#666;margin-top:10px;">Stop ademhaling</button>
-    </div>
-    <div id="solo-wait-game" style="display:none;">
-      <div id="solo-wait-timer" class="wait-game-timer">0.0s</div>
-      <button id="solo-wait-btn" class="wait-game-btn" onclick="waitGameStop('solo')">🛑 STOP — Neem je schok!</button>
-    </div>
-    <div id="solo-color-countdown" class="color-countdown" style="display:none;"><div id="solo-color-fill" class="color-countdown-fill"></div></div>
-  </div>
+  <!-- Anticipatie verwijderd in v1.0040 -->
 
   <!-- Session Engine -->
   <div class="session-engine-card">
@@ -2400,35 +2562,7 @@
     </div>
   </div>
 
-  <!-- Random mode -->
-  <div class="standalone-card">
-    <h3>&#9200; Random modus</h3>
-    <div class="toggle-row" style="margin-bottom: 12px;">
-      <label>Random schokken aan</label>
-      <div id="solo-random-toggle" class="toggle" onclick="toggleSoloRandom()"></div>
-    </div>
-    <div class="control-row">
-      <label>Min interval</label>
-      <input type="range" id="solo-rand-min" min="1" max="30" value="5" oninput="updateSoloLabels()">
-      <span id="solo-rand-min-label" class="value">5 min</span>
-    </div>
-    <div class="control-row">
-      <label>Max interval</label>
-      <input type="range" id="solo-rand-max" min="1" max="60" value="15" oninput="updateSoloLabels()">
-      <span id="solo-rand-max-label" class="value">15 min</span>
-    </div>
-    <div class="control-row">
-      <label>Min volume</label>
-      <input type="range" id="solo-rand-vol-min" min="0" max="100" value="20" oninput="updateSoloLabels()">
-      <span id="solo-rand-vol-min-label" class="value">20%</span>
-    </div>
-    <div class="control-row">
-      <label>Max volume</label>
-      <input type="range" id="solo-rand-vol-max" min="0" max="100" value="80" oninput="updateSoloLabels()">
-      <span id="solo-rand-vol-max-label" class="value">80%</span>
-    </div>
-    <div id="solo-rand-next" style="color: #666; font-size: 0.85em; margin-top: 8px; text-align: center;"></div>
-  </div>
+  <!-- Random modus verplaatst naar Spelletjes sectie -->
 
   <div id="solo-log" class="log-section">
     <h3>Log</h3>
@@ -2485,7 +2619,7 @@
   </div>
 
   <!-- Audio routing section -->
-  <div class="control-card" id="audio-routing-section" style="border:2px solid #f39c12;">
+  <div class="control-card" id="audio-routing-section" style="border:2px solid #f39c12;display:none;">
     <h3>🔊 Audio Routing — BELANGRIJK</h3>
     <p style="color:#f39c12;font-size:13px;margin:0 0 12px 0;">⚠️ Stel in welk apparaat het e-stim signaal ontvangt en waar je beeps/spraak hoort</p>
     <div class="control-group">
@@ -2624,6 +2758,12 @@
     </div>
     <div id="recv-last" class="viz-text"></div>
     <div id="recv-pattern-display" class="viz-text" style="margin-top: 12px;"></div>
+  </div>
+
+  <div id="recv-timer-display" style="display:none;text-align:center;margin:16px 0;padding:20px;background:rgba(255,152,0,0.1);border:2px solid #ff9800;border-radius:12px;">
+    <div style="font-size:0.85em;color:#ff9800;margin-bottom:4px;">⏱️ TIMER ACTIEF</div>
+    <div id="recv-timer-countdown" style="font-size:3em;font-weight:bold;color:#fff;font-family:monospace;"></div>
+    <div id="recv-timer-label" style="font-size:0.8em;color:#aaa;margin-top:4px;">Bereid je voor...</div>
   </div>
 
   <!-- Voice Quiz ontvanger -->
@@ -2967,31 +3107,72 @@
   <!-- Games -->
   <div class="control-card">
     <h3 onclick="toggleCollapsible(this)">
-      <span class="toggle-icon">▶</span> Spelletjes
+      <span class="toggle-icon">▶</span> Spelletjes & Modi
     </h3>
     <div class="collapsible-content open">
-      <button class="game-btn" id="game-dice" disabled onclick="startDice()">🎲 Dobbelsteen</button>
-      <button class="game-btn" id="game-countdown" disabled onclick="startCountdown()">⏱️ Countdown</button>
-      <button class="game-btn" id="game-reaction" disabled onclick="startReactionGame()">⚡ Reactiespel</button>
-      <button class="game-btn" id="game-roulette" disabled onclick="startRouletteGame('sender')">🎰 Roulette</button>
-      <div id="sender-roulette-display" class="roulette-display" style="display: none;">
-        <div id="sender-roulette-slot" class="roulette-slot"></div>
-        <div id="sender-roulette-result" class="roulette-result"></div>
-      </div>
-      <button class="game-btn" id="game-durf" disabled onclick="startDurfGame('sender')">🔥 Durf-meter</button>
-      <div id="sender-durf-display" class="durf-display" style="display: none;">
-        <div class="durf-bar-container">
-          <div id="sender-durf-bar" class="durf-bar-fill"></div>
-          <div id="sender-durf-pct" class="durf-pct">0%</div>
+      <!-- Random modus -->
+      <div style="margin-bottom:12px;padding:10px;background:#0f0f23;border-radius:8px;border:1px solid #333;">
+        <div class="toggle-row" style="margin-bottom:8px;">
+          <label style="font-weight:bold;">🎲 Random schokken</label>
+          <div id="random-toggle" class="toggle" onclick="toggleRandom()"></div>
         </div>
-        <button class="durf-stop-btn" onclick="stopDurfGame('sender')">STOP!</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Min interval</label>
+            <input type="range" id="rand-min" min="1" max="30" value="5" oninput="updateSendLabels()" style="width:100%;">
+            <span id="rand-min-label" class="value" style="font-size:0.8em;">5 min</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Max interval</label>
+            <input type="range" id="rand-max" min="1" max="60" value="15" oninput="updateSendLabels()" style="width:100%;">
+            <span id="rand-max-label" class="value" style="font-size:0.8em;">15 min</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Min volume</label>
+            <input type="range" id="rand-vol-min" min="0" max="100" value="20" oninput="updateSendLabels()" style="width:100%;">
+            <span id="rand-vol-min-label" class="value" style="font-size:0.8em;">20%</span>
+          </div>
+          <div class="control-row" style="margin:0;">
+            <label style="font-size:0.8em;">Max volume</label>
+            <input type="range" id="rand-vol-max" min="0" max="100" value="80" oninput="updateSendLabels()" style="width:100%;">
+            <span id="rand-vol-max-label" class="value" style="font-size:0.8em;">80%</span>
+          </div>
+        </div>
+        <div class="toggle-row" style="margin-top:6px;">
+          <label style="font-size:0.85em;">Escalatie (stijgende intensiteit)</label>
+          <div id="escalation-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div id="escalation-display" style="display:none;">
+          <div class="escalation-display"><div class="escalation-bar"><div id="escalation-fill" class="escalation-fill"></div></div><div class="escalation-text" id="escalation-text">0%</div></div>
+        </div>
+        <div id="rand-next" style="color:#666;font-size:0.8em;margin-top:6px;text-align:center;"></div>
       </div>
-      <button class="game-btn" id="game-trivia" disabled onclick="startTriviaGame('sender')">🧠 Trivia</button>
-      <div id="sender-trivia-display" class="trivia-display" style="display: none;">
-        <div id="sender-trivia-score" class="trivia-score"></div>
-        <div id="sender-trivia-question" class="trivia-question"></div>
-        <div id="sender-trivia-options" class="trivia-options"></div>
+
+      <!-- Countdown -->
+      <button class="game-btn" id="game-countdown" disabled onclick="startCountdown()">⏱️ Countdown</button>
+      <div id="sender-countdown-config-inline" style="display:none;margin:8px 0;padding:10px;background:#0f0f23;border-radius:8px;border:1px solid #333;">
+        <div class="control-row" style="margin:0 0 6px;">
+          <label style="font-size:0.85em;">Intensiteit</label>
+          <input type="range" id="countdown-intensity" min="10" max="100" value="60" oninput="document.getElementById('countdown-int-label').textContent=this.value+'%'">
+          <span class="value" id="countdown-int-label" style="font-size:0.85em;">60%</span>
+        </div>
+        <div class="control-row" style="margin:0 0 6px;">
+          <label style="font-size:0.85em;">Actie</label>
+          <select id="countdown-action" style="flex:1;padding:6px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.85em;">
+            <option value="shock">Schok</option>
+            <option value="ratata">Ratata patroon</option>
+            <option value="opbouw">Opbouw patroon</option>
+            <option value="chaos">Chaos patroon</option>
+            <option value="mystery">Mystery (random)</option>
+          </select>
+        </div>
+        <div class="toggle-row">
+          <label style="font-size:0.85em;">🔊 Waarschuwingspiep</label>
+          <div class="toggle" id="countdown-beep-toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
       </div>
+
+      <!-- Voice Quiz -->
       <button class="game-btn" id="game-voice-quiz" disabled onclick="senderStartVoiceQuiz()" style="border-color:#4488ff;color:#4488ff;">🎤 Voice Quiz (ontvanger)</button>
       <div id="sender-vq-display" class="voice-quiz-display" style="display:none;">
         <div class="vq-header">
@@ -3007,43 +3188,7 @@
     </div>
   </div>
 
-  <div class="anticipation-card" id="sender-anticipation">
-    <h3>🎭 Anticipatie</h3>
-    <button class="mystery-box-btn" onclick="mysteryBox('sender')">❓ Mystery Box</button>
-    <button class="game-btn" onclick="edgingPattern('sender')" style="border-color:#9c27b0;color:#9c27b0;">🌊 Edging → BAM</button>
-    <button class="game-btn" onclick="uncertainCountdown('sender')" style="border-color:#ff9800;color:#ff9800;">⏳ Onzeker Aftellen</button>
-    <button class="game-btn" onclick="startTensionMeter('sender')" style="border-color:#e94560;color:#e94560;">📈 Spanning-meter</button>
-    <button class="game-btn" onclick="startSweepFromUI('sender')" style="border-color:#4488ff;color:#4488ff;">🌊 Frequency Sweep</button>
-    <button class="game-btn" onclick="bastardClimaxPattern('sender')" style="border-color:#ff2020;color:#ff2020;" data-stereo-only title="665Hz anti-fase climax (Bastard-style)">🔥 Bastard Climax</button>
-    <button class="game-btn" onclick="bastardPumpPattern('sender')" style="border-color:#ff6b6b;color:#ff6b6b;" data-stereo-only title="Dual-freq pumping (Bastard 7min zone)">💪 Dual Pump</button>
-    <div id="sender-tension-meter" style="display:none;">
-      <div class="tension-meter"><div id="sender-tension-fill" class="tension-fill"></div><div id="sender-tension-label" class="tension-label">0%</div></div>
-      <button class="game-btn" onclick="stopTensionMeter('sender')" style="border-color:#666;color:#666;margin-top:6px;">Stop</button>
-    </div>
-  </div>
-
-  <div class="control-card" id="sender-countdown-config">
-    <h3>⏳ Countdown instellingen</h3>
-    <div class="control-row">
-      <label>Intensiteit</label>
-      <input type="range" id="countdown-intensity" min="10" max="100" value="60" oninput="document.getElementById('countdown-int-label').textContent=this.value+'%'">
-      <span class="value" id="countdown-int-label">60%</span>
-    </div>
-    <div class="control-row">
-      <label>Actie</label>
-      <select id="countdown-action" style="flex:1;padding:8px;border-radius:8px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.9em;">
-        <option value="shock">Schok</option>
-        <option value="ratata">Ratata patroon</option>
-        <option value="opbouw">Opbouw patroon</option>
-        <option value="chaos">Chaos patroon</option>
-        <option value="mystery">Mystery (random)</option>
-      </select>
-    </div>
-    <div class="toggle-row" style="margin-top:8px;">
-      <label>🔊 Waarschuwingspiep</label>
-      <div class="toggle" id="countdown-beep-toggle" onclick="this.classList.toggle('on')"></div>
-    </div>
-  </div>
+  <!-- Countdown config verplaatst naar Spelletjes sectie -->
 
   <div class="control-card">
     <h3>😈 Tease berichten</h3>
@@ -3104,51 +3249,7 @@
     </div>
   </div>
 
-  <!-- Random mode for sender -->
-  <div class="control-card">
-    <h3>&#127922; Random modus</h3>
-    <div class="toggle-row" style="margin-bottom: 12px;">
-      <label>Automatische schokken</label>
-      <div id="random-toggle" class="toggle" onclick="toggleRandom()"></div>
-    </div>
-    <div class="control-row">
-      <label>Min interval</label>
-      <input type="range" id="rand-min" min="1" max="30" value="5" oninput="updateSendLabels()">
-      <span id="rand-min-label" class="value">5 min</span>
-    </div>
-    <div class="control-row">
-      <label>Max interval</label>
-      <input type="range" id="rand-max" min="1" max="60" value="15" oninput="updateSendLabels()">
-      <span id="rand-max-label" class="value">15 min</span>
-    </div>
-    <div class="toggle-row" style="margin-top: 8px;">
-      <label>Random volume</label>
-      <div id="rand-vol-toggle" class="toggle on" onclick="this.classList.toggle('on')"></div>
-    </div>
-    <div class="control-row">
-      <label>Min volume</label>
-      <input type="range" id="rand-vol-min" min="0" max="100" value="20" oninput="updateSendLabels()">
-      <span id="rand-vol-min-label" class="value">20%</span>
-    </div>
-    <div class="control-row">
-      <label>Max volume</label>
-      <input type="range" id="rand-vol-max" min="0" max="100" value="80" oninput="updateSendLabels()">
-      <span id="rand-vol-max-label" class="value">80%</span>
-    </div>
-    <div class="toggle-row" style="margin-top: 8px;">
-      <label>Escalatie (stijgende intensiteit)</label>
-      <div id="escalation-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
-    </div>
-    <div id="escalation-display" style="display: none;">
-      <div class="escalation-display">
-        <div class="escalation-bar">
-          <div id="escalation-fill" class="escalation-fill"></div>
-        </div>
-        <div class="escalation-text" id="escalation-text">0%</div>
-      </div>
-    </div>
-    <div id="rand-next" style="color: #666; font-size: 0.85em; margin-top: 8px; text-align: center;"></div>
-  </div>
+  <!-- Random modus verplaatst naar Spelletjes sectie -->
 
   <!-- Session timer -->
   <div class="control-card">
@@ -3273,6 +3374,25 @@
       <button class="quick-action-btn" style="border-color:#666;color:#666;" onclick="lisanneStopAll()">
         🛑<br>Stop
       </button>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">⏱️ Timer Schok</div>
+      <div style="display:block;">
+        <p style="font-size:0.82em;color:#aaa;margin:0 0 10px;">Stel een aftelling in. Tim ziet de timer en krijgt een schok als hij op 0 staat.</p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <label style="font-size:0.85em;color:#bbb;min-width:60px;">Seconden:</label>
+          <input type="range" id="lisanne-timer-seconds" min="5" max="120" value="15" oninput="document.getElementById('lisanne-timer-seconds-val').textContent=this.value+'s'" style="flex:1;">
+          <span id="lisanne-timer-seconds-val" style="font-size:0.85em;color:#fff;min-width:30px;">15s</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <label style="font-size:0.85em;color:#bbb;min-width:60px;">Sterkte:</label>
+          <input type="range" id="lisanne-timer-intensity" min="10" max="90" value="40" oninput="document.getElementById('lisanne-timer-intensity-val').textContent=this.value+'%'" style="flex:1;">
+          <span id="lisanne-timer-intensity-val" style="font-size:0.85em;color:#fff;min-width:30px;">40%</span>
+        </div>
+        <button onclick="startLisanneTimer()" style="width:100%;padding:12px;font-size:1em;background:#ff9800;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">⏱️ Start Timer</button>
+        <div id="lisanne-timer-status" style="text-align:center;margin-top:8px;font-size:0.9em;color:#888;display:none;"></div>
+      </div>
     </div>
 
     <!-- Voice Quiz voor Lisanne -->
@@ -3713,15 +3833,15 @@ document.addEventListener('visibilitychange', () => {
         console.warn('[SAFETY] Lisanne tab hidden — mood loops stopped');
       }
     }
-    if (myRole === 'receiver') {
+    if (myRole === 'receiver' && audioCtx) {
       ['solo', 'send'].forEach(prefix => {
         const state = continuousState[prefix];
-        if (state && state.active && state.nodes) {
+        if (state && state.active && state.nodes && audioCtx) {
           state.nodes.masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
           state._wasPausedByTab = true;
         }
       });
-      if (audioPlayerState.playing && audioPlayerState.gainNode) {
+      if (audioPlayerState.playing && audioPlayerState.gainNode && audioCtx) {
         audioPlayerState.gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
         audioPlayerState._wasPausedByTab = true;
       }
@@ -3749,15 +3869,15 @@ document.addEventListener('visibilitychange', () => {
       showSenderReconnectBanner(awayText);
     }
 
-    if (myRole === 'receiver') {
+    if (myRole === 'receiver' && audioCtx) {
       ['solo', 'send'].forEach(prefix => {
         const state = continuousState[prefix];
-        if (state && state.active && state._wasPausedByTab) {
+        if (state && state.active && state._wasPausedByTab && state.nodes && audioCtx) {
           state.nodes.masterGain.gain.linearRampToValueAtTime(state.currentVol, audioCtx.currentTime + 1);
           state._wasPausedByTab = false;
         }
       });
-      if (audioPlayerState._wasPausedByTab && audioPlayerState.gainNode) {
+      if (audioPlayerState._wasPausedByTab && audioPlayerState.gainNode && audioCtx) {
         const vol = parseInt(document.getElementById('audio-volume')?.value || 50) / 100;
         audioPlayerState.gainNode.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 1);
         audioPlayerState._wasPausedByTab = false;
@@ -3781,8 +3901,11 @@ function showSenderReconnectBanner(awayText) {
     if (senderScreen) senderScreen.insertBefore(banner, senderScreen.firstChild);
   }
 
-  document.getElementById('reconnect-banner-text').innerHTML =
-    '⚠️ Je was ' + awayText + ' weg.<br>Tim\'s apparaat is automatisch gestopt voor veiligheid.<br>Kies opnieuw een actie om te hervatten.';
+  const bannerText = document.getElementById('reconnect-banner-text');
+  if (bannerText) {
+    bannerText.innerHTML =
+      '⚠️ Je was ' + awayText + ' weg.<br>Tim\'s apparaat is automatisch gestopt voor veiligheid.<br>Kies opnieuw een actie om te hervatten.';
+  }
   banner.style.display = 'block';
 
   // Also send a resume check to receiver
@@ -3827,12 +3950,16 @@ function initTabDetection() {
 window.addEventListener('beforeunload', () => {
   if (tabChannel) {
     tabChannel.postMessage({ type: 'tab_close', id: TAB_ID });
+    try { tabChannel.close(); } catch(e) {}
+  }
+  if (wakeDetectorInterval) {
+    clearInterval(wakeDetectorInterval);
   }
 });
 
 // ==================== WAKE-FROM-SLEEP DETECTION ====================
 let lastTickTime = Date.now();
-setInterval(() => {
+let wakeDetectorInterval = setInterval(() => {
   const now = Date.now();
   const gap = now - lastTickTime;
   lastTickTime = now;
@@ -3877,6 +4004,8 @@ function recordIntensity(volume, label) {
   intensityHistory.push({ t: Date.now(), v: volume, label: label || 'shock' });
   const cutoff = Date.now() - GRAPH_WINDOW_MS;
   while (intensityHistory.length > 0 && intensityHistory[0].t < cutoff) intensityHistory.shift();
+  // Hard cap to prevent unbounded growth if time-based cleanup fails
+  if (intensityHistory.length > 2000) intensityHistory.splice(0, intensityHistory.length - 1000);
   renderAllGraphs();
 }
 
@@ -4391,6 +4520,22 @@ function playTone(freq, volume, duration, volumeL, volumeR) {
 
 function stopAudioImmediately() {
   if (audioCtx) {
+    // Stop all continuous mode audio first
+    ['solo', 'send'].forEach(prefix => {
+      const state = continuousState[prefix];
+      if (state && state.active && state.nodes) {
+        try { state.nodes.masterGain.gain.setValueAtTime(0, audioCtx.currentTime); } catch(e) {}
+      }
+    });
+    // Stop audio file player
+    if (audioPlayerState.source) {
+      try { audioPlayerState.source.stop(); } catch(e) {}
+      audioPlayerState.source = null;
+      audioPlayerState.playing = false;
+    }
+    // Clear all pattern timeouts
+    clearAllPatternTimeouts();
+    // Now close and recreate context
     audioCtx.close();
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     masterLimiterNode = null;
@@ -4520,6 +4665,153 @@ function updateAudioLoop() {
   if (loop) {
     recvLog('⚠️ Audio loop ingeschakeld — vergeet niet uit te zetten!', true);
   }
+}
+
+// ==================== CENTRALIZED AUDIO SETUP ====================
+async function detectGlobalAudioDevices() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter(d => d.kind === 'audiooutput');
+
+    // Deduplicate devices by label (macOS lists Bluetooth devices multiple times)
+    const seen = new Map();
+    const uniqueOutputs = [];
+    outputs.forEach(d => {
+      const label = (d.label || '').trim();
+      // Normalize: remove "(Built-in)", trailing numbers, etc.
+      const normalizedLabel = label.replace(/\s*\(Built-in\)/i, '').replace(/\s*\(\d+\)$/, '').trim();
+      if (!seen.has(normalizedLabel) || d.deviceId === 'default') {
+        seen.set(normalizedLabel, d);
+        uniqueOutputs.push(d);
+      }
+    });
+
+    ['setup-stim-device', 'setup-ui-device'].forEach(selectId => {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const currentVal = sel.value;
+      sel.innerHTML = '<option value="default">Standaard audio output</option>';
+      uniqueOutputs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.deviceId;
+        const label = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+        opt.textContent = label;
+        // Mark Bluetooth devices
+        if (/bluetooth|airpods|buds|headphones|bt/i.test(label)) {
+          opt.textContent = '🔵 ' + label;
+        }
+        // Mark headphone jack
+        if (/headphone|koptelefoon|external|macbook.*speaker/i.test(label)) {
+          // no special marking needed
+        }
+        sel.appendChild(opt);
+      });
+      // Restore selection if possible
+      if (currentVal && sel.querySelector('option[value="' + currentVal + '"]')) {
+        sel.value = currentVal;
+      }
+    });
+
+    const statusEl = document.getElementById('setup-device-status');
+    if (statusEl) {
+      statusEl.textContent = '✅ ' + uniqueOutputs.length + ' audio apparaten gevonden';
+      statusEl.style.color = '#4caf50';
+    }
+
+    // Also populate the old selects (for backwards compatibility)
+    populateLegacyDeviceSelects(uniqueOutputs);
+
+  } catch(e) {
+    const statusEl = document.getElementById('setup-device-status');
+    if (statusEl) {
+      statusEl.textContent = '❌ Kan apparaten niet detecteren: ' + e.message;
+      statusEl.style.color = '#e94560';
+    }
+  }
+}
+
+function populateLegacyDeviceSelects(outputs) {
+  // Keep old selects in sync for any code that reads from them
+  ['stim-output-device', 'ui-output-device', 'solo-stim-output-device', 'solo-ui-output-device'].forEach(selectId => {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    sel.innerHTML = '<option value="default">Standaard audio output</option>';
+    outputs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+      sel.appendChild(opt);
+    });
+  });
+}
+
+async function updateGlobalStimDevice() {
+  const deviceId = document.getElementById('setup-stim-device').value;
+  const label = document.getElementById('setup-stim-device').selectedOptions[0]?.text || '';
+
+  // Show Bluetooth warning
+  const warning = document.getElementById('setup-stim-warning');
+  if (warning) {
+    warning.style.display = /bluetooth|airpods|buds|bt|🔵/i.test(label) ? 'block' : 'none';
+  }
+
+  // Apply to audioCtx
+  ensureAudio();
+  if (audioCtx && audioCtx.setSinkId && deviceId !== 'default') {
+    try {
+      await audioCtx.setSinkId(deviceId);
+    } catch(e) {
+      console.warn('Could not set stim device:', e);
+    }
+  }
+
+  // Sync to legacy selects
+  ['stim-output-device', 'solo-stim-output-device'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.value = deviceId;
+  });
+}
+
+async function updateGlobalUIDevice() {
+  const deviceId = document.getElementById('setup-ui-device').value;
+
+  if (!uiAudioCtx) {
+    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (uiAudioCtx.setSinkId && deviceId !== 'default') {
+    try {
+      await uiAudioCtx.setSinkId(deviceId);
+    } catch(e) {
+      console.warn('Could not set UI device:', e);
+    }
+  }
+
+  // Sync to legacy selects
+  ['ui-output-device', 'solo-ui-output-device'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.value = deviceId;
+  });
+}
+
+function updateGlobalUIVolume(value) {
+  const display = document.getElementById('setup-ui-volume-display');
+  if (display) display.textContent = value + '%';
+
+  // Apply to UI audio context gain
+  if (typeof uiMasterGain !== 'undefined' && uiMasterGain) {
+    uiMasterGain.gain.value = value / 100;
+  }
+
+  // Sync to legacy volume sliders
+  ['solo-ui-volume', 'recv-ui-volume'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+  });
+  ['solo-ui-volume-display', 'recv-ui-volume-display'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value + '%';
+  });
 }
 
 // ==================== AUDIO ROUTING ====================
@@ -4696,7 +4988,12 @@ let panicCooldown = false;
 // zodat panicStop ze kan cancelen
 let patternTimeouts = [];
 function trackTimeout(fn, delay) {
-  const id = setTimeout(fn, delay);
+  const id = setTimeout(() => {
+    fn();
+    // Remove completed timeout from tracking array
+    const idx = patternTimeouts.indexOf(id);
+    if (idx !== -1) patternTimeouts.splice(idx, 1);
+  }, delay);
   patternTimeouts.push(id);
   return id;
 }
@@ -5155,7 +5452,7 @@ function startReceiver() {
         if (isNaN(n) || !isFinite(n)) return fallback;
         return Math.max(min, Math.min(max, n));
       }
-      const safetyLimitPct = parseInt(document.getElementById('safety-limit')?.value || 80);
+      const safetyLimitPct = parseInt(document.getElementById('safety-limit')?.value || 50);
 
       if (data.type === 'shock') {
         doReceiverShock(
@@ -5167,7 +5464,7 @@ function startReceiver() {
         );
       } else if (data.type === 'pattern') {
         // Whitelist pattern names to prevent injection
-        const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging'];
+        const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging','ademhaling','pingpong','slowramp','stereo_sweep','stereo_drift','stereo_pulse'];
         const safePat = allowedPatterns.includes(data.pattern) ? data.pattern : 'ratata';
         doReceiverPattern(safePat, safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
       } else if (data.type === 'hold_start') {
@@ -5225,6 +5522,8 @@ function startReceiver() {
         setRecvStatus('connected', 'Verbonden met zender!');
         lastHeartbeat = Date.now(); // Reset heartbeat
         if (!heartbeatCheckInterval) startHeartbeatMonitor(); // Restart monitor if stopped
+      } else if (data.type === 'timer_start') {
+        startRecvTimer(safeNum(data.seconds, 5, 120, 15), safeNum(data.intensity, 10, 90, 40));
       } else if (data.type === 'panic') {
         // Remote panic was triggered
         recvLog('⚠️ PANIC - Verbinding gestopt door zender');
@@ -5269,7 +5568,7 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
   }
 
   // Safety cap op receiver-niveau (bovenop de cap in playToneAdvanced)
-  const limit = parseInt(document.getElementById('safety-limit')?.value || 100);
+  const limit = parseInt(document.getElementById('safety-limit')?.value || 50);
   const cappedVol = Math.min(volume, limit);
   const cappedL = volumeL != null ? Math.min(volumeL, limit) : null;
   const cappedR = volumeR != null ? Math.min(volumeR, limit) : null;
@@ -5469,6 +5768,73 @@ function stopReceiverHold() {
   stopReceiverHoldLocal();
 }
 
+// --- Receiver Timer Feature ---
+let recvTimerInterval = null;
+function startRecvTimer(seconds, intensity) {
+  const display = document.getElementById('recv-timer-display');
+  const countdown = document.getElementById('recv-timer-countdown');
+  const label = document.getElementById('recv-timer-label');
+
+  if (!display || !countdown) return;
+
+  display.style.display = 'block';
+  let remaining = seconds;
+  countdown.textContent = remaining;
+  label.textContent = 'Bereid je voor...';
+
+  // Play a warning beep
+  playTimerBeep(440, 0.15, 200);
+
+  clearInterval(recvTimerInterval);
+  recvTimerInterval = setInterval(() => {
+    remaining--;
+    countdown.textContent = remaining;
+
+    if (remaining <= 5 && remaining > 0) {
+      // Last 5 seconds: warning beeps + red color
+      countdown.style.color = '#e94560';
+      label.textContent = 'Daar komt ie...';
+      playTimerBeep(660, 0.1, 100);
+    }
+
+    if (remaining <= 0) {
+      clearInterval(recvTimerInterval);
+      countdown.textContent = '⚡';
+      label.textContent = 'SCHOK!';
+
+      // Fire the shock
+      ensureAudio();
+      doReceiverShock(200, intensity, 500);
+      vibrateDevice(300);
+
+      // Hide after 2s
+      setTimeout(() => {
+        display.style.display = 'none';
+        countdown.style.color = '#fff';
+      }, 2000);
+    }
+  }, 1000);
+}
+
+function playTimerBeep(freq, volume, durationMs) {
+  try {
+    const ctx = ensureUiAudio();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + durationMs / 1000);
+    osc.connect(gain);
+    gain.connect(getUiDestination());
+    osc.start(now);
+    osc.stop(now + durationMs / 1000);
+  } catch(e) {
+    console.warn('Timer beep failed:', e);
+  }
+}
+
 // Helper: Check if stereo engine should be used
 function shouldUseStereoEngine() {
   const mode = getChannelMode('recv');
@@ -5497,7 +5863,7 @@ function doReceiverPattern(pattern, freq, volume) {
   display.textContent = 'Patroon: ' + (patternNames[pattern] || 'Onbekend');
 
   // SAFETY: Cap volume to receiver's safety limit BEFORE pattern scaling
-  const limit = parseInt(document.getElementById('safety-limit')?.value || 80);
+  const limit = parseInt(document.getElementById('safety-limit')?.value || 50);
   const v = Math.min(Math.max(0, volume || 0), limit);
   const useStereo = shouldUseStereoEngine();
 
@@ -5881,12 +6247,14 @@ function doReceiverPattern(pattern, freq, volume) {
 
 function setRecvStatus(state, text) {
   const dot = document.getElementById('recv-dot');
-  dot.className = 'status-dot ' + state;
-  document.getElementById('recv-status-text').textContent = text;
+  if (dot) dot.className = 'status-dot ' + state;
+  const statusText = document.getElementById('recv-status-text');
+  if (statusText) statusText.textContent = text;
 }
 
 function recvLog(msg, isShock) {
   const log = document.getElementById('recv-log');
+  if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
   entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
@@ -5895,10 +6263,15 @@ function recvLog(msg, isShock) {
 }
 
 function updateSafetyLimit() {
-  const limit = document.getElementById('safety-limit').value;
-  document.getElementById('safety-limit-label').textContent = limit + '%';
-  document.getElementById('safety-limit-text').textContent = limit + '%';
-  document.getElementById('safety-limit-fill').style.width = limit + '%';
+  const el = document.getElementById('safety-limit');
+  if (!el) return;
+  const limit = el.value;
+  const label = document.getElementById('safety-limit-label');
+  const text = document.getElementById('safety-limit-text');
+  const fill = document.getElementById('safety-limit-fill');
+  if (label) label.textContent = limit + '%';
+  if (text) text.textContent = limit + '%';
+  if (fill) fill.style.width = limit + '%';
   // Als continuous actief is: onmiddellijk volume hercappen
   reCapContinuousMode('send');
 }
@@ -5929,9 +6302,11 @@ function panicStop() {
   panicCooldown = true;
 
   const btn = document.getElementById('panic-btn');
-  btn.classList.add('cooldown');
-  btn.disabled = true;
-  btn.textContent = '🛑 GESTOPT - cooldown 3s';
+  if (btn) {
+    btn.classList.add('cooldown');
+    btn.disabled = true;
+    btn.textContent = '🛑 GESTOPT - cooldown 3s';
+  }
 
   if (conn && conn.open) {
     conn.send({ type: 'panic', ts: Date.now() });
@@ -5942,7 +6317,7 @@ function panicStop() {
   let cooldownTime = 3;
   const cooldownInterval = setInterval(() => {
     cooldownTime--;
-    btn.textContent = '🛑 GESTOPT - cooldown ' + cooldownTime + 's';
+    if (btn) btn.textContent = '🛑 GESTOPT - cooldown ' + cooldownTime + 's';
     if (cooldownTime <= 0) {
       clearInterval(cooldownInterval);
       stopPanicCooldown();
@@ -5955,13 +6330,16 @@ function panicStop() {
 function stopPanicCooldown() {
   panicCooldown = false;
   const btn = document.getElementById('panic-btn');
-  btn.classList.remove('cooldown');
-  btn.disabled = false;
-  btn.textContent = '🛑 STOP / Paniekknop';
+  if (btn) {
+    btn.classList.remove('cooldown');
+    btn.disabled = false;
+    btn.textContent = '🛑 STOP / Paniekknop';
+  }
 }
 
 function addChatMessage(sender, text) {
   const container = myRole === 'receiver' ? document.getElementById('recv-chat-messages') : document.getElementById('send-chat-messages');
+  if (!container) return;
   const msg = document.createElement('div');
   msg.className = 'chat-message ' + (sender === 'sender' ? 'sender' : 'receiver');
   msg.textContent = text;
@@ -6289,6 +6667,7 @@ function setSendStatus(state, text) {
 
 function sendLog(msg, isShock) {
   const log = document.getElementById('send-log');
+  if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
   entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
@@ -6777,6 +7156,61 @@ function stopSoloHoldLocal() {
   if (text) { text.textContent = 'Wacht op schok...'; text.style.color = '#888'; }
 }
 
+// ==================== SETUP WIZARD ====================
+let wizardCurrentStep = 1;
+let selectedElectrodeConfig = null;
+
+function wizardNext(step) {
+  // Hide current step
+  document.getElementById('wiz-step-' + wizardCurrentStep).style.display = 'none';
+  document.getElementById('wiz-dot-' + wizardCurrentStep).classList.remove('active');
+  document.getElementById('wiz-dot-' + wizardCurrentStep).classList.add('done');
+
+  // Show new step
+  wizardCurrentStep = step;
+  document.getElementById('wiz-step-' + step).style.display = 'block';
+  document.getElementById('wiz-dot-' + step).classList.remove('done');
+  document.getElementById('wiz-dot-' + step).classList.add('active');
+
+  // Mark all steps before current as done
+  for (let i = 1; i < step; i++) {
+    document.getElementById('wiz-dot-' + i).classList.add('done');
+    document.getElementById('wiz-dot-' + i).classList.remove('active');
+  }
+  // Mark all steps after current as neither
+  for (let i = step + 1; i <= 5; i++) {
+    document.getElementById('wiz-dot-' + i).classList.remove('done', 'active');
+  }
+
+  // Auto-detect devices on step 1
+  if (step === 1 && document.getElementById('setup-stim-device').options.length <= 1) {
+    detectGlobalAudioDevices();
+  }
+}
+
+function selectElectrodeConfig(config) {
+  selectedElectrodeConfig = config;
+  // Visual selection
+  document.querySelectorAll('.electrode-opt-btn').forEach(b => b.classList.remove('selected'));
+  const map = { loops_plug: 'elec-opt-lp', loops_only: 'elec-opt-lo', plug_only: 'elec-opt-po', custom: 'elec-opt-cu' };
+  const btn = document.getElementById(map[config]);
+  if (btn) btn.classList.add('selected');
+
+  // Status text
+  const status = document.getElementById('wiz-electrode-status');
+  const labels = { loops_plug: 'Loop + Plug (A=Loop, B=Plug)', loops_only: 'Alleen Loop (Kanaal A)', plug_only: 'Alleen Plug (Kanaal B)', custom: 'Handmatige configuratie' };
+  if (status) status.textContent = '✅ ' + (labels[config] || config);
+
+  // Apply electrode config to channel modes
+  if (config === 'loops_only') {
+    // Set all channel modes to monoA
+    document.querySelectorAll('[id$="-channel-mode"]').forEach(el => {
+      const btns = el.querySelectorAll('button');
+      if (btns.length >= 2) { btns[0].click(); } // Select Mono A
+    });
+  }
+}
+
 function startSolo() {
   myRole = 'solo';
   pendingScreenAfterSetup = 'solo';
@@ -6799,6 +7233,7 @@ function startSolo() {
 
 function soloLog(msg, isShock) {
   const log = document.getElementById('solo-log');
+  if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
   entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
@@ -6807,7 +7242,7 @@ function soloLog(msg, isShock) {
 }
 
 let soloCooldownUntil = 0;
-function doSoloShock(freq, volume, duration, opts) {
+function doSoloShock(freq, volume, duration, opts, volumeL, volumeR) {
   duckBaseline(duration || 300);
   // Anti-stacking: handmatige klikken mogen niet stapelen
   // Patronen/games bypassen dit via opts._bypassCooldown
@@ -6826,6 +7261,11 @@ function doSoloShock(freq, volume, duration, opts) {
   if (getChannelMode('solo') === 'monoA') {
     const cm = applyChannelMode('solo', cappedVol, 0, freq, finalOpts);
     playToneAdvanced(cm.freq, cappedVol, duration, cm.volumeL, cm.volumeR, cm.opts);
+  } else if (volumeL != null || volumeR != null) {
+    // Per-channel volumes specified (e.g. quiz punishment on specific channel)
+    const cappedL = volumeL != null ? Math.min(volumeL, limit) : null;
+    const cappedR = volumeR != null ? Math.min(volumeR, limit) : null;
+    playToneAdvanced(freq, cappedVol, duration, cappedL, cappedR, finalOpts);
   } else {
     playToneAdvanced(freq, cappedVol, duration, null, null, finalOpts);
   }
@@ -7996,6 +8436,8 @@ function contRealtimeTick(prefix) {
   if (!state.active || !state.nodes) return;
   const ctx = audioCtx;
   if (!ctx) return;
+  // Resume suspended context (happens after tab was backgrounded)
+  if (ctx.state === 'suspended') { ctx.resume(); }
   const now = ctx.currentTime;
   const safetyLimit = getEffectiveSafetyLimit();
   const n = state.nodes;
@@ -9497,6 +9939,10 @@ function loadPreset(prefix) {
 // ==================== LISANNE MODE ====================
 let lisanneCurrentMood = null;
 let lisanneMoodTimer = null;
+function setMoodTimer(fn, delay) {
+  if (lisanneMoodTimer) { clearTimeout(lisanneMoodTimer); lisanneMoodTimer = null; }
+  lisanneMoodTimer = trackTimeout(fn, delay);
+}
 
 function startLisanneMode() {
   myRole = 'sender'; // internally she's a sender
@@ -9622,7 +10068,7 @@ function lisanneMood(mood) {
         safeSend({ type: 'pattern', pattern: 'ademhaling', freq: 80, volume: vol, ts: Date.now() });
         // Also send stereo tone for richer experience
         safeSend({ type: 'stereo_tone', freqL: 70, freqR: 75, volume: vol / 100, duration: 3000, waveL: 'sine', waveR: 'triangle', lfoRateL: 0.3, lfoDepthL: 0.2, lfoRateR: 0.5, lfoDepthR: 0.15, delayR: 0.04, envelope: 'smooth', ts: Date.now() });
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'zacht') lisanneMood('zacht'); // loop
         }, 5000);
       }
@@ -9634,7 +10080,7 @@ function lisanneMood(mood) {
         safeSend({ type: 'pattern', pattern: 'hartslag', freq: 70, volume: vol, ts: Date.now() });
         // Also send stereo tone
         safeSend({ type: 'stereo_tone', freqL: 60, freqR: 65, volume: vol / 100, duration: 2000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 1.2, lfoDepthL: 0.3, lfoRateR: 0.8, lfoDepthR: 0.2, delayR: 0.03, envelope: 'smooth', ts: Date.now() });
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'massage') lisanneMood('massage');
         }, 3000);
       }
@@ -9660,7 +10106,7 @@ function lisanneMood(mood) {
           safeSend({ type: 'tease_fakeout', text: 'Nu!', ts: Date.now() });
         }
         const delay = 2000 + Math.random() * 5000; // unpredictable timing
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'tease') lisanneMood('tease');
         }, delay);
       }
@@ -9673,7 +10119,7 @@ function lisanneMood(mood) {
         safeSend({ type: 'pattern', pattern: pats[Math.floor(Math.random()*pats.length)], freq: 150 + Math.random() * 150, volume: vol, ts: Date.now() });
         // Escalating stereo tone
         safeSend({ type: 'stereo_tone', freqL: 100 + Math.random() * 100, freqR: 130 + Math.random() * 120, volume: vol / 100, duration: 2500, waveL: 'sawtooth', waveR: 'square', lfoRateL: 1.5 + Math.random(), lfoDepthL: 0.25, lfoRateR: 1 + Math.random(), lfoDepthR: 0.2, delayR: 0.015, envelope: 'smooth', ts: Date.now() });
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'opwindend') lisanneMood('opwindend');
         }, 3500 + Math.random() * 2000);
       }
@@ -9701,7 +10147,7 @@ function lisanneMood(mood) {
           // Aggressive stereo tone
           safeSend({ type: 'stereo_tone', freqL: 150 + Math.random() * 150, freqR: 200 + Math.random() * 200, volume: vol / 100, duration: 1000, waveL: 'square', waveR: 'sawtooth', lfoRateL: 2.5, lfoDepthL: 0.35, lfoRateR: 2, lfoDepthR: 0.3, delayR: 0.025, envelope: 'punch', ts: Date.now() });
         }
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'genadeloos') lisanneMood('genadeloos');
         }, 1500 + Math.random() * 2500);
       }
@@ -9719,7 +10165,7 @@ function lisanneMood(mood) {
 
         setLisanneActivity('🎲', 'Verrassing: ' + moodConfigs[randomMood].icon);
 
-        lisanneMoodTimer = trackTimeout(() => {
+        setMoodTimer(() => {
           if (lisanneCurrentMood === 'verrassing') lisanneMood('verrassing');
         }, 3000 + Math.random() * 5000);
       }
@@ -9781,6 +10227,52 @@ function lisanneStopAll() {
   }
   document.querySelectorAll('#lisanne .mood-btn').forEach(b => b.classList.remove('active'));
   setLisanneActivity('😴', 'Gestopt');
+}
+
+// --- Lisanne Timer Feature ---
+let lisanneTimerInterval = null;
+
+function startLisanneTimer() {
+  const seconds = parseInt(document.getElementById('lisanne-timer-seconds').value) || 15;
+  const intensity = parseInt(document.getElementById('lisanne-timer-intensity').value) || 40;
+
+  // Send timer start to receiver
+  if (!conn || !conn.open) {
+    setLisanneActivity('❌', 'Niet verbonden!');
+    return;
+  }
+
+  conn.send({
+    type: 'timer_start',
+    seconds: seconds,
+    intensity: intensity,
+    ts: Date.now()
+  });
+
+  // Show local countdown too
+  const statusEl = document.getElementById('lisanne-timer-status');
+  statusEl.style.display = 'block';
+  let remaining = seconds;
+  statusEl.textContent = '⏱️ ' + remaining + 's...';
+  statusEl.style.color = '#ff9800';
+
+  clearInterval(lisanneTimerInterval);
+  lisanneTimerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(lisanneTimerInterval);
+      statusEl.textContent = '⚡ SCHOK!';
+      statusEl.style.color = '#e94560';
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 2000);
+    } else {
+      statusEl.textContent = '⏱️ ' + remaining + 's...';
+      if (remaining <= 5) statusEl.style.color = '#e94560';
+    }
+  }, 1000);
+
+  setLisanneActivity('⏱️', 'Timer: ' + seconds + 's → ' + intensity + '% schok');
 }
 
 // ==================== BASTARD CLIMAX PATTERNS ====================
@@ -10109,7 +10601,7 @@ function initSpeechRecognition() {
         clearTimeout(pendingTimer);
       } else {
         // Voeg toe aan pending transcript (Chrome kan meerdere final results sturen)
-        pendingTranscript = (pendingTranscript + ' ' + transcript).trim();
+        pendingTranscript = (pendingTranscript + ' ' + transcript).trim().slice(0, 500);
         showVoiceHeard(pendingTranscript);
         // Wacht even of er nog meer komt
         clearTimeout(pendingTimer);
@@ -10726,6 +11218,8 @@ function getQuizConfig(mode) {
     rewardStreakBonus: parseInt(getVal('reward-streak')) || 5,
     rewardChannel: getVal('reward-ch') || 'both',
     punishChannel: getVal('punish-ch') || 'both',
+    punishBaseVolume: parseInt(getVal('punish-vol')) || 47,
+    punishBaseDuration: parseInt(getVal('punish-dur')) || 650,
   };
 }
 
@@ -11158,7 +11652,12 @@ function filterQuizQuestions(config) {
 let lastAudioDeviceCount = 0;
 let bluetoothSafetyActive = false;
 
+let _deviceChangeHandler = null;
 function initBluetoothSafety() {
+  // Clean up previous listener if called again
+  if (_deviceChangeHandler && navigator.mediaDevices) {
+    navigator.mediaDevices.removeEventListener('devicechange', _deviceChangeHandler);
+  }
   if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
 
   // Count current audio output devices
@@ -11167,7 +11666,7 @@ function initBluetoothSafety() {
   });
 
   // Listen for device changes
-  navigator.mediaDevices.addEventListener('devicechange', async () => {
+  _deviceChangeHandler = async () => {
     if (!bluetoothSafetyActive) return;
 
     try {
@@ -11209,7 +11708,8 @@ function initBluetoothSafety() {
     } catch(e) {
       console.error('[SAFETY] Error checking devices:', e);
     }
-  });
+  };
+  navigator.mediaDevices.addEventListener('devicechange', _deviceChangeHandler);
 }
 
 // Initialize on first user interaction
@@ -11443,7 +11943,7 @@ function showVoiceQuizQuestion(mode) {
   // Speak the question FIRST — timer + mic start AFTER TTS is done
   const ttsOn = !voiceQuizState.config || voiceQuizState.config.ttsEnabled !== false;
   if (ttsOn) {
-    const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
+    const spokenOptions = q.o.map((opt, i) => 'Antwoord ' + (i + 1) + ', ' + opt).join('. ');
     speak(q.v + '. ' + spokenOptions, () => {
       console.log('[Quiz] TTS klaar voor vraag ' + (questionId + 1) + ', timer starten');
       startQuestionTimer();
@@ -11483,7 +11983,7 @@ function repeatCurrentQuestion() {
   clearInterval(voiceQuizState.timerInterval);
   voiceQuizState.waitingForAnswer = false;
 
-  const spokenOptions = 'Antwoord 1, ' + q.o[0] + '. Antwoord 2, ' + q.o[1] + '. Antwoord 3, ' + q.o[2] + '. Antwoord 4, ' + q.o[3];
+  const spokenOptions = q.o.map((opt, i) => 'Antwoord ' + (i + 1) + ', ' + opt).join('. ');
   const mode = voiceQuizState.mode;
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   updateMicStatus(prefix, false);
@@ -11884,38 +12384,43 @@ function doQuizPunishment(mode) {
   if (config.punishment === 'mild') multiplier = 0.5;
   else if (config.punishment === 'hard') multiplier = 1.5;
 
-  // Escalating punishment
-  let shockVol = Math.min(Math.round((15 + wrongCount * 10) * multiplier), 80, safetyLimit);
-  let shockDur = Math.min(Math.round((300 + wrongCount * 100) * multiplier), 1500);
+  // Escalating punishment — uses configurable base values from quiz settings
+  const baseVol = config.punishBaseVolume || 47;
+  const baseDur = config.punishBaseDuration || 650;
+  let shockVol = Math.min(Math.round((baseVol + wrongCount * 8) * multiplier), 80, safetyLimit);
+  let shockDur = Math.min(Math.round((baseDur + wrongCount * 100) * multiplier), 2500);
   let shockFreq = 200;
-
-  logFn('⚡ Straf: ' + shockVol + '% / ' + shockDur + 'ms (fout #' + wrongCount + ', modus: ' + (config.punishment || 'normaal') + ')');
-
-  if (wrongCount >= 5) {
-    // After 5 wrong: pattern punishment
-    const patterns = ['ratata', 'staccato', 'chaos'];
-    const pattern = patterns[wrongCount % patterns.length];
-    logFn('⚡ Patroon-straf: ' + pattern);
-    if (mode === 'solo') {
-      const s = getSoloSettings();
-      doSoloPattern(pattern, s.freq, shockVol);
-    } else if (mode === 'recv') {
-      doReceiverPattern(pattern, shockFreq, shockVol);
-    }
-    vibrateDevice(500);
-    return;
-  }
 
   // Per-channel punishment: compute volumeL/volumeR based on punish channel config
   const punishCh = config.punishChannel || 'both';
   const punishVolL = punishCh === 'B' ? 0 : shockVol;
   const punishVolR = punishCh === 'A' ? 0 : shockVol;
 
-  // Normal shock punishment
+  logFn('⚡ Straf: ' + shockVol + '% / ' + shockDur + 'ms (fout #' + wrongCount + ', modus: ' + (config.punishment || 'normaal') + ', kanaal: ' + punishCh + ')');
+
+  if (wrongCount >= 5) {
+    // After 5 wrong: pattern punishment — use rapid burst with per-channel routing
+    logFn('⚡ Patroon-straf (fout #' + wrongCount + ')');
+    const burstCount = Math.min(3 + wrongCount - 5, 8);
+    for (let i = 0; i < burstCount; i++) {
+      setTimeout(() => {
+        if (mode === 'solo') {
+          const s = getSoloSettings();
+          doSoloShock(s.freq, shockVol, 120, { _label: 'quiz_burst', _bypassCooldown: true }, punishVolL, punishVolR);
+        } else if (mode === 'recv') {
+          doReceiverShock(shockFreq, shockVol, 120, punishVolL, punishVolR);
+        }
+      }, i * 150);
+    }
+    vibrateDevice(500);
+    return;
+  }
+
+  // Normal shock punishment with per-channel routing
   ensureAudio();
   if (mode === 'solo') {
     const s = getSoloSettings();
-    doSoloShock(s.freq, shockVol, shockDur, { _label: 'quiz_fout', _bypassCooldown: true });
+    doSoloShock(s.freq, shockVol, shockDur, { _label: 'quiz_fout', _bypassCooldown: true }, punishVolL, punishVolR);
   } else if (mode === 'recv') {
     // doReceiverShock expects volume as percentage (0-100), not decimal
     doReceiverShock(shockFreq, shockVol, shockDur, punishVolL, punishVolR);
@@ -12188,6 +12693,207 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (typeof updateSafetyLimit === 'function') updateSafetyLimit();
 });
+
+// ========================
+// SETUP & DIAGNOSTICS
+// ========================
+
+// Channel test: play a 3-second reference tone at full app volume on specified channel
+let setupTestTimeout = null;
+let setupTestNodes = null;
+function setupTestChannel(ch) {
+  // Stop previous test if running
+  setupTestStop();
+
+  const ctx = ensureAudio();
+  const now = ctx.currentTime;
+  const duration = 3;
+  const freq = 80; // Clear, easily felt frequency
+  const vol = 0.85; // High but not clipping — leaves headroom
+
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+
+  const master = ctx.createGain();
+  master.channelCount = 2;
+  master.channelCountMode = 'explicit';
+  master.channelInterpretation = 'speakers';
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(vol, now + 0.3);
+  master.gain.setValueAtTime(vol, now + duration - 0.5);
+  master.gain.linearRampToValueAtTime(0, now + duration);
+
+  if (ch === 'AB') {
+    // Both channels at full — simple mono path
+    master.connect(getMasterLimiter());
+  } else {
+    // Stereo routing
+    const splitter = ctx.createChannelSplitter(2);
+    const merger = ctx.createChannelMerger(2);
+    const gainL = ctx.createGain();
+    const gainR = ctx.createGain();
+    gainL.gain.value = ch === 'A' ? 1.0 : 0.0;
+    gainR.gain.value = ch === 'B' ? 1.0 : 0.0;
+    master.connect(splitter);
+    splitter.connect(gainL, 0); splitter.connect(gainR, 1);
+    gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
+    merger.connect(getMasterLimiter());
+  }
+
+  osc.connect(master);
+  osc.start(now);
+  osc.stop(now + duration);
+
+  setupTestNodes = { osc, master };
+  setupTestTimeout = setTimeout(setupTestStop, (duration + 0.5) * 1000);
+}
+
+function setupTestStop() {
+  if (setupTestTimeout) { clearTimeout(setupTestTimeout); setupTestTimeout = null; }
+  if (setupTestNodes) {
+    try { setupTestNodes.osc.stop(); } catch(e) {}
+    setupTestNodes = null;
+  }
+}
+
+// Wrapper function for setup-diagnostics panel (converts uppercase/both to setupTestChannel format)
+function diagTestChannel(channel) {
+  // Map 'both' to 'AB' for setupTestChannel, 'A'/'B' already match
+  const ch = channel === 'both' ? 'AB' : channel;
+  setupTestChannel(ch);
+}
+
+// Diagnostics
+let clipDetectorNode = null;
+let clipCount = 0;
+let clipDetectorActive = false;
+
+function startClipDetector() {
+  if (clipDetectorActive) return;
+  try {
+    const ctx = ensureAudio();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    getMasterLimiter().connect(analyser);
+    const data = new Float32Array(analyser.fftSize);
+
+    clipDetectorActive = true;
+    clipCount = 0;
+
+    function checkClip() {
+      if (!clipDetectorActive) return;
+      analyser.getFloatTimeDomainData(data);
+      for (let i = 0; i < data.length; i++) {
+        if (Math.abs(data[i]) > 0.98) {
+          clipCount++;
+          break;
+        }
+      }
+      requestAnimationFrame(checkClip);
+    }
+    checkClip();
+    clipDetectorNode = analyser;
+  } catch(e) {
+    console.warn('Clip detector failed:', e);
+  }
+}
+
+function runDiagnostics() {
+  // Tab focus
+  const tabVal = document.getElementById('diag-tab-val');
+  if (document.hidden) {
+    tabVal.textContent = 'ACHTERGROND';
+    tabVal.style.color = '#e94560';
+  } else {
+    tabVal.textContent = 'Voorgrond';
+    tabVal.style.color = '#4caf50';
+  }
+
+  // Audio output device
+  const audioVal = document.getElementById('diag-audio-val');
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices().then(devices => {
+      const outputs = devices.filter(d => d.kind === 'audiooutput');
+      const active = outputs.find(d => d.deviceId === 'default') || outputs[0];
+      if (active && active.label) {
+        const isBT = /bluetooth|airpods|airplay|wireless/i.test(active.label);
+        audioVal.textContent = active.label;
+        audioVal.style.color = isBT ? '#e94560' : '#4caf50';
+        if (isBT) audioVal.textContent += ' ⚠️ BLUETOOTH!';
+      } else {
+        audioVal.textContent = 'Onbekend (toestemming nodig)';
+        audioVal.style.color = '#ff9800';
+      }
+    });
+  } else {
+    audioVal.textContent = 'Niet beschikbaar';
+    audioVal.style.color = '#888';
+  }
+
+  // Clipping
+  const clipVal = document.getElementById('diag-clip-val');
+  if (audioCtx) {
+    startClipDetector();
+    const prevCount = clipCount;
+    setTimeout(() => {
+      const newClips = clipCount - prevCount;
+      if (newClips > 0) {
+        clipVal.textContent = 'GEDETECTEERD (' + newClips + 'x) — zet MacBook zachter';
+        clipVal.style.color = '#e94560';
+      } else {
+        clipVal.textContent = 'Geen clipping';
+        clipVal.style.color = '#4caf50';
+      }
+    }, 2000);
+    clipVal.textContent = 'Luistert (2s)...';
+    clipVal.style.color = '#ff9800';
+  } else {
+    clipVal.textContent = 'Start eerst audio (kies een rol)';
+    clipVal.style.color = '#888';
+  }
+
+  // Sample rate
+  const srVal = document.getElementById('diag-sr-val');
+  if (audioCtx) {
+    srVal.textContent = audioCtx.sampleRate + ' Hz';
+    srVal.style.color = '#4caf50';
+  } else {
+    srVal.textContent = 'Audio niet actief';
+    srVal.style.color = '#888';
+  }
+}
+
+// Tab focus warning — show overlay when tab goes to background
+function checkTabFocus() {
+  const warning = document.getElementById('bg-tab-warning');
+  if (!warning) return;
+  if (document.hidden && (myRole === 'receiver' || myRole === 'solo')) {
+    warning.style.display = 'flex';
+  } else {
+    warning.style.display = 'none';
+  }
+}
+
+// Also maintain legacy banner for backwards compatibility
+let tabWarningBanner = null;
+document.addEventListener('visibilitychange', function() {
+  checkTabFocus();
+  if (document.hidden && (myRole === 'receiver' || myRole === 'solo')) {
+    if (!tabWarningBanner) {
+      tabWarningBanner = document.createElement('div');
+      tabWarningBanner.id = 'tab-warning-banner';
+      tabWarningBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e94560;color:white;text-align:center;padding:8px;font-size:0.85em;font-weight:bold;z-index:99998;';
+      tabWarningBanner.textContent = '⚠️ Tab is op achtergrond — audio kan onregelmatig worden!';
+      document.body.appendChild(tabWarningBanner);
+    }
+  } else {
+    if (tabWarningBanner) {
+      tabWarningBanner.remove();
+      tabWarningBanner = null;
+    }
+  }
+});
 </script>
 
 <div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
@@ -12199,6 +12905,22 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="tease-overlay" class="tease-overlay">
   <div id="tease-text" class="tease-text"></div>
 </div>
+
+<!-- Background tab warning overlay -->
+<div id="bg-tab-warning" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+  <div style="font-size:3em;margin-bottom:16px;">⚠️</div>
+  <div style="font-size:1.3em;color:#ff9800;font-weight:bold;margin-bottom:8px;">Tab niet actief!</div>
+  <div style="font-size:0.9em;color:#ccc;text-align:center;max-width:300px;">Chrome vertraagt audio op achtergrond-tabs.<br>Houd deze tab op de voorgrond voor betrouwbare stimulatie.</div>
+</div>
+
+<script>
+// Auto-detect audio devices on load
+setTimeout(() => {
+  if (document.getElementById('setup-stim-device')) {
+    detectGlobalAudioDevices();
+  }
+}, 1000);
+</script>
 
 </body>
 </html>
