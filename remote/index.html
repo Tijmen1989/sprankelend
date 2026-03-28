@@ -3732,7 +3732,8 @@ function softerNow() {
     const now = audioCtx.currentTime;
     const newLimit = newVal / 100;
 
-    ['solo', 'send'].forEach(prefix => {
+    // Bug #60 fix: guard against continuousState not yet defined (defined later in file)
+    if (typeof continuousState !== 'undefined') ['solo', 'send'].forEach(prefix => {
       const state = continuousState[prefix];
       if (state && state.active && state.nodes) {
         const newVol = Math.min(state.currentVol, newLimit);
@@ -3789,7 +3790,8 @@ function startIntensityReporting() {
   intensityReportInterval = setInterval(() => {
     if (conn && conn.open) {
       let currentLevel = 0;
-      ['solo', 'send'].forEach(prefix => {
+      // Bug #67 fix: guard continuousState
+      if (typeof continuousState !== 'undefined') ['solo', 'send'].forEach(prefix => {
         const state = continuousState[prefix];
         if (state && state.active) currentLevel = Math.max(currentLevel, state.currentVol * 100);
       });
@@ -4225,6 +4227,7 @@ function playToneAdvanced(freq, volume, duration, volumeL, volumeR, opts) {
     noise.connect(noiseGain);
     noiseGain.connect(masterGain);
     noise.start(now);
+    noise.stop(now + noiseDur); // Bug #59 fix: stop noise buffer to prevent leak
   }
 
   return dur;
@@ -4528,12 +4531,14 @@ function startSweepFromUI(mode) {
 
   recordIntensity(vol, 'frequency_sweep');
 
-  // Auto-stop after duration
-  setTimeout(() => {
-    if (currentSweep) {
-      currentSweep = null;
-    }
-  }, currentSweep.duration);
+  // Auto-stop after duration — Bug #61 fix: null check + trackTimeout
+  if (currentSweep && currentSweep.duration) {
+    trackTimeout(() => {
+      if (currentSweep) {
+        currentSweep = null;
+      }
+    }, currentSweep.duration);
+  }
 }
 
 // Backward-compatible wrapper — bestaande code blijft werken
@@ -6333,8 +6338,13 @@ function panicStop() {
   if (recvTimerDisplay) recvTimerDisplay.style.display = 'none';
   // Stop breathing sync (was only in panicStopSolo before)
   stopBreathingSync('solo');
+  stopBreathingSync('sender');
   stopHeartbeatMonitor();
   stopDeadManSwitch();
+  // Bug #81/#82/#88 fix: reset all game state flags to prevent post-panic callbacks
+  rouletteActive = false;
+  uncertainCountdownActive = false;
+  waitGameActive.solo = false;
   panicCooldown = true;
 
   const btn = document.getElementById('panic-btn');
@@ -7526,8 +7536,14 @@ function panicStopSolo() {
   if (waitGameTimers.solo) { clearTimeout(waitGameTimers.solo); waitGameTimers.solo = null; }
   document.getElementById('solo-wait-game').style.display = 'none';
   soloReactionActive = false;
-  document.getElementById('solo-reaction-container').style.display = 'none';
-  document.getElementById('solo-countdown-display').style.display = 'none';
+  const soloReactContainer = document.getElementById('solo-reaction-container');
+  if (soloReactContainer) soloReactContainer.style.display = 'none';
+  const soloCdDisplay = document.getElementById('solo-countdown-display');
+  if (soloCdDisplay) soloCdDisplay.style.display = 'none';
+  // Bug #81/#82/#88 fix: reset game state flags
+  rouletteActive = false;
+  uncertainCountdownActive = false;
+  waitGameActive.solo = false;
   soloLog('🛑 PANIEKKNOP GEBRUIKT!', true);
 }
 
@@ -9181,13 +9197,17 @@ const rouletteSegments = [
   { label: 'Staccato ⚡', color: '#ff6b6b', action: 'pattern', pattern: 'staccato' },
 ];
 
+// Bug #81 fix: roulette active flag to prevent post-panic execution
+let rouletteActive = false;
+
 function startRouletteGame(mode) {
+  rouletteActive = true;
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   const display = document.getElementById(prefix + '-roulette-display');
   const slot = document.getElementById(prefix + '-roulette-slot');
   const result = document.getElementById(prefix + '-roulette-result');
-  display.style.display = 'block';
-  result.textContent = '';
+  if (display) display.style.display = 'block';
+  if (result) result.textContent = '';
 
   const finalIndex = Math.floor(Math.random() * rouletteSegments.length);
   let totalSteps = 30 + Math.floor(Math.random() * 15);
@@ -9195,34 +9215,29 @@ function startRouletteGame(mode) {
   let currentIndex = 0;
 
   const spin = () => {
+    if (!rouletteActive) return; // Bug #81: abort if panic/stopped
     currentIndex = (currentIndex + 1) % rouletteSegments.length;
     const seg = rouletteSegments[currentIndex];
-    slot.textContent = seg.label;
-    slot.style.background = seg.color + '33';
-    slot.style.color = seg.color;
+    if (slot) { slot.textContent = seg.label; slot.style.background = seg.color + '33'; slot.style.color = seg.color; }
     step++;
 
     if (step >= totalSteps) {
-      // Land op het gekozen segment
       const final = rouletteSegments[finalIndex];
-      slot.textContent = final.label;
-      slot.style.background = final.color + '55';
-      slot.style.color = final.color;
+      if (slot) { slot.textContent = final.label; slot.style.background = final.color + '55'; slot.style.color = final.color; }
 
-      // Uitvoeren na korte pauze
-      setTimeout(() => {
+      trackTimeout(() => {
+        if (!rouletteActive) return;
         executeRouletteResult(mode, final);
-        result.textContent = final.action === 'nothing' ? 'Geluk gehad!' : 'Inkomend...';
+        if (result) result.textContent = final.action === 'nothing' ? 'Geluk gehad!' : 'Inkomend...';
       }, 500);
 
-      setTimeout(() => { display.style.display = 'none'; }, 3000);
+      trackTimeout(() => { if (display) display.style.display = 'none'; rouletteActive = false; }, 3000);
       return;
     }
 
-    // Vertraag geleidelijk
     const progress = step / totalSteps;
     const delay = 60 + progress * progress * 400;
-    setTimeout(spin, delay);
+    trackTimeout(spin, delay);
   };
 
   spin();
@@ -9464,22 +9479,24 @@ function answerTrivia(mode, chosen, correct) {
   triviaState.questionIndex++;
 
   if (triviaState.questionIndex >= 10) {
-    // Eindscore
-    setTimeout(() => {
+    // Eindscore — Bug #86 fix: use trackTimeout instead of bare setTimeout
+    trackTimeout(() => {
+      if (!triviaState.active) return;
       const scoreEl = document.getElementById(prefix + '-trivia-score');
       const questionEl = document.getElementById(prefix + '-trivia-question');
       const optionsEl2 = document.getElementById(prefix + '-trivia-options');
-      questionEl.textContent = 'Klaar! Score: ' + triviaState.score + '/10';
-      optionsEl2.innerHTML = '';
-      scoreEl.textContent = triviaState.wrong + ' fouten = ' + triviaState.wrong + ' schokken';
+      if (questionEl) questionEl.textContent = 'Klaar! Score: ' + triviaState.score + '/10';
+      if (optionsEl2) optionsEl2.innerHTML = '';
+      if (scoreEl) scoreEl.textContent = triviaState.wrong + ' fouten = ' + triviaState.wrong + ' schokken';
       if (mode === 'solo') soloLog('🧠 Trivia klaar: ' + triviaState.score + '/10', true);
       else sendLog('🧠 Trivia klaar: ' + triviaState.score + '/10', true);
-      setTimeout(() => {
-        document.getElementById(prefix + '-trivia-display').style.display = 'none';
+      trackTimeout(() => {
+        const disp = document.getElementById(prefix + '-trivia-display');
+        if (disp) disp.style.display = 'none';
       }, 3000);
     }, 1500);
   } else {
-    setTimeout(() => showTriviaQuestion(mode), 1500);
+    trackTimeout(() => { if (triviaState.active) showTriviaQuestion(mode); }, 1500);
   }
 }
 
@@ -9590,7 +9607,11 @@ function fakeOut(mode) {
 }
 
 // ---- Uncertainty Countdown (chance of early fire at each tick) ----
+// Bug #82 fix: state flag for uncertain countdown
+let uncertainCountdownActive = false;
+
 function uncertainCountdown(mode) {
+  uncertainCountdownActive = true;
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   const log = mode === 'solo' ? soloLog : sendLog;
   const s = mode === 'solo' ? getSoloSettings() : {
@@ -9608,6 +9629,7 @@ function uncertainCountdown(mode) {
   log('⏳ Onzeker aftellen gestart... wanneer komt het?', true);
 
   const tick = () => {
+    if (!uncertainCountdownActive) return; // Bug #82: abort on panic
     step++;
     const progress = step / totalSteps;
 
@@ -9849,6 +9871,7 @@ function stopBreathingSync(mode) {
 // ---- "How Long Can You Wait?" Game ----
 let waitGameTimers = { solo: null };
 let waitGameData = { solo: null };
+let waitGameActive = { solo: false }; // Bug #88 fix: state flag
 function waitGame(mode) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   if (mode !== 'solo') return;
@@ -9860,10 +9883,12 @@ function waitGame(mode) {
   const startTime = Date.now();
   const maxWait = 15000 + Math.random() * 15000; // 15-30 sec max
   waitGameData[prefix] = { startTime, maxWait };
+  waitGameActive[prefix] = true; // Bug #88 fix
 
   log('⏱️ Hoelang durf je wachten? Hoe langer, hoe zachter... maar wacht te lang en het wordt HARDER!', true);
 
   const tick = () => {
+    if (!waitGameActive[prefix]) return; // Bug #88: abort on panic
     const elapsed = Date.now() - startTime;
     if (timerEl) timerEl.textContent = (elapsed / 1000).toFixed(1) + 's';
 
@@ -9889,6 +9914,7 @@ function waitGame(mode) {
 
 function waitGameStop(mode, tooLate) {
   const prefix = mode === 'solo' ? 'solo' : (typeof mode === 'string' ? mode : 'solo');
+  waitGameActive[prefix] = false; // Bug #88 fix
   if (waitGameTimers[prefix]) { clearTimeout(waitGameTimers[prefix]); waitGameTimers[prefix] = null; }
   const container = document.getElementById(prefix + '-wait-game');
   if (container) container.style.display = 'none';
@@ -11870,24 +11896,25 @@ function startVoiceQuiz(mode, useCustom, config) {
 
   speak(qs.length + ' vragen. Klaar?');
 
-  setTimeout(() => {
+  // Bug #85 fix: use trackTimeout so countdown is cleared on panic
+  trackTimeout(() => {
     if (!voiceQuizState.active) return;
     optionsEl.innerHTML = '<div style="text-align:center;font-size:2em;padding:20px;color:#ff9800;">2...</div>';
     if (mic) mic.querySelector('span').textContent = '2...';
   }, 1200);
 
-  setTimeout(() => {
+  trackTimeout(() => {
     if (!voiceQuizState.active) return;
     optionsEl.innerHTML = '<div style="text-align:center;font-size:2em;padding:20px;color:#e94560;">1...</div>';
     if (mic) mic.querySelector('span').textContent = '1...';
   }, 2400);
 
-  setTimeout(() => {
+  trackTimeout(() => {
     if (!voiceQuizState.active) return;
     optionsEl.innerHTML = '<div style="text-align:center;font-size:2.5em;padding:20px;color:#4caf50;">GO!</div>';
     vibrateDevice(200);
     // Start first question after brief flash
-    setTimeout(() => {
+    trackTimeout(() => {
       if (voiceQuizState.active && voiceQuizState.currentIndex === 0) {
         showVoiceQuizQuestion(mode);
       }
@@ -12029,7 +12056,8 @@ function showVoiceQuizQuestion(mode) {
     const fullText = q.v + '. ' + spokenOptions;
     const estimatedSpeakTime = Math.max(8, Math.ceil(fullText.length / 10) + 3);
     console.log('[Quiz] TTS fallback timeout:', estimatedSpeakTime + 's voor', fullText.length, 'tekens');
-    setTimeout(() => {
+    // Bug #93 fix: use trackTimeout so fallback is cleared on panic
+    trackTimeout(() => {
       if (!voiceQuizState.active) return;
       if (!voiceQuizState.waitingForAnswer && voiceQuizState.currentIndex === questionId) {
         console.warn('[Quiz] Fallback ' + estimatedSpeakTime + 's: timer starten voor vraag ' + (questionId + 1));
