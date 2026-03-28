@@ -7294,10 +7294,12 @@ function selectElectrodeConfig(config) {
   // Apply electrode config to channel modes
   if (config === 'loops_only') {
     // Set all channel modes to monoA
-    document.querySelectorAll('[id$="-channel-mode"]').forEach(el => {
-      const btns = el.querySelectorAll('button');
-      if (btns.length >= 2) { btns[0].click(); } // Select Mono A
-    });
+    ['solo', 'send'].forEach(p => setChannelMode(p, 'monoA'));
+  } else if (config === 'plug_only') {
+    // Bug #132 fix: set all channel modes to monoB for plug-only
+    ['solo', 'send'].forEach(p => setChannelMode(p, 'monoB'));
+  } else if (config === 'loops_plug') {
+    ['solo', 'send'].forEach(p => setChannelMode(p, 'stereo'));
   }
 }
 
@@ -7916,16 +7918,21 @@ function setContChannel(prefix, mode) {
   const card = document.getElementById(prefix + '-continuous');
   if (card) {
     card.querySelectorAll('.cont-ch-btn').forEach(b => b.classList.remove('active'));
+    // Bug #130 fix: also handle monoB mode
     card.querySelectorAll('.cont-ch-btn').forEach(b => {
-      if ((mode === 'stereo' && b.textContent.includes('Stereo')) ||
-          (mode === 'monoA' && b.textContent.includes('Mono'))) b.classList.add('active');
+      const t = b.textContent.toLowerCase();
+      if ((mode === 'stereo' && t.includes('stereo')) ||
+          (mode === 'monoA' && (t.includes('mono a') || (t.includes('mono') && !t.includes('b')))) ||
+          (mode === 'monoB' && t.includes('b'))) b.classList.add('active');
     });
   }
   const hint = document.getElementById(prefix + '-cont-ch-hint');
   if (hint) {
     hint.textContent = mode === 'stereo'
       ? 'Beide kanalen actief. Stereo geeft ruimtelijk gevoel.'
-      : 'Alleen kanaal A. Freq-drift en volume-golven compenseren automatisch.';
+      : mode === 'monoB'
+        ? 'Alleen kanaal B. Freq-drift en volume-golven compenseren automatisch.'
+        : 'Alleen kanaal A. Freq-drift en volume-golven compenseren automatisch.';
   }
   // Show/hide A/B balance row (only useful in stereo)
   const balRow = document.getElementById(prefix + '-cont-balance-row');
@@ -10041,10 +10048,11 @@ function loadPreset(prefix) {
     if (!raw) { (prefix === 'solo' ? soloLog : sendLog)('Geen opgeslagen instellingen gevonden', false); return; }
     const data = JSON.parse(raw);
     if (prefix === 'solo') {
-      if (data.volume) document.getElementById('solo-volume').value = data.volume;
-      if (data.duration) document.getElementById('solo-duration').value = data.duration;
-      if (data.freq) document.getElementById('solo-freq').value = data.freq;
-      if (data.safetyLimit) document.getElementById('solo-safety-limit').value = data.safetyLimit;
+      // Bug #133 fix: use != null instead of truthiness to allow 0 values
+      if (data.volume != null) document.getElementById('solo-volume').value = data.volume;
+      if (data.duration != null) document.getElementById('solo-duration').value = data.duration;
+      if (data.freq != null) document.getElementById('solo-freq').value = data.freq;
+      if (data.safetyLimit != null) document.getElementById('solo-safety-limit').value = data.safetyLimit;
       if (data.sensatie) {
         ['texture','modulation','pulsewidth','noise'].forEach(k => {
           const el = document.getElementById('solo-sens-' + k);
@@ -10057,9 +10065,10 @@ function loadPreset(prefix) {
       updateSoloSafetyLimit();
       soloLog('📂 Instellingen geladen', false);
     } else {
-      if (data.volume) document.getElementById('send-volume').value = data.volume;
-      if (data.duration) document.getElementById('send-duration').value = data.duration;
-      if (data.freq) document.getElementById('send-freq').value = data.freq;
+      // Bug #133 fix: use != null
+      if (data.volume != null) document.getElementById('send-volume').value = data.volume;
+      if (data.duration != null) document.getElementById('send-duration').value = data.duration;
+      if (data.freq != null) document.getElementById('send-freq').value = data.freq;
       updateSendLabels();
       sendLog('📂 Instellingen geladen', false);
     }
@@ -12299,9 +12308,12 @@ function updateStreakDisplay(prefix) {
 // --- Quiz Rewards & Punishments ---
 let quizRewardNodes = null;
 let quizRewardTimeout = null;
+let quizRewardCountdownInterval = null; // Bug #147 fix: track reward countdown for cleanup
 
 function stopQuizReward() {
   if (quizRewardTimeout) { clearTimeout(quizRewardTimeout); quizRewardTimeout = null; }
+  // Bug #147 fix: clear reward countdown interval
+  if (quizRewardCountdownInterval) { clearInterval(quizRewardCountdownInterval); quizRewardCountdownInterval = null; }
   if (quizRewardNodes) {
     try {
       const ctx = audioCtx || ensureAudio();
@@ -12506,9 +12518,12 @@ function showRewardCountdown(mode, durationMs) {
   const pattern = voiceQuizState.config?.rewardPattern || 'massage';
   const patternNames = { massage: '🌊 Massage', tinteling: '✨ Tinteling', hartslag: '💓 Hartslag' };
 
-  const countdownInterval = setInterval(() => {
+  // Bug #147 fix: clear any previous countdown before starting new one
+  if (quizRewardCountdownInterval) clearInterval(quizRewardCountdownInterval);
+  quizRewardCountdownInterval = setInterval(() => {
     if (!voiceQuizState.active || remaining <= 0) {
-      clearInterval(countdownInterval);
+      clearInterval(quizRewardCountdownInterval);
+      quizRewardCountdownInterval = null;
       if (feedback) {
         feedback.textContent = '✅ Beloning klaar!';
         feedback.className = 'vq-feedback good';
@@ -12757,7 +12772,8 @@ function handleVoiceQuizMessage(data) {
   if (data.type === 'vq_start') {
     // BUG FIX #1: startVoiceQuiz already calls showVoiceQuizQuestion via TTS callback
     // Don't call it again here — that caused double timers and double questions
-    voiceQuizState.customQuestions.recv = data.questions;
+    // Bug #140 fix: validate incoming questions array
+    voiceQuizState.customQuestions.recv = Array.isArray(data.questions) ? data.questions : [];
     startVoiceQuiz('recv', true);
     // startVoiceQuiz handles everything: sets questions, starts TTS, shows first question
   } else if (data.type === 'vq_stop') {
@@ -12767,13 +12783,18 @@ function handleVoiceQuizMessage(data) {
 
 // --- Handle PeerJS quiz messages (sender/lisanne side) ---
 function handleVoiceQuizSenderMessage(data) {
+  // Bug #142/#143 fix: validate numeric fields from PeerJS
+  const safeScore = typeof data.score === 'number' ? data.score : 0;
+  const safeWrong = typeof data.wrong === 'number' ? data.wrong : 0;
+  const safeStreak = typeof data.streak === 'number' ? data.streak : 0;
+
   if (data.type === 'vq_question') {
     // Update sender display
     const senderQ = document.getElementById('sender-vq-question');
     const senderOpts = document.getElementById('sender-vq-options');
     const senderScore = document.getElementById('sender-vq-score');
-    if (senderQ) senderQ.textContent = data.question;
-    if (senderOpts) {
+    if (senderQ) senderQ.textContent = data.question || '';
+    if (senderOpts && Array.isArray(data.options)) { // Bug #141 fix
       senderOpts.innerHTML = '';
       data.options.forEach((opt, i) => {
         const div = document.createElement('div');
@@ -12789,8 +12810,8 @@ function handleVoiceQuizSenderMessage(data) {
     if (lqCurrent) lqCurrent.textContent = 'Vraag ' + data.index + ': ' + data.question;
   } else if (data.type === 'vq_answer') {
     const emoji = data.isCorrect ? '✅' : '❌';
-    const text = emoji + ' Score: ' + data.score + '/' + (data.score + data.wrong) +
-      (data.streak >= 3 ? ' (🔥' + data.streak + 'x streak)' : '');
+    const text = emoji + ' Score: ' + safeScore + '/' + (safeScore + safeWrong) +
+      (safeStreak >= 3 ? ' (🔥' + safeStreak + 'x streak)' : '');
 
     // Update sender display
     const senderScore = document.getElementById('sender-vq-score');
@@ -12814,17 +12835,17 @@ function handleVoiceQuizSenderMessage(data) {
     if (myRole === 'lisanne') {
       // Lisanne doesn't have sendLog, use console
     } else {
-      sendLog('🎤 ' + emoji + ' Score: ' + data.score + '/' + (data.score + data.wrong));
+      sendLog('🎤 ' + emoji + ' Score: ' + safeScore + '/' + (safeScore + safeWrong));
     }
   } else if (data.type === 'vq_finished') {
-    const total = data.score + data.wrong;
-    const pct = total > 0 ? Math.round((data.score / total) * 100) : 0;
-    const text = '🏁 Quiz klaar! Score: ' + data.score + '/' + total + ' (' + pct + '%)';
+    const total = safeScore + safeWrong;
+    const pct = total > 0 ? Math.round((safeScore / total) * 100) : 0;
+    const text = '🏁 Quiz klaar! Score: ' + safeScore + '/' + total + ' (' + pct + '%)';
 
     const senderQ = document.getElementById('sender-vq-question');
     if (senderQ) senderQ.textContent = text;
     const senderScore = document.getElementById('sender-vq-score');
-    if (senderScore) senderScore.textContent = 'Max streak: ' + data.maxStreak;
+    if (senderScore) senderScore.textContent = 'Max streak: ' + (data.maxStreak || 0);
 
     const lqStatus = document.getElementById('lisanne-vq-status');
     if (lqStatus) { lqStatus.textContent = text; lqStatus.style.color = pct >= 60 ? '#4caf50' : '#e94560'; }
@@ -12956,6 +12977,15 @@ function startClipDetector() {
   }
 }
 
+// Bug #149 fix: stop clip detector to prevent infinite RAF loop
+function stopClipDetector() {
+  clipDetectorActive = false;
+  if (clipDetectorNode) {
+    try { clipDetectorNode.disconnect(); } catch(e) {}
+    clipDetectorNode = null;
+  }
+}
+
 function runDiagnostics() {
   // Tab focus
   const tabVal = document.getElementById('diag-tab-val');
@@ -12995,6 +13025,7 @@ function runDiagnostics() {
     const prevCount = clipCount;
     setTimeout(() => {
       const newClips = clipCount - prevCount;
+      stopClipDetector(); // Bug #149 fix: stop RAF loop after measurement
       if (newClips > 0) {
         clipVal.textContent = 'GEDETECTEERD (' + newClips + 'x) — zet MacBook zachter';
         clipVal.style.color = '#e94560';
