@@ -3543,7 +3543,7 @@ function ensureUiAudio() {
     uiMasterGain.gain.value = uiVolumeLevel;
     uiMasterGain.connect(uiAudioCtx.destination);
   }
-  if (uiAudioCtx.state === 'suspended') uiAudioCtx.resume();
+  if (uiAudioCtx.state === 'suspended') uiAudioCtx.resume().catch(e => console.warn('UI AudioCtx resume failed:', e));
   return uiAudioCtx;
 }
 
@@ -3574,7 +3574,7 @@ function updateUIVolume(prefix, value) {
 
 function ensureAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(e => console.warn('AudioCtx resume failed:', e));
   return audioCtx;
 }
 
@@ -3980,8 +3980,11 @@ let wakeDetectorInterval = setInterval(() => {
   const gap = now - lastTickTime;
   lastTickTime = now;
 
+  // Bug #51 fix: only do work when receiver role — skip entirely otherwise
+  if (myRole !== 'receiver') return;
+
   // If gap > 5 seconds, device probably woke from sleep
-  if (gap > 5000 && myRole === 'receiver') {
+  if (gap > 5000) {
     const sleepSeconds = Math.round(gap / 1000);
     recvLog('💤 Apparaat was ' + sleepSeconds + 's in slaapstand', false);
 
@@ -5426,7 +5429,8 @@ function startReceiver() {
   initTabDetection();
 
   const code = generateCode();
-  document.getElementById('recv-code').textContent = code;
+  const recvCodeEl = document.getElementById('recv-code');
+  if (recvCodeEl) recvCodeEl.textContent = code;
 
   peer = new Peer(getPeerId(code), { debug: 0 });
 
@@ -5762,6 +5766,8 @@ function stopReceiverHoldLocal() {
   const text = document.getElementById('recv-viz-text');
   if (bar) bar.style.width = '0%';
   if (text) { text.textContent = 'Wacht op schok...'; text.style.color = '#888'; }
+  // Bug #49 fix: re-enable dead man switch after hold mode ends
+  startDeadManSwitch();
 }
 
 // Legacy wrappers voor PeerJS data handler
@@ -6465,13 +6471,22 @@ function scheduleStandalone() {
 }
 
 function updateSALabels() {
-  const minI = document.getElementById('sa-interval-min').value;
-  const maxI = document.getElementById('sa-interval-max').value;
-  document.getElementById('sa-interval-label').textContent = minI + ' min';
-  document.getElementById('sa-interval-max-label').textContent = maxI + ' min';
-  document.getElementById('sa-vol-min-label').textContent = document.getElementById('sa-vol-min').value + '%';
-  document.getElementById('sa-vol-max-label').textContent = document.getElementById('sa-vol-max').value + '%';
-  document.getElementById('sa-duration-label').textContent = (document.getElementById('sa-duration').value / 1000).toFixed(1) + 's';
+  // Bug #57 fix: null-safe element access
+  const minEl = document.getElementById('sa-interval-min');
+  const maxEl = document.getElementById('sa-interval-max');
+  const intLabel = document.getElementById('sa-interval-label');
+  const intMaxLabel = document.getElementById('sa-interval-max-label');
+  const volMinEl = document.getElementById('sa-vol-min');
+  const volMinLabel = document.getElementById('sa-vol-min-label');
+  const volMaxEl = document.getElementById('sa-vol-max');
+  const volMaxLabel = document.getElementById('sa-vol-max-label');
+  const durEl = document.getElementById('sa-duration');
+  const durLabel = document.getElementById('sa-duration-label');
+  if (minEl && intLabel) intLabel.textContent = minEl.value + ' min';
+  if (maxEl && intMaxLabel) intMaxLabel.textContent = maxEl.value + ' min';
+  if (volMinEl && volMinLabel) volMinLabel.textContent = volMinEl.value + '%';
+  if (volMaxEl && volMaxLabel) volMaxLabel.textContent = volMaxEl.value + '%';
+  if (durEl && durLabel) durLabel.textContent = (durEl.value / 1000).toFixed(1) + 's';
 }
 
 // ---- SENDER ----
@@ -6616,6 +6631,7 @@ function sendShock(volume, duration, freq, _bypassCooldown) {
 function shockStart(e) {
   e.preventDefault();
   if (!conn || conn.open !== true) return;
+  resetDeadMan(); // Bug #53 fix: reset dead man switch on hold interactions
 
   if (holdModeActive) {
     sendHoldStart(parseInt(document.getElementById('send-freq').value), parseInt(document.getElementById('send-volume').value));
@@ -10306,6 +10322,7 @@ function startLisanneTimer() {
 
   // Show local countdown too
   const statusEl = document.getElementById('lisanne-timer-status');
+  if (!statusEl) return; // Bug #56 fix: null guard
   statusEl.style.display = 'block';
   let remaining = seconds;
   statusEl.textContent = '⏱️ ' + remaining + 's...';
@@ -10621,6 +10638,7 @@ let persistentMicStream = null;
 let voiceActivityDetector = null; // Analyser die geluid detecteert voordat SpeechRecognition start
 let vadAnimFrame = null;
 let speechRecRunning = false; // Track of SpeechRecognition daadwerkelijk draait
+let voicePendingTimer = null; // Bug #54 fix: module-scope so stopListening() can clear it
 
 function initSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -10642,7 +10660,6 @@ function initSpeechRecognition() {
   // Debounce: wacht tot Chrome klaar is met het volledige woord
   // Voorkomt dat "tweeënvijftig" wordt opgepikt als "twee"
   let pendingTranscript = '';
-  let pendingTimer = null;
   const VOICE_DEBOUNCE_MS = 500; // 500ms wachten op meer spraak
 
   speechRecognition.onresult = (event) => {
@@ -10653,14 +10670,14 @@ function initSpeechRecognition() {
       if (!isFinal) {
         showVoiceHeard('... ' + transcript);
         // Interim results resetten de debounce timer
-        clearTimeout(pendingTimer);
+        clearTimeout(voicePendingTimer);
       } else {
         // Voeg toe aan pending transcript (Chrome kan meerdere final results sturen)
         pendingTranscript = (pendingTranscript + ' ' + transcript).trim().slice(0, 500);
         showVoiceHeard(pendingTranscript);
         // Wacht even of er nog meer komt
-        clearTimeout(pendingTimer);
-        pendingTimer = setTimeout(() => {
+        clearTimeout(voicePendingTimer);
+        voicePendingTimer = setTimeout(() => {
           if (pendingTranscript) {
             console.log('[Voice] Debounce klaar, verwerk:', pendingTranscript);
             processVoiceInput(pendingTranscript);
@@ -10784,6 +10801,9 @@ async function startListening() {
 function stopListening() {
   speechRecognitionActive = false;
   clearTimeout(speechRestartDelay);
+  // Bug #54 fix: clear pending voice debounce timer
+  clearTimeout(voicePendingTimer);
+  voicePendingTimer = null;
   if (speechRecognition) {
     try { speechRecognition.stop(); } catch(e) {}
   }
