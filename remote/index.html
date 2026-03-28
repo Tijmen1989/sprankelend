@@ -3671,7 +3671,7 @@ function stopDeadManSwitch() {
 }
 
 // ==================== SESSION TIMER ====================
-function startSessionTimer() {
+function startSessionWarnings() {
   sessionStartTime = Date.now();
   sessionWarningsShown.clear();
   sessionTimerInterval = setInterval(() => {
@@ -3681,6 +3681,7 @@ function startSessionTimer() {
         sessionWarningsShown.add(w.minutes);
         if (typeof recvLog === 'function') recvLog(w.msg, true);
         if (typeof sendLog === 'function') sendLog(w.msg, true);
+        if (typeof soloLog === 'function') soloLog(w.msg, true);
         vibrateDevice(1000);
         if (w.forcePause) {
           softerNow();
@@ -3716,7 +3717,12 @@ function softerNow() {
     document.getElementById('solo-safety-label').textContent = newVal + '%';
   }
 
-  updateSafetyLimit(); // This updates the master limiter threshold
+  // Update the correct safety limit handler based on mode
+  if (slider.id === 'solo-safety-limit' && typeof updateSoloSafetyLimit === 'function') {
+    updateSoloSafetyLimit();
+  } else {
+    updateSafetyLimit();
+  }
 
   // Also immediately reduce any active continuous audio
   if (audioCtx) {
@@ -4452,12 +4458,14 @@ function startFrequencySweep(params) {
   oscR.stop(now + p.duration); subR.stop(now + p.duration);
 
   // Return handle with stop method
+  let stopTimeout = null;
   return {
     stop: function() {
       try {
+        if (stopTimeout) { clearTimeout(stopTimeout); stopTimeout = null; }
         gainL.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
         gainR.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
-        setTimeout(() => {
+        stopTimeout = trackTimeout(() => {
           try { oscL.stop(); } catch(e) {}
           try { subL.stop(); } catch(e) {}
           try { oscR.stop(); } catch(e) {}
@@ -6274,8 +6282,9 @@ function updateSafetyLimit() {
   if (label) label.textContent = limit + '%';
   if (text) text.textContent = limit + '%';
   if (fill) fill.style.width = limit + '%';
-  // Als continuous actief is: onmiddellijk volume hercappen
+  // Als continuous actief is: onmiddellijk volume hercappen (zowel send als solo)
   reCapContinuousMode('send');
+  reCapContinuousMode('solo');
 }
 
 function panicStop() {
@@ -6494,7 +6503,7 @@ function connectToReceiver() {
       sendLog('Verbonden met ontvanger');
       // Start heartbeat to receiver
       startHeartbeat();
-      startSessionTimer();
+      startSessionWarnings();
     });
 
     conn.on('data', (data) => {
@@ -7228,6 +7237,7 @@ function startSolo() {
   updateSoloLabels();
   updateFloatingPanic();
   requestWakeLock();
+  startSessionWarnings();
 
   // Show audio activation gate
   const gate = document.getElementById('audio-activation-gate');
@@ -9071,7 +9081,7 @@ function startSession(mode, type) {
         if (actionEl) actionEl.textContent = '⚡ Schok ' + shockVol + '% — ' + Math.round(shockDur) + 'ms';
       } else {
         // Stilte-dan-burst: wacht even, dan dubbele hit
-        setTimeout(() => {
+        trackTimeout(() => {
           if (!sessionEngine.active) return;
           const burstVol = Math.round(maxV * 0.8);
           if (mode === 'solo') {
@@ -9079,7 +9089,7 @@ function startSession(mode, type) {
             trackTimeout(() => doSoloShock(freq * 1.2, burstVol, 150, { envelope: 'punch', timbre: 'sharp', _label: 'session', _bypassCooldown: true }), 200);
           } else {
             sendShock(burstVol, 150, freq, true);
-            setTimeout(() => sendShock(burstVol, 150, Math.round(freq * 1.2), true), 200);
+            trackTimeout(() => sendShock(burstVol, 150, Math.round(freq * 1.2), true), 200);
           }
           log('🧠 ' + phase.name + ' → surprise burst!', true);
           if (actionEl) actionEl.textContent = '💥 Surprise burst! Dubbele hit @ ' + Math.round(maxV * 0.8) + '%';
