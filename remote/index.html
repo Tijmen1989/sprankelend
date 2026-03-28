@@ -2025,19 +2025,19 @@
   <div class="control-card">
     <h3>&#9889; Snelle schokjes</h3>
     <div class="quick-shocks">
-      <button class="quick-shock-btn qs-25" onclick="soloShock(25)">
+      <button class="quick-shock-btn qs-25" onclick="soloShock(25, event)">
         <span class="qs-pct">25%</span>
         <span class="qs-vol" id="qs-solo-25-vol">13</span>
       </button>
-      <button class="quick-shock-btn qs-50" onclick="soloShock(50)">
+      <button class="quick-shock-btn qs-50" onclick="soloShock(50, event)">
         <span class="qs-pct">50%</span>
         <span class="qs-vol" id="qs-solo-50-vol">25</span>
       </button>
-      <button class="quick-shock-btn qs-75" onclick="soloShock(75)">
+      <button class="quick-shock-btn qs-75" onclick="soloShock(75, event)">
         <span class="qs-pct">75%</span>
         <span class="qs-vol" id="qs-solo-75-vol">38</span>
       </button>
-      <button class="quick-shock-btn qs-100" onclick="soloShock(100)">
+      <button class="quick-shock-btn qs-100" onclick="soloShock(100, event)">
         <span class="qs-pct">100%</span>
         <span class="qs-vol" id="qs-solo-100-vol">50</span>
       </button>
@@ -3605,6 +3605,9 @@ function getEffectiveSafetyLimit() {
   } else if (myRole === 'solo') {
     const el = document.getElementById('solo-safety-limit');
     rawVal = el ? parseInt(el.value) : NaN;
+  } else if (myRole === 'sender' || myRole === 'lisanne') {
+    const el = document.getElementById('send-safety-limit');
+    rawVal = el ? parseInt(el.value) : NaN;
   }
   // NaN-safe: if value corrupted or missing, default to safe 50%
   if (isNaN(rawVal) || rawVal <= 0 || rawVal > 100) return 0.5;
@@ -3939,11 +3942,18 @@ function initTabDetection() {
         // Another tab with same role!
         const warning = document.createElement('div');
         warning.id = 'duplicate-tab-warning';
+        warning.dataset.sourceTab = e.data.id;
         warning.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:white;padding:16px;text-align:center;z-index:99999;font-size:0.95em;';
         warning.innerHTML = '⚠️ <strong>Let op:</strong> Deze app is ook open in een ander tabblad (' + e.data.role + '). Dit kan dubbele output veroorzaken! <button onclick="this.parentElement.remove()" style="margin-left:12px;padding:4px 12px;background:white;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">Sluiten</button>';
 
         if (!document.getElementById('duplicate-tab-warning')) {
           document.body.prepend(warning);
+        }
+      } else if (e.data.type === 'tab_close') {
+        // Other tab closed — remove warning if it came from that tab
+        const warning = document.getElementById('duplicate-tab-warning');
+        if (warning && warning.dataset.sourceTab === e.data.id) {
+          warning.remove();
         }
       }
     };
@@ -6308,6 +6318,15 @@ function panicStop() {
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
   if (triviaState.active) stopTriviaGame();
   if (typeof lisanneStopAll === 'function') lisanneStopAll();
+  // Stop reaction game and receiver timer (prevent orphan shocks after panic)
+  reactionGameActive = false;
+  const reactionContainer = document.getElementById('recv-reaction-container');
+  if (reactionContainer) reactionContainer.style.display = 'none';
+  if (recvTimerInterval) { clearInterval(recvTimerInterval); recvTimerInterval = null; }
+  const recvTimerDisplay = document.getElementById('recv-timer-display');
+  if (recvTimerDisplay) recvTimerDisplay.style.display = 'none';
+  // Stop breathing sync (was only in panicStopSolo before)
+  stopBreathingSync('solo');
   stopHeartbeatMonitor();
   stopDeadManSwitch();
   panicCooldown = true;
@@ -6373,15 +6392,14 @@ function showCountdownReceiver(number) {
 function startReactionGameReceiver() {
   reactionGameActive = true;
   const container = document.getElementById('recv-reaction-container');
-  container.style.display = 'block';
+  if (container) container.style.display = 'block';
   const text = document.getElementById('recv-viz-text');
-  text.textContent = 'DRUK NU!';
-  text.style.color = '#4caf50';
+  if (text) { text.textContent = 'DRUK NU!'; text.style.color = '#4caf50'; }
 
-  setTimeout(() => {
+  trackTimeout(() => {
     if (reactionGameActive) {
       reactionGameActive = false;
-      container.style.display = 'none';
+      if (container) container.style.display = 'none';
       if (conn && conn.open) {
         conn.send({ type: 'reaction_result', hit: false, ts: Date.now() });
       }
@@ -7314,14 +7332,15 @@ function getSoloSettings() {
   };
 }
 
-function soloShock(pct) {
+function soloShock(pct, e) {
   ensureAudio();
   const s = getSoloSettings();
   const volume = Math.round(s.volume * pct / 100);
   doSoloShock(s.freq, volume, s.duration);
 
-  // Visual feedback
-  const btn = event.target.closest('.quick-shock-btn');
+  // Visual feedback — use passed event or fallback to global event (inline onclick)
+  const evt = e || (typeof event !== 'undefined' ? event : null);
+  const btn = evt && evt.target ? evt.target.closest('.quick-shock-btn') : null;
   if (btn) { btn.classList.add('firing'); setTimeout(() => btn.classList.remove('firing'), s.duration); }
 }
 
@@ -8728,7 +8747,7 @@ function renderAllGraphs() {
 }
 
 // Periodiek grafiek updaten (voor het verschuiven van oude data)
-setInterval(renderAllGraphs, 5000);
+let graphRenderInterval = setInterval(renderAllGraphs, 5000);
 
 // ---- DOORLOPENDE PATRONEN + DRAGER-TOON ----
 // Patroonduur in ms (hoe lang 1 cyclus duurt)
@@ -9566,8 +9585,8 @@ function uncertainCountdown(mode) {
 
   const totalSteps = 10 + Math.floor(Math.random() * 6); // 10-15 steps
   let step = 0;
-  const colorBar = document.getElementById(prefix === 'solo' ? 'solo-color-countdown' : null);
-  const colorFill = document.getElementById(prefix === 'solo' ? 'solo-color-fill' : null);
+  const colorBar = document.getElementById(prefix + '-color-countdown');
+  const colorFill = document.getElementById(prefix + '-color-fill');
   if (colorBar) colorBar.style.display = 'block';
 
   log('⏳ Onzeker aftellen gestart... wanneer komt het?', true);
