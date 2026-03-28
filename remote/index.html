@@ -3591,9 +3591,15 @@ function getMasterLimiter() {
   }
   // Update threshold based on current safety limit
   const safetyLimit = getEffectiveSafetyLimit();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   masterLimiterNode.threshold.value = threshDb;
   return masterLimiterNode;
+}
+
+// Bug #100 fix: NaN-safe dB conversion — prevents NaN from propagating to limiter threshold
+function safetyLimitToDb(limit) {
+  const safeVal = (typeof limit === 'number' && !isNaN(limit) && limit > 0) ? limit : 0.5;
+  return 20 * Math.log10(Math.max(safeVal, 0.01));
 }
 
 function getEffectiveSafetyLimit() {
@@ -4001,7 +4007,7 @@ let wakeDetectorInterval = setInterval(() => {
         setTimeout(() => {
           if (masterLimiterNode) {
             const safetyLimit = getEffectiveSafetyLimit();
-            const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+            const threshDb = safetyLimitToDb(safetyLimit);
             masterLimiterNode.threshold.value = threshDb;
           }
         }, 3000);
@@ -4094,7 +4100,7 @@ function playToneAdvanced(freq, volume, duration, volumeL, volumeR, opts) {
   // ---- Hard limiter: brickwall ceiling op safety limit ----
   // Voorkomt dat LFO of modulatie het volume boven de limiet duwt
   const limiter = ctx.createDynamicsCompressor();
-  const limiterThresholdDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const limiterThresholdDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = limiterThresholdDb; // plafond op safety limit
   limiter.knee.value = 0;       // hard knee = brickwall
   limiter.ratio.value = 20;     // extreme ratio = ceiling
@@ -4277,7 +4283,7 @@ function playToneStereoAdvanced(params) {
 
   // === Brickwall limiter ===
   const limiter = ctx.createDynamicsCompressor();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = threshDb;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
@@ -4410,7 +4416,7 @@ function startFrequencySweep(params) {
 
   // === Brickwall limiter ===
   const limiter = ctx.createDynamicsCompressor();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = threshDb;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
@@ -4614,7 +4620,7 @@ function startAudioPlayback() {
 
   // Safety: brickwall limiter
   const limiter = ctx.createDynamicsCompressor();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = threshDb;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
@@ -5676,7 +5682,7 @@ function startReceiverHoldLocal(freq, volume) {
 
   // Hard limiter voor hold modus
   const holdLimiter = ctx.createDynamicsCompressor();
-  const holdThreshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const holdThreshDb = safetyLimitToDb(safetyLimit);
   holdLimiter.threshold.value = holdThreshDb;
   holdLimiter.knee.value = 0;
   holdLimiter.ratio.value = 20;
@@ -6288,7 +6294,12 @@ function recvLog(msg, isShock) {
   if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
-  entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
+  // Bug #102 fix: prevent XSS from PeerJS messages
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'time';
+  timeSpan.textContent = new Date().toLocaleTimeString('nl-NL');
+  entry.appendChild(timeSpan);
+  entry.appendChild(document.createTextNode(' ' + msg));
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
 }
@@ -6533,7 +6544,20 @@ function connectToReceiver() {
   peer.on('open', () => {
     conn = peer.connect(getPeerId(code), { reliable: true });
 
+    // Bug #116 fix: timeout if connection doesn't open within 15s
+    const connectTimeout = setTimeout(() => {
+      if (!conn || conn.open !== true) {
+        setSendStatus('error', 'Verbinden mislukt — ontvanger niet gevonden');
+        btn.disabled = false;
+        btn.textContent = 'Verbinden';
+        sendLog('⚠️ Verbinding timeout na 15s', true);
+        if (conn) { try { conn.close(); } catch(e) {} conn = null; }
+        if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+      }
+    }, 15000);
+
     conn.on('open', () => {
+      clearTimeout(connectTimeout);
       setSendStatus('connected', 'Verbonden met ontvanger!');
       btn.textContent = 'Verbonden';
       document.getElementById('shock-btn').disabled = false;
@@ -6701,6 +6725,8 @@ function updateSendQS() {
 
 // Quick shock buttons - Receiver (solo)
 function quickShockRecv(pct) {
+  // Bug #111 fix: respect cooldown to prevent rapid-fire
+  if (Date.now() < shockCooldownUntil) return;
   ensureAudio();
   const baseVol = parseInt(document.getElementById('recv-volume').value);
   const volume = Math.round(baseVol * pct / 100);
@@ -6729,7 +6755,12 @@ function sendLog(msg, isShock) {
   if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
-  entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
+  // Bug #102 fix: prevent XSS from PeerJS messages
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'time';
+  timeSpan.textContent = new Date().toLocaleTimeString('nl-NL');
+  entry.appendChild(timeSpan);
+  entry.appendChild(document.createTextNode(' ' + msg));
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
 }
@@ -7118,7 +7149,7 @@ function startSoloHoldLocal() {
 
   // Hard limiter
   const holdLimiter = ctx.createDynamicsCompressor();
-  const holdThreshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const holdThreshDb = safetyLimitToDb(safetyLimit);
   holdLimiter.threshold.value = holdThreshDb;
   holdLimiter.knee.value = 0;
   holdLimiter.ratio.value = 20;
@@ -7296,7 +7327,12 @@ function soloLog(msg, isShock) {
   if (!log) return;
   const entry = document.createElement('div');
   entry.className = 'log-entry' + (isShock ? ' shock' : '');
-  entry.innerHTML = '<span class="time">' + new Date().toLocaleTimeString('nl-NL') + '</span>' + msg;
+  // Bug #102 fix: prevent XSS from PeerJS messages
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'time';
+  timeSpan.textContent = new Date().toLocaleTimeString('nl-NL');
+  entry.appendChild(timeSpan);
+  entry.appendChild(document.createTextNode(' ' + msg));
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
 }
@@ -8125,7 +8161,7 @@ function startBaseline() {
 
   // Limiter
   const limiter = ctx.createDynamicsCompressor();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = threshDb;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
@@ -8359,7 +8395,7 @@ function startContinuousMode(prefix) {
 
   // ---- Hard limiter voor continue modus ----
   const contLimiter = ctx.createDynamicsCompressor();
-  const contThreshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const contThreshDb = safetyLimitToDb(safetyLimit);
   contLimiter.threshold.value = contThreshDb;
   contLimiter.knee.value = 0;
   contLimiter.ratio.value = 20;
@@ -10027,7 +10063,11 @@ function loadPreset(prefix) {
       updateSendLabels();
       sendLog('📂 Instellingen geladen', false);
     }
-  } catch(e) {}
+  } catch(e) {
+    // Bug #98 fix: log corruption and remove bad data
+    console.warn('Corrupted preset data:', e);
+    try { localStorage.removeItem('estim-preset-' + prefix); } catch(e2) {}
+  }
 }
 
 // ==================== LISANNE MODE ====================
@@ -10062,7 +10102,21 @@ function lisanneConnect() {
   peer = new Peer(undefined, { debug: 0 });
   peer.on('open', () => {
     conn = peer.connect(getPeerId(code), { reliable: true });
+
+    // Bug #116 fix: timeout if Lisanne connection doesn't open within 15s
+    const lisConnTimeout = setTimeout(() => {
+      if (!conn || conn.open !== true) {
+        dot.className = 'status-dot error';
+        document.getElementById('lisanne-status-text').textContent = 'Verbinden mislukt';
+        btn.disabled = false;
+        btn.textContent = 'Verbinden';
+        if (conn) { try { conn.close(); } catch(e) {} conn = null; }
+        if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+      }
+    }, 15000);
+
     conn.on('open', () => {
+      clearTimeout(lisConnTimeout);
       dot.className = 'status-dot connected';
       document.getElementById('lisanne-status-text').textContent = 'Verbonden met Tim!';
       btn.textContent = 'Verbonden ✓';
@@ -12336,7 +12390,7 @@ function doQuizReward(mode) {
 
   // Limiter
   const limiter = ctx.createDynamicsCompressor();
-  const threshDb = 20 * Math.log10(Math.max(safetyLimit, 0.01));
+  const threshDb = safetyLimitToDb(safetyLimit);
   limiter.threshold.value = threshDb;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
