@@ -1,0 +1,618 @@
+SPRANKELEND SOUFFLEUR — REGULIERE SUGGESTIES POOL
+============================================================
+
+Found pools: SUGGESTIE_POOL, kernPool
+
+============================================================
+POOL: SUGGESTIE_POOL (202 items)
+============================================================
+
+m01 [micro]
+Misschien een berichtje naar Tim. Bijvoorbeeld: "Vanavond luister je naar mij." Kijk eens wat hij terugstuurt.
+
+m02 [micro]
+Stuur Tim een berichtje. Bijvoorbeeld: "Trek vanavond geen boxershort aan na het douchen." Let op zijn reactie.
+
+m05 [micro]
+Stuur Tim een berichtje. Bijvoorbeeld: "Als je thuiskomt, telefoon in de keuken. Dan wacht je op de bank." Hij vindt dit spannend.
+
+m06 [micro]
+Leg de halsband ergens neer waar Tim hem ziet als hij thuiskomt. Kijk of hij iets zegt.
+
+m07 [micro]
+Leg de polsboeien op het nachtkastje aan Tim\'s kant. Kijk of hij het opmerkt.
+
+m08 [micro]
+Doe Tim vanavond de halsband om als hij op de bank zit. Je kunt zeggen: "Die blijft om tot ik zeg dat hij af mag." Let op zijn gezicht.
+
+m12 [micro]
+Stuur Tim een foto van de polsboeien. Zonder tekst. Kijk maar wat hij terugstuurt.
+
+m14 [micro]
+Kies een klusje dat Tim vanavond moet doen. Maakt niet uit wat. Zeg het tegen hem zonder uitleg. Kijk hoe hij reageert.
+
+m15 [micro]
+Stuur Tim een berichtje. Bijvoorbeeld: "Morgenochtend wil ik dat je het huis stofzuigt voor 10 uur." Merk hoe Tim reageert als je dit gewoon zegt.
+
+m16 [micro]
+Leg de blinddoek op Tim\'s kussen. Kijk of hij het opmerkt en wat hij doet.
+
+m18 [micro]
+Pak de halsband en loop naar Tim. Doe hem om, slotje dicht, loop weer weg. Kijk maar wat er gebeurt.
+
+m19 [micro]
+Stuur Tim een berichtje: "Ik denk aan je." Meer hoef je niet te zeggen.
+
+m20 [micro]
+Bepaal wat Tim vanavond aantrekt naar bed. Of niks. Zeg het gewoon tegen hem — hij vindt het leuk als jij dat beslist.
+
+m23 [micro]
+Als Tim iets vraagt, probeer eens te zeggen: "Vraag het nog eens. Maar dan als verzoek." Kijk hoe hij reageert.
+
+m24 [micro]
+Leg je hand in Tim\'s nek als je achter hem langsloopt. Kort, stevig, doorlopen. Kijk of hij omkeert.
+
+m26 [micro]
+Geef Tim een compliment over iets specifieks. En dan: "En nu drinken voor me." Kijk eens naar zijn gezicht.
+
+m28 [micro]
+Stuur Tim overdag een berichtje: "Ik heb vanavond plannen met je." Meer niet. Als Milou op bed ligt: halsband om. Laat hem knielen. 10 minuten zo, terwijl jij op de bank zit.
+
+m29 [micro]
+Stuur Tim een berichtje. Bijvoorbeeld: "Vanavond om 21:00." Geen verdere uitleg. Om 21:00: polsboeien om. Tim vindt het wachten al spannend.
+
+m30 [micro]
+Stuur Tim een berichtje: "Maak jezelf vast vanavond. Polsboeien om als ik beneden kom." Tim doet het zelf — jij hoeft niks.
+
+m31 [micro]
+Stuur Tim een berichtje: "Blinddoek om als ik thuiskom. Op de bank wachten." Tim bereidt het zelf voor. Jij komt binnen en hij zit klaar.
+
+m32 [micro]
+Stuur Tim een berichtje: "Vanavond kom je niet klaar." Geen verdere uitleg. Kijk wat hij terugstuurt.
+
+m33 [micro]
+Laat Tim iets voor je doen. Drinken halen, je schouders masseren, de bank klaarmaken. Zeg het als mededeling. En als hij klaar is: "Goed zo."
+
+m34 [micro]
+Zeg tegen Tim: "Ga op bed liggen. Armen en benen gespreid. Wacht op mij." Loop weg. Laat hem wachten. Het wachten is het moment.
+
+v01 [vastmaak]
+Doe Tim vanavond de polsboeien om op de bank. Slotjes dicht. Even zo laten — 10 minuten, langer als het goed voelt. Jij kijkt je serie.
+
+v02 [vastmaak]
+Halsband en polsboeien om vanavond. Slotjes dicht. Tim op de bank. Jij doet je ding.
+
+v03 [vastmaak]
+Vanavond de volledige set: halsband, polsboeien, enkelboeien. Alles om, slotjes dicht. Tim op de bank of op bed. Jij bepaalt wanneer het af gaat.
+
+v04 [vastmaak]
+Bondageriem om Tim\'s middel, slotjes dicht. Polsboeien om en vastclipken aan de ringen van de riem. Handen voor of achter — jouw keuze.
+
+v05 [vastmaak]
+Vanavond kort en simpel: "Handen achter je rug." Politieboeien klikken. Klaar. Tim op de bank.
+
+v06 [vastmaak]
+Tim in de slaapzak vanavond. Help hem erin stappen, rits dicht. Help hem op bed liggen. Hij kan niks meer. Jij gaat je avond doen.
+
+v07 [vastmaak]
+Slaapzak + blinddoek vanavond. Totale hulpeloosheid. Jij bepaalt hoe lang.
+
+v08 [vastmaak]
+Bondagewanten en halsband om. Tim kan niks meer vastpakken. Heel ander gevoel dan polsboeien — volledige hulpeloosheid.
+
+v09 [vastmaak]
+Polsboeien om, blinddoek op. Tim op de bank of op bed. Hij ziet niks, kan weinig. Jij doet je eigen ding.
+
+v10 [vastmaak]
+Grote set vanavond: halsband, bondageriem, polsboeien aan de riem, enkelboeien om. Tim zit volledig vast aan zichzelf.
+
+v11 [vastmaak]
+Alleen de halsband vanavond. Slotje dicht. Even zo laten — kijk wat het doet met zijn houding.
+
+v12 [vastmaak]
+Polsboeien om met het korte kettinkje ertussen — handen voor de rug. Tim kan beperkt bewegen maar niks echt doen.
+
+v13 [vastmaak]
+Polsboeien om, aan de bondageriem. Tim zit op de bank met handen vast aan zichzelf. Jij kiest een serie.
+
+v14 [vastmaak]
+Enkelboeien om met kort kettinkje. Tim kan alleen kleine pasjes doen. Laat hem zo de afwas doen.
+
+v15 [vastmaak]
+Blinddoek om, oordopjes in. Tim op de bank. Totale isolatie. Jij doet je eigen ding — hij weet niet wanneer je terugkomt.
+
+v16 [vastmaak]
+Halsband om met slotje. Polsboeien om. Jullie kijken samen TV. Jij bepaalt wanneer het weer af gaat.
+
+v17 [vastmaak]
+Bondagewanten over Tim\'s handen. Hij kan niks meer. Jij bepaalt wanneer ze weer afgaan.
+
+v18 [vastmaak]
+Politiehandboeien — klik, klaar. Tim\'s handen achter zijn rug. Even laten zitten terwijl je iets anders doet.
+
+v19 [vastmaak]
+Bedriemen: alleen Tim\'s armen vastmaken. Benen vrij. Hij ligt op bed, jij leest een boek naast hem.
+
+v20 [vastmaak]
+Slaapzak dicht, rits op slot. Tim ligt op de bank. Jij hebt de afstandsbediening.
+
+v21 [vastmaak]
+Enkelboeien aan bedriemen. Tim ligt op bed, benen gespreid. Verder niks. Laat hem zo liggen.
+
+v22 [vastmaak]
+Zeg om 20:00: "Om half 10 lig je op bed." Om 21:30: enkelboeien aan bedriemen, benen gespreid. Het wachten was het cadeau.
+
+v23 [vastmaak]
+Stuur Tim een berichtje: "Pak de polsboeien en maak jezelf vast op de bank. Ik kom zo." Tim doet het zelf. Jij hoeft alleen binnen te lopen.
+
+v24 [vastmaak]
+Zeg tegen Tim: "Alles om. Polsboeien, enkelboeien, blinddoek. Op bed. Ik kom als ik klaar ben." Tim maakt zichzelf volledig vast en wacht.
+
+vz01 [vastmaak]
+Zeg: "Handen achter je rug." Meer hoef je niet te doen. Tim houdt ze daar zelf. Dat is moeilijker dan boeien — en krachtiger.
+
+vz02 [vastmaak]
+Zeg: "Niet bewegen." Waar hij ook staat of zit. Kijk hoe lang hij het volhoudt. Jij bepaalt wanneer hij weer mag.
+
+vz03 [vastmaak]
+Zeg: "Handen op je hoofd." Tim staat zo voor je. Kwetsbaar, zichtbaar. Loop even om hem heen als je wilt.
+
+vz04 [vastmaak]
+Zeg: "Ga op bed liggen. Armen en benen gespreid. En houdt ze gespreid." Tim moet zichzelf in die positie houden. Geen boeien nodig — zijn gehoorzaamheid is de boei.
+
+vz05 [vastmaak]
+Zeg: "Armen langs je zij. Niet optillen." Tim staat of zit zo voor je. Simpel, maar merk hoe het voelt — hij kan niks doen met zijn handen tenzij jij het zegt.
+
+vz06 [vastmaak]
+Zeg: "Blijf zo staan." Waar Tim ook staat. Even wachten. Kijk naar hem. Pas als jij iets anders zegt, mag hij bewegen.
+
+vz07 [vastmaak]
+Zeg: "Op je knieën. Handen achter je rug. Niet bewegen tot ik het zeg." Jij gaat gewoon door met je avond. Tim knielt en wacht.
+
+vz08 [vastmaak]
+Op de bank: leg je benen over Tim\'s handen. Hij zit vast onder jou. Kijk je serie. Hij kan niks.
+
+vz09 [vastmaak]
+Pak Tim\'s pols vast. Stevig. Houd even vast terwijl je hem aankijkt. Laat dan los wanneer jij dat wilt.
+
+vz10 [vastmaak]
+Tim zit op de grond naast de bank. Zet je voet op zijn hand. Niet hard — gewoon laten rusten. Hij zit vast onder jou.
+
+vz11 [vastmaak]
+Zeg: "Handen plat op tafel. Niet optillen." Tim zit aan tafel met zijn handen vast aan het oppervlak — door jouw woord.
+
+vz12 [vastmaak]
+Zeg: "Tegen de muur. Handen plat." Tim staat met zijn handen tegen de muur. Kwetsbare positie. Jij bepaalt hoe lang.
+
+vz13 [vastmaak]
+Zeg: "Kniel bij de bank." Tim knielt naast de bank. Jij zit. Hij is lager dan jij. Dat is het hele punt.
+
+vz14 [vastmaak]
+Zeg: "Blijf zo zitten tot ik terugkom." Loop de kamer uit. Neem je tijd. Tim wacht — hij weet niet hoe lang.
+
+vz15 [vastmaak]
+Stuur een berichtje: "Om 9 uur sta je in de slaapkamer. Handen achter je rug. Wachten." Het wachten is het moment.
+
+vz16 [vastmaak]
+Zeg: "Ga staan. Handen achter je rug. Blijf zo staan terwijl ik iets pak." Loop rustig weg. Neem je tijd.
+
+s01 [sessie]
+Vanavond een kort momentje? Blinddoek om, polsboeien vast. 15-20 minuten. Jij bepaalt wat er gebeurt.
+
+s02 [sessie]
+Tim op bed, blinddoek om, polsboeien aan bondageriem. 20 minuten. Af en toe aanraken of niks doen. Jij bepaalt.
+
+s03 [sessie]
+Blinddoek + polsboeien + tepelklemmen. Begin rustig, bouw op.
+
+s04 [sessie]
+Heel simpel vanavond: alleen de blinddoek. Tim op de bank of op bed. Raak hem aan. Dat is alles.
+
+s05 [sessie]
+Sensorisch spel: blinddoek + radeerwieltje + veertje. Contrast tussen scherp en zacht.
+
+s06 [sessie]
+Spread-eagle op bed. Blinddoek, polsboeien + enkelboeien aan de bedriemen. Tim ligt volledig vast.
+
+s07 [sessie]
+Blinddoek + polsboeien + crop. Mix van tease en impact.
+
+s08 [sessie]
+Slaapzak + blinddoek + oordopjes. Totale isolatie. Tim ligt en voelt niks dan zichzelf en soms jouw aanraking.
+
+s09 [sessie]
+Hood + polsboeien aan bondageriem. Tim ziet en hoort bijna niks. Alleen aanraking telt.
+
+s10 [sessie]
+Temperatuurspel: blinddoek + kaarsen + ijsklontjes. Heet en koud.
+
+s11 [sessie]
+Sensorische sessie: Blinddoek om → oordopjes in → afwisselen tussen ijsklontjes en kaarsen op Tim\'s borst. 15 minuten.
+
+s12 [sessie]
+Controle-sessie: Tim knielt. Halsband om. Jij zit in de stoel. Geef 5 simpele opdrachten achter elkaar. Afsluiten met: "Goed zo."
+
+s13 [sessie]
+Bondage-opbouw: Start met alleen polsboeien. Voeg elke 5 minuten iets toe: blinddoek, enkelboeien, gag. Tim weet niet wat het volgende is.
+
+s14 [sessie]
+E-stim avond: Bandjes om, 2B op lage stand. Jij hebt de remote. Verhoog af en toe terwijl jullie praten of TV kijken.
+
+s15 [sessie]
+Verkenningssessie: Kies 3 items uit de handleiding die je nog niet eerder gebruikt hebt. Probeer ze kort uit, één voor één.
+
+s16 [sessie]
+Stilte-sessie: Tim vastgemaakt, blinddoek om. Geen praten. 20 minuten. Alleen af en toe aanraken.
+
+s17 [sessie]
+Wartenberg + veertje: Tim geblinddoekt en vastgemaakt. Wissel af. Hij moet raden welke het is.
+
+s18 [sessie]
+Spread-eagle avond: Tim op bed, vier punten vast. Blinddoek om. Jij hebt 30 minuten.
+
+s19 [sessie]
+Impact-sessie: Tim voorovergebogen. Crop of cane. Begin zacht, bouw op. Tim telt hardop mee.
+
+s20 [sessie]
+Edging-sessie: Tim vastgemaakt, jij hebt de controle. Stop wanneer jij wilt. Tim mag niet klaarkomen tenzij jij het zegt.
+
+s21 [sessie]
+Edging-avond: Tim vast, blinddoek om. Breng hem drie keer naar de rand. Elke keer stop je. De vierde keer bepaal jij of hij mag.
+
+o01 [opdracht]
+Bedenk een regel voor Tim vandaag. Bijvoorbeeld: geen telefoon aan tafel. Of iets anders — jij kiest. Jouw keuze. Klaar.
+
+o02 [opdracht]
+Misschien Tim vanavond laten bestellen. Niet vragen maar gewoon zeggen: "Jij bestelt vanavond." Kijk hoe hij reageert.
+
+o03 [opdracht]
+Een leuke: geef Tim een fysieke opdracht. Bijvoorbeeld 20 push-ups voor het slapen. Of kies zelf een aantal. Het hoeft niet perfect — het gaat erom dat jij het bepaalt.
+
+o04 [opdracht]
+Bepaal vanavond Tim\'s bedtijd. Gewoon zeggen: "Om tien uur lig je in bed." Of een ander tijdstip — jij kiest. Simpel. Effectief.
+
+o05 [opdracht]
+Geef Tim een klusje met een deadline. Kies zelf wat — opruimen, stofzuigen, was ophangen. Kijk of hij het haalt.
+
+o08 [opdracht]
+Geef Tim een schrijfopdracht. Bijvoorbeeld: schrijf op wat je het fijnste vond deze week. Inleveren voor bedtijd. Leuk om te lezen wat hij opschrijft.
+
+o09 [opdracht]
+Verbied Tim vanavond iets. Kies zelf wat: telefoon, snoep, de bank — maakt niet uit. Het gaat erom dat jij het bepaalt. Kijk hoe hij reageert.
+
+o11 [opdracht]
+Laat Tim vanavond alles klaarzetten: eten, drinken, deken, afstandsbediening. Gewoon zeggen: "Regel het." Leun achterover en geniet.
+
+o16 [opdracht]
+Tim draagt de daycollar morgen de hele dag onder zijn kleding. Doe hem vanavond om. Jij weet het — een geheimpje tussen jullie. Merk hoe hij zich gedraagt.
+
+o18 [opdracht]
+Tim mag vanavond niet zelf kiezen wat hij eet. Jij kiest. Simpel — maar merk hoe hij reageert op jouw beslissing.
+
+o19 [opdracht]
+Laat Tim 15 minuten in stilte zitten. Geen telefoon, geen boek, niks. Jij zegt wanneer het klaar is. Merk hoe rustig hij wordt.
+
+o20 [opdracht]
+Zeg vanavond tegen Tim wat je morgen van hem verwacht. Niet alles — één concreet ding. Geeft hem iets om naar uit te kijken.
+
+o21 [opdracht]
+Laat Tim vanavond de hele bank-setup doen. Drinken, deken, kussens, afstandsbediening. Zeg: "Ik wil dat alles klaarstaat als ik ga zitten." Leun achterover.
+
+o22 [opdracht]
+Geef Tim een verbod voor de hele avond. Geen telefoon, geen laptop, geen gaming. Jij kiest welke. "Vanavond geen [x]." Klaar.
+
+o23 [opdracht]
+Stuur Tim een berichtje met een concrete opdracht voor morgen. Één ding, met een deadline. "Morgen voor 12 uur: badkamer schoon." Duidelijk en concreet.
+
+r01 [relationeel]
+Zeg tegen Tim: "Kom eens hier." Kijk wat hij doet.
+
+r02 [relationeel]
+Ga zitten en zeg alleen: "Drinken."
+
+r04 [relationeel]
+Laat Tim het eten regelen vanavond. Jij kiest wat.
+
+r05 [relationeel]
+Zeg tegen Tim: "Naast me. Nu."
+
+r06 [relationeel]
+Zeg tegen Tim: "Blijf even hier."
+
+r08 [relationeel]
+Kies een film. Zeg tegen Tim dat hij alles regelt: snacks, dekens, licht.
+
+r09 [relationeel]
+Stuur Tim een berichtje met alleen: "Ik wil vanavond verwend worden." Verder niks.
+
+r10 [relationeel]
+Vraag Tim: "Waar maak je je deze week zorgen over?" Luister alleen. Geen oplossingen.
+
+r11 [relationeel]
+Ga 10 minuten naast Tim zitten zonder telefoon. Niks doen. Gewoon samen zijn.
+
+r12 [relationeel]
+Vraag Tim wat hij vanavond voor je kan doen. Kies het beste antwoord.
+
+r13 [relationeel]
+Vraag Tim wat zijn favoriete herinnering is van afgelopen maand.
+
+r14 [relationeel]
+Raak Tim aan voordat je naar bed gaat. Even je hand op zijn borst. Kort. Bewust.
+
+r15 [relationeel]
+Ga op de bank zitten en zeg: "Schouders." Tim weet wat hij moet doen.
+
+r16 [relationeel]
+Zeg tegen Tim: "Stel twee opties voor vanavond." Jij kiest.
+
+r17 [relationeel]
+Plan samen iets voor het weekend. Niet kink-gerelateerd. Gewoon iets leuks voor jullie twee.
+
+r18 [relationeel]
+Vertel Tim één ding dat je fijn vindt aan jullie avondroutine. Iets kleins, iets specifieks.
+
+zn01 [relationeel]
+Trek Tim even naar je toe. Korte knuffel. Laat weer los. Verder niks.
+
+zn02 [relationeel]
+Leg je hand op Tim’s been als jullie op de bank zitten. Laat hem daar. Gewoon contact.
+
+zn03 [relationeel]
+Zeg na iets dat Tim deed: "Goed zo." Twee woorden. Kijk wat het met hem doet.
+
+zn04 [relationeel]
+Aai Tim over zijn hoofd. Zonder aanleiding. Gewoon omdat het kan.
+
+zn05 [relationeel]
+Loop langs Tim en raak zijn nek aan. Eén seconde. Loop door.
+
+zn06 [relationeel]
+Ga na het eten naast Tim zitten. Dicht. Schouder tegen schouder. Zeg niks.
+
+zn07 [relationeel]
+Stuur Tim overdag: "Ik denk aan je." Verder niks. Laat hem maar.
+
+zn08 [relationeel]
+Pak Tim’s hand vast. Hou hem even vast. Laat dan los. Dat is alles.
+
+zn09 [relationeel]
+Zeg tegen Tim: "Kom even liggen." Laat hem zijn hoofd op je schoot leggen. Aai zijn hoofd.
+
+zn10 [relationeel]
+Na iets dat goed ging vanavond: raak Tim even aan en zeg "dat was fijn." Eén zin.
+
+tme01 [relationeel]
+Vraag Tim: "Wat vond je het leukste van afgelopen week?" Luister alleen. Jij hoeft niks te doen.
+
+tme02 [relationeel]
+Zeg tegen Tim: "Vertel eens wat je het spannendste moment vond." Luister. Dat is alles.
+
+tme03 [relationeel]
+Vraag Tim: "Waar kijk je naar uit?" Niet bespreken. Alleen luisteren. Bewaar het voor later.
+
+lv02 [micro]
+Stuur Tim: "Zorg dat de bank vanavond vrij is." Geen uitleg.
+
+lv08 [relationeel]
+Let vandaag eens op hoe snel Tim reageert als jij iets vraagt. Vertel hem vanavond wat je hebt gezien.
+
+intro_crop1 [micro]
+Leg de crop ergens neer waar Tim hem kan zien. Zeg er niks over.
+
+intro_touw1 [micro]
+Leg het touw op het nachtkastje. Kijk of Tim het opmerkt.
+
+intro_estim1 [micro]
+Leg het e-stim apparaat zichtbaar neer. Zeg alleen: "Misschien later."
+
+intro_warten1 [micro]
+Pak het wartenbergwiel en laat het over je eigen hand rollen. Waar Tim het ziet.
+
+intro_cane1 [micro]
+Zet de cane tegen de muur in de slaapkamer. Verder niks.
+
+intro_flogger3 [micro]
+Leg de flogger op de salontafel. Als Tim vraagt waarom: glimlach. Dat is alles.
+
+intro_cane2 [micro]
+Stuur Tim een foto van de cane. Zonder tekst. Kijk wat hij terugstuurt.
+
+wor01 [relationeel]
+Ga op de bank zitten en zeg: "Borstel mijn haar." Verder niks.
+
+wor02 [relationeel]
+Laat Tim je schouders masseren. Zeg alleen wanneer hij mag stoppen.
+
+wor04 [opdracht]
+Laat Tim je hand vasthouden. Trek hem naar je toe wanneer jij dat wilt.
+
+wor05 [opdracht]
+Tim smeert vanavond bodylotion op je handen en armen. Jij leest of kijkt een serie.
+
+wor06 [relationeel]
+Laat Tim drinken voor je halen. Als hij het brengt: knik. Dat is genoeg.
+
+wor07 [opdracht]
+Laat Tim voor je knielen. Leg je hand op zijn hoofd. Zeg niks. Sta op wanneer jij klaar bent.
+
+hs01 [micro]
+Geef Tim een speelse tik op zijn bil als hij langsloopt. Glimlach erbij.
+
+hs02 [micro]
+Trek Tim over je schoot op de bank. Eén tik. Daarna: gewoon verder kijken.
+
+hs03 [micro]
+Zeg tegen Tim: "Buig voorover." Eén tik met je hand. Dan: "Goed zo."
+
+hs04 [micro]
+Leg je hand op Tims bil terwijl jullie in de keuken staan. Laat hem even liggen.
+
+woord01 [micro]
+Zeg alleen: "Hier." Wijs naast je op de bank.
+
+woord02 [micro]
+Als Tim iets vraagt, antwoord alleen met: "Nee." Geen reden.
+
+woord03 [micro]
+Stuur Tim een bericht met alleen: "Straks." Geen context.
+
+woord04 [micro]
+Zeg: "Wacht." Als Tim iets wil pakken of doen. Laat hem even staan.
+
+woord05 [micro]
+Wijs naar de grond naast je. Zeg niks. Kijk of hij het snapt.
+
+woord06 [micro]
+Zeg: "Op je knieën." Niks erbij. Wacht.
+
+tease01 [micro]
+Raak Tim even aan — nek, arm, binnenkant pols. Loop dan weg zonder iets te zeggen.
+
+tease02 [micro]
+Trek iets aan waar Tim van houdt. Zeg er niks over. Kijk of hij reageert.
+
+tease03 [micro]
+Ga dicht bij Tim staan. Bijna-kus. Trek dan terug. Glimlach.
+
+tease04 [micro]
+Laat je hand over Tims rug glijden als je langsloopt. Eén keer. Niet stoppen.
+
+fun01 [opdracht]
+Tim moet vanavond alles beantwoorden met "Ja mevrouw." Kijk hoe lang hij het volhoudt.
+
+fun03 [opdracht]
+Tim moet jou vanavond aanspreken met "mevrouw." Eén keer vergeten = opnieuw beginnen.
+
+fun04 [micro]
+Vraag Tim om drie redenen te geven waarom hij vanavond de afwas mag doen. Hij moet je overtuigen.
+
+fun05 [micro]
+Stuur Tim naar het balkon met een glimlach. "Ga maar even nadenken." Hij weet dat het speels is.
+
+fun06 [micro]
+Zeg tegen Tim dat hij je een massage moet geven. Gewoon omdat jij het zegt.
+
+fun08 [opdracht]
+Tim moet vijf minuten in de hoek staan. Geen reden. Als hij vraagt waarom: "Dat weet je best."
+
+fun09 [opdracht]
+Leg een kussen op de grond. Zeg: "Dat is jouw plek vanavond." Kijk hoe hij reageert.
+
+fun10 [micro]
+Eet iets lekkers waar Tim bij zit. Bied het niet aan. Als hij kijkt: "Nee."
+
+fun11 [micro]
+Laat Tim iets voor je pakken uit een andere kamer. Als hij terugkomt: "Nee, het andere."
+
+fun14 [micro]
+Geef Tim een compliment. Wacht drie seconden. "Maar je moet nog wel even iets voor me doen."
+
+fun17 [micro]
+Tim moet een minuut lang oogcontact houden met jou zonder te lachen. (Hij gaat verliezen.)
+
+fun18 [micro]
+Zeg: "Ik heb een verrassing." Laat hem raden. De verrassing is dat hij de was mag vouwen.
+
+fun21 [micro]
+Als Tim op zijn telefoon zit: pak hem af. "Je krijgt hem terug als ik het zeg."
+
+fun23 [micro]
+Tim wil iets pakken uit de koelkast? "Eerst vragen."
+
+fun25 [micro]
+Zeg halverwege de avond: "Ik heb honger." Kijk hoe snel hij reageert.
+
+fun28 [micro]
+Vraag Tim: "Op een schaal van 1 tot 10, hoe lief was je vandaag?" Geef daarna jouw score. (Lager.)
+
+fun32 [micro]
+Zeg: "Ik heb nagedacht." Lange pauze. "Je mag de vuilniszak buiten zetten."
+
+p01 [vastmaak]
+Maak Tim vast zonder iets te zeggen. Geen uitleg nodig. Loop weg. Kom terug wanneer jij wilt. De stilte doet het werk.
+
+p02 [micro]
+Kijk Tim aan en zeg: "Vanavond om negen uur wil ik dat je klaarstaat." Meer niet. Kijk hoe hij reageert. Om negen uur: geef hem een simpele taak.
+
+p03 [sessie]
+Blinddoek Tim. Oordopjes in. Laat hem 10 minuten zo zitten terwijl jij iets voor jezelf doet. Kom terug en zeg één woord. Let op zijn reactie.
+
+p04 [micro]
+Leg de halsband voor Tim neer. Zeg niks. Wacht tot hij het begrijpt en omdoet. Dan pas kom je in actie.
+
+p05 [vastmaak]
+Polsboeien om. Blinddoek op. Zeg niks meer. Zet Tim op de bank en ga verder met je avond. Af en toe even laten merken dat je er bent. Dat is alles.
+
+p06 [micro]
+Zeg tegen Tim: "Ik heb iets in gedachten voor morgenavond." Niet ingaan op vragen. Kijk hoe hij de rest van de dag speculeert.
+
+p07 [sessie]
+Blinddoek en polsboeien. Dan stilte. Jij zit erbij maar zegt niks. Na 20 minuten: één woord. Dan weer stilte. Kijk wat het met hem doet.
+
+p08 [vastmaak]
+Doe Tim ochtends de halsband om. Zeg: "Die gaat tot vanavond niet af." De hele dag speelt dit in zijn hoofd. Pas \'s avonds gebeurt er iets.
+
+p09 [micro]
+Stuur Tim om 14:00 één foto van een item. Niks erbij. Laat hem de hele dag piekeren. Pas \'s avonds wordt het duidelijk.
+
+p10 [sessie]
+Blinddoek Tim. Polsboeien om. Zeg: "Ik ga je tikken. Jij raakt me niet terug." Tikken, pauze, tikken. 3-4 ronden. Let op zijn ademhaling.
+
+zc01 [micro]
+Roep Tim naar je toe. Wijs waar hij moet zitten. Kijk hoe snel hij luistert.
+
+zc02 [micro]
+Zeg: \'Kom naast me zitten.\' Jij bepaalt wanneer hij weer opstaat. Meer hoef je niet te doen.
+
+zc03 [micro]
+Laat Tim even voor je staan. Even wachten. Zeg dan: \'Je mag gaan.\' Let op zijn gezicht.
+
+zc04 [micro]
+Wijs een plek aan op de vloer. Zeg: \'Hier. Tot ik iets zeg.\' Kijk hoe hij reageert.
+
+zc05 [micro]
+Zeg: \'Wacht even.\' Laat Tim staan terwijl jij iets afmaakt. Je hoeft niks uit te leggen.
+
+zc06 [micro]
+Zeg: \'Jij blijft zitten tot ik je roep.\'
+
+zc07 [micro]
+Zeg: \'Niet praten tot ik iets zeg.\' Kijk hoe rustig hij wordt.
+
+zc08 [micro]
+Laat Tim staan terwijl jij gaat zitten. Zeg niks. Let op wat er gebeurt.
+
+zc09 [micro]
+Laat Tim knielen voor de bank. Jij blijft lekker zitten. Meer hoef je niet te doen.
+
+zc10 [micro]
+Zeg: \'Handen achter je rug.\' Ga dan gewoon verder met praten.
+
+zc11 [micro]
+Til even zijn kin op zodat hij je aankijkt. Laat los. Eén moment is genoeg.
+
+zc12 [micro]
+Corrigeer Tim\'s houding. Zeg: \'Rechtop zitten.\' Ga gewoon verder met je avond.
+
+zc13 [vastmaak]
+Doe alleen de collar om. Meer hoef je niet te doen. Dat is al genoeg.
+
+zc14 [vastmaak]
+Polsboeien om. Zeg: \'Zo blijf je zitten.\' Jij kijkt lekker tv.
+
+zc15 [vastmaak]
+Blinddoek om. Zeg: \'Even wachten.\' Laat hem maar. Kijk hoe rustig hij wordt.
+
+zc16 [vastmaak]
+Handboeien om. Zeg: \'Stil blijven.\' Meer hoef je niet te doen.
+
+zc17 [vastmaak]
+Eén enkelboei om. Laat Tim daarmee rondlopen. Leuk om te zien.
+
+zc18 [vastmaak]
+Polsboeien om. Jij kijkt lekker tv. Meer hoef je niet te doen.
+
+============================================================
+POOL: kernPool (0 items)
+============================================================
