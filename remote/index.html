@@ -9914,7 +9914,7 @@ function stopBreathingSync(mode) {
 // ---- "How Long Can You Wait?" Game ----
 let waitGameTimers = { solo: null };
 let waitGameData = { solo: null };
-let waitGameActive = { solo: false }; // Bug #88 fix: state flag
+let waitGameActive = { solo: false, sender: false }; // Bug #88/#171 fix: state flag for both modes
 function waitGame(mode) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   if (mode !== 'solo') return;
@@ -11941,6 +11941,9 @@ function startVoiceQuiz(mode, useCustom, config) {
         const hint = document.querySelector('#' + prefix + '-vq-display .vq-voice-hint');
         if (hint) hint.innerHTML = 'Tik op het juiste antwoord (microfoon niet beschikbaar)';
       }
+    }).catch(e => { // Bug #150 fix: unhandled promise rejection
+      console.warn('[Voice] startListening failed:', e);
+      updateMicStatus(prefix, false);
     });
   } else {
     logFn('📱 Tikken-modus — tik op het juiste antwoord');
@@ -12010,7 +12013,8 @@ function updateMicStatus(prefix, active) {
   const mic = document.getElementById(prefix + '-vq-mic');
   if (!mic) return;
   mic.className = 'vq-mic-status' + (active ? ' active' : '');
-  mic.querySelector('span').textContent = active ? 'Luistert...' : 'Mic uit';
+  const micSpan = mic.querySelector('span'); // Bug #183 fix: null check
+  if (micSpan) micSpan.textContent = active ? 'Luistert...' : 'Mic uit';
 }
 
 // --- Show Question ---
@@ -12282,7 +12286,7 @@ function handleVoiceQuizAnswer(answerIndex) {
   } else {
     nextQuestionDelay = 3500;
   }
-  setTimeout(() => {
+  trackTimeout(() => { // Bug #180 fix: use trackTimeout so panic clears this
     if (!voiceQuizState.active) return;
     if (voiceQuizState.currentIndex !== expectedIndex) return;
     stopQuizReward(); // Ensure reward is stopped before next question
@@ -12575,7 +12579,8 @@ function doQuizPunishment(mode) {
     logFn('⚡ Patroon-straf (fout #' + wrongCount + ')');
     const burstCount = Math.min(3 + wrongCount - 5, 8);
     for (let i = 0; i < burstCount; i++) {
-      setTimeout(() => {
+      trackTimeout(() => { // Bug #181 fix: use trackTimeout so panic clears burst
+        if (!voiceQuizState.active) return; // guard against post-panic execution
         if (mode === 'solo') {
           const s = getSoloSettings();
           doSoloShock(s.freq, shockVol, 120, { _label: 'quiz_burst', _bypassCooldown: true }, punishVolL, punishVolR);
@@ -13012,6 +13017,10 @@ function runDiagnostics() {
         audioVal.textContent = 'Onbekend (toestemming nodig)';
         audioVal.style.color = '#ff9800';
       }
+    }).catch(e => { // Bug #151 fix: unhandled promise rejection
+      console.warn('Device enumeration failed:', e);
+      audioVal.textContent = 'Kan apparaten niet ophalen';
+      audioVal.style.color = '#ff9800';
     });
   } else {
     audioVal.textContent = 'Niet beschikbaar';
