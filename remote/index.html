@@ -571,6 +571,250 @@
   }
   .tts-toggle-row label { font-size: 0.8em; color: #888; }
 
+  /* Safeword — voice detection */
+  .safeword-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #1a1a2e;
+    font-size: 0.82em;
+    margin-top: 8px;
+  }
+  .safeword-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .safeword-dot.listening { background: #4caf50; box-shadow: 0 0 6px #4caf50; animation: pulse 1.5s infinite; }
+  .safeword-dot.off { background: #555; }
+  .safeword-dot.error { background: #f44336; box-shadow: 0 0 6px #f44336; }
+
+  /* Safeword paused overlay on TV */
+  .tv-safeword-paused {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: linear-gradient(135deg, #1a3a2a, #0a2a3a);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+  }
+  .tv-safeword-paused.visible { display: flex; }
+  .tv-safeword-paused .pause-icon { font-size: clamp(4em, 15vw, 10em); margin-bottom: 24px; }
+  .tv-safeword-paused .pause-text {
+    font-size: clamp(1.5em, 5vw, 3em);
+    color: #4caf50;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .tv-safeword-paused .pause-sub {
+    font-size: clamp(0.9em, 2.5vw, 1.3em);
+    color: #88ccaa;
+  }
+
+  /* Sender safeword alert */
+  .safeword-alert {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    background: rgba(233, 69, 96, 0.95);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    animation: safewordFlash 1s ease infinite;
+  }
+  .safeword-alert.visible { display: flex; }
+  @keyframes safewordFlash {
+    0%, 100% { background: rgba(233, 69, 96, 0.95); }
+    50% { background: rgba(233, 69, 96, 0.7); }
+  }
+  .safeword-alert .alert-icon { font-size: 4em; margin-bottom: 16px; }
+  .safeword-alert .alert-title { font-size: 1.8em; font-weight: 900; color: #fff; margin-bottom: 12px; }
+  .safeword-alert .alert-sub { font-size: 1em; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+  .safeword-alert .resume-btn {
+    padding: 16px 48px;
+    font-size: 1.2em;
+    font-weight: bold;
+    background: #fff;
+    color: #c0392b;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  /* Camera companion */
+  .camera-choice-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 15000;
+    background: rgba(10,10,26,0.97);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  .camera-screen {
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .camera-indicator {
+    padding: 8px 16px;
+    background: rgba(76, 175, 80, 0.2);
+    border: 1px solid #4caf50;
+    border-radius: 20px;
+    color: #4caf50;
+    font-size: 0.85em;
+  }
+
+  /* Sender camera fullscreen */
+  .cam-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    background: #000;
+    display: none;
+    flex-direction: column;
+  }
+  .cam-fullscreen.visible { display: flex; }
+  .cam-fullscreen video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cam-controls-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .cam-controls-overlay.faded { opacity: 0; }
+  .cam-controls-overlay > * { pointer-events: auto; }
+  .cam-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  }
+  .cam-top-bar .cam-back-btn {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  .cam-status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cam-status-dot.online { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+  .cam-status-dot.offline { background: #f44336; box-shadow: 0 0 6px #f44336; }
+  .cam-battery { font-size: 0.8em; color: #ccc; margin-left: auto; }
+  .cam-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    flex-wrap: wrap;
+  }
+  .cam-action-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .cam-action-btn:active { background: rgba(255,255,255,0.3); }
+  .cam-action-btn.active { border-color: #4caf50; background: rgba(76,175,80,0.3); }
+  .cam-action-btn.danger { border-color: #e94560; }
+  .cam-action-btn.danger:active { background: rgba(233,69,96,0.4); }
+  .cam-intensity-slider {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-lr;
+    direction: rtl;
+    height: 200px;
+    accent-color: #e94560;
+    pointer-events: auto;
+  }
+  .cam-chat-drawer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.85);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 16px;
+    transform: translateY(100%);
+    transition: transform 0.3s;
+    pointer-events: auto;
+    max-height: 40vh;
+  }
+  .cam-chat-drawer.open { transform: translateY(0); }
+  .cam-chat-drawer input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 0.95em;
+    box-sizing: border-box;
+  }
+
+  /* Receiver PiP for sender camera */
+  .sender-pip {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    width: 140px;
+    height: 105px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.3);
+    z-index: 9998;
+    cursor: move;
+    display: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .sender-pip.visible { display: block; }
+  .sender-pip video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   /* TV Display — receiver fullscreen controlled by sender */
   .tv-overlay {
     display: none;
@@ -1835,7 +2079,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0066</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0067</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3620,6 +3864,27 @@
     </div>
   </div>
 
+  <!-- Safeword Settings (sender) -->
+  <div class="control-card" id="safeword-control">
+    <h3>🛡️ Safeword Spraakdetectie</h3>
+    <div style="font-size:0.78em;color:#888;margin-bottom:8px;">De ontvanger's mic luistert continu naar het safeword</div>
+
+    <div class="control-row">
+      <label>Safeword</label>
+      <input type="text" id="safeword-input" value="rood" placeholder="bijv. rood, stop" style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e94560;font-weight:bold;font-size:1em;">
+    </div>
+
+    <div class="toggle-row" style="margin:8px 0;">
+      <label style="flex:1;">🎤 Spraakdetectie actief</label>
+      <div id="safeword-enable-toggle" class="toggle" onclick="toggleSafewordSender()"></div>
+    </div>
+
+    <div id="safeword-sender-status" class="safeword-status" style="display:none;">
+      <div id="safeword-sender-dot" class="safeword-dot off"></div>
+      <span id="safeword-sender-text">Inactief</span>
+    </div>
+  </div>
+
   <!-- TV Display Control Panel -->
   <div class="control-card" id="tv-control-panel">
     <h3>🖥️ Ontvanger TV-weergave</h3>
@@ -3667,6 +3932,41 @@
         <button onclick="sendTvMessage()" style="flex:1;padding:8px;border-radius:6px;border:none;background:#4488ff;color:#fff;font-weight:bold;cursor:pointer;font-size:0.85em;">📺 Toon op TV</button>
         <button onclick="sendTvCommand('clear_info')" style="padding:8px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#888;cursor:pointer;font-size:0.85em;">Wis</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Camera Companion Controls -->
+  <div class="control-card" id="camera-control-panel">
+    <h3>📷 Camera Companion</h3>
+    <div style="font-size:0.78em;color:#888;margin-bottom:8px;">iPhone als camera — kijk naar de ontvanger terwijl je bedient</div>
+
+    <div id="cam-not-connected" style="text-align:center;padding:8px;color:#666;font-size:0.85em;">
+      📷 Geen camera verbonden. Open dezelfde sessiecode op een iPhone.
+    </div>
+
+    <div id="cam-connected-controls" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div id="cam-sender-dot" class="cam-status-dot online"></div>
+        <span style="color:#ccc;font-size:0.85em;">Camera verbonden</span>
+        <span id="cam-sender-battery" style="font-size:0.8em;color:#888;margin-left:auto;"></span>
+      </div>
+
+      <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:10px;background:#000;aspect-ratio:16/9;cursor:pointer;" onclick="openCamFullscreen()">
+        <video id="cam-preview-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);pointer-events:none;">
+          <span style="font-size:1.5em;opacity:0.7;">⛶ Tik voor fullscreen</span>
+        </div>
+      </div>
+
+      <div class="toggle-row" style="margin-bottom:8px;">
+        <label style="flex:1;">📷 Camera audio</label>
+        <div id="cam-audio-toggle" class="toggle" onclick="this.classList.toggle('on'); camToggleAudio()"></div>
+      </div>
+    </div>
+
+    <div class="toggle-row" style="margin:8px 0;">
+      <label style="flex:1;">🤳 Deel mijn camera (frontcamera)</label>
+      <div id="sender-cam-share-toggle" class="toggle" onclick="this.classList.toggle('on'); toggleSenderCamShare()"></div>
     </div>
   </div>
 
@@ -5887,6 +6187,21 @@ function startReceiver() {
   });
 
   peer.on('connection', (c) => {
+    const meta = c.metadata || {};
+    // Camera companion data connection — handle separately
+    if (meta.role === 'camera' && conn) {
+      cameraPeerConn = c;
+      c.on('open', () => { recvLog('📷 Camera data-verbinding open'); });
+      c.on('data', (data) => {
+        if (data.type === 'cam_battery' && conn && conn.open) conn.send(data);
+      });
+      c.on('close', () => {
+        cameraPeerConn = null;
+        if (conn && conn.open) conn.send({ type: 'cam_disconnected', ts: Date.now() });
+      });
+      return; // Don't override the main sender conn
+    }
+
     conn = c;
     setRecvStatus('connected', 'Verbonden met zender!');
     document.getElementById('recv-connected-indicator').style.display = 'block';
@@ -5967,6 +6282,34 @@ function startReceiver() {
         recvLog('❌ Geplande schok geannuleerd');
         cancelRecvSchedCountdown();
         if (fsOpen) fsUpdateMain('❌ Geannuleerd', 'waiting');
+      } else if (data.type === 'safeword_config') {
+        // Sender configured safeword
+        const word = typeof data.word === 'string' ? data.word.slice(0, 50).toLowerCase().trim() : '';
+        if (data.enabled && word) {
+          startSafewordListening(word);
+        } else {
+          stopSafewordListening();
+          if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'off', ts: Date.now() });
+        }
+      } else if (data.type === 'safeword_resume') {
+        resumeSafewordReceiver();
+      } else if (data.type === 'cam_cmd') {
+        // Relay camera commands from sender to camera companion
+        if (data.cmd === 'audio_toggle' && cameraMediaConn) {
+          // Relay to camera data connection
+          if (cameraPeerConn && cameraPeerConn.open) cameraPeerConn.send({ type: 'cam_audio_toggle', enabled: data.enabled });
+        } else if (data.cmd === 'show_sender_pip') {
+          const pip = document.getElementById('sender-pip');
+          if (pip) pip.classList.toggle('visible', !!data.enabled);
+        }
+      } else if (data.type === 'cam_request_stream') {
+        // Sender wants camera stream — handled via peer.on('call') sender_wants_cam
+        // Nothing to do here, the call handler answers with the relay stream
+      } else if (data.type === 'sender_cam_start') {
+        recvLog('🤳 Zender deelt camera');
+      } else if (data.type === 'sender_cam_stop') {
+        hideSenderPip();
+        recvLog('🤳 Zender camera gestopt');
       } else if (data.type === 'tv_cmd') {
         handleTvCommand(data);
       } else if (data.type === 'countdown') {
@@ -6055,6 +6398,37 @@ function startReceiver() {
       // Clean up old connection reference
       conn = null;
     });
+  });
+
+  // Handle incoming media calls (camera companion, sender camera)
+  peer.on('call', (call) => {
+    const meta = call.metadata || {};
+    if (meta.role === 'camera') {
+      // Camera companion calling with video
+      call.answer(); // no stream back
+      call.on('stream', (remoteStream) => {
+        recvLog('📷 Camera-companion video ontvangen');
+        window._cameraRelayStream = remoteStream;
+        handleCameraConnection(call);
+      });
+    } else if (meta.role === 'sender_cam') {
+      // Sender sharing their front camera
+      call.answer(); // no stream back
+      call.on('stream', (remoteStream) => {
+        handleSenderCamStream(remoteStream);
+      });
+      call.on('close', () => {
+        hideSenderPip();
+      });
+    } else if (meta.role === 'sender_wants_cam') {
+      // Sender requesting camera stream
+      if (window._cameraRelayStream) {
+        call.answer(window._cameraRelayStream);
+        recvLog('📷 Camera stream doorgestuurd naar zender');
+      } else {
+        call.answer(); // answer without stream
+      }
+    }
   });
 
   peer.on('error', (err) => {
@@ -6864,6 +7238,8 @@ function panicStop() {
   if (recvTimerInterval) { clearInterval(recvTimerInterval); recvTimerInterval = null; }
   const recvTimerDisplay = document.getElementById('recv-timer-display');
   if (recvTimerDisplay) recvTimerDisplay.style.display = 'none';
+  // Stop safeword listening on panic
+  stopSafewordListening();
   // Stop breathing sync (was only in panicStopSolo before)
   stopBreathingSync('solo');
   stopBreathingSync('sender');
@@ -7129,6 +7505,11 @@ function connectToReceiver() {
       // Start heartbeat to receiver
       startHeartbeat();
       startSessionWarnings();
+      // Re-send safeword config if already enabled
+      const swToggle = document.getElementById('safeword-enable-toggle');
+      if (swToggle && swToggle.classList.contains('on')) {
+        toggleSafewordSender();
+      }
     });
 
     conn.on('data', (data) => {
@@ -7151,6 +7532,16 @@ function connectToReceiver() {
         } else {
           sendLog('❌ Reactiespel: Ontvanger was te laat!', true);
         }
+      } else if (data.type === 'safeword_status') {
+        handleSafewordStatus(data);
+      } else if (data.type === 'safeword_triggered') {
+        handleSafewordTriggered();
+      } else if (data.type === 'cam_available') {
+        handleCamAvailable();
+      } else if (data.type === 'cam_disconnected') {
+        handleCamDisconnected();
+      } else if (data.type === 'cam_battery') {
+        handleCamBattery(data);
       }
     });
 
@@ -7180,6 +7571,21 @@ function connectToReceiver() {
       setSendStatus('error', 'Fout: ' + err);
       sendLog('Fout: ' + err);
     });
+  });
+
+  // Handle incoming media calls (camera stream from receiver relay)
+  peer.on('call', (call) => {
+    const meta = call.metadata || {};
+    if (meta.role === 'cam_relay') {
+      // Receiver relaying camera stream
+      call.answer();
+      call.on('stream', (remoteStream) => {
+        handleCamStream(remoteStream);
+      });
+      call.on('close', () => {
+        handleCamDisconnected();
+      });
+    }
   });
 
   peer.on('error', (err) => {
@@ -14200,6 +14606,634 @@ document.addEventListener('visibilitychange', function() {
     }
   }
 });
+
+// ==================== SAFEWORD VOICE DETECTION (v1.0067) ====================
+const safewordState = {
+  enabled: false,
+  word: 'rood',
+  recognition: null,
+  paused: false, // sessie gepauzeerd door safeword
+  restartTimer: null
+};
+
+// --- Sender-side: send safeword config to receiver ---
+function toggleSafewordSender() {
+  const toggle = document.getElementById('safeword-enable-toggle');
+  const isOn = toggle && toggle.classList.contains('on');
+  const word = (document.getElementById('safeword-input')?.value || 'rood').trim().toLowerCase();
+
+  if (!word) { alert('Vul een safeword in'); if (toggle) toggle.classList.remove('on'); return; }
+
+  if (conn && conn.open) {
+    conn.send({ type: 'safeword_config', enabled: isOn, word, ts: Date.now() });
+  }
+
+  const statusEl = document.getElementById('safeword-sender-status');
+  const dotEl = document.getElementById('safeword-sender-dot');
+  const textEl = document.getElementById('safeword-sender-text');
+  if (statusEl) statusEl.style.display = 'flex';
+  if (isOn) {
+    if (dotEl) { dotEl.className = 'safeword-dot listening'; }
+    if (textEl) textEl.textContent = 'Wacht op bevestiging ontvanger...';
+    sendLog('🛡️ Safeword "' + word + '" ingesteld');
+  } else {
+    if (dotEl) { dotEl.className = 'safeword-dot off'; }
+    if (textEl) textEl.textContent = 'Uitgeschakeld';
+    sendLog('🛡️ Safeword uitgeschakeld');
+  }
+}
+
+function handleSafewordStatus(data) {
+  // data.status: 'active' | 'error' | 'off'
+  const dotEl = document.getElementById('safeword-sender-dot');
+  const textEl = document.getElementById('safeword-sender-text');
+  const statusEl = document.getElementById('safeword-sender-status');
+  if (statusEl) statusEl.style.display = 'flex';
+
+  if (data.status === 'active') {
+    if (dotEl) dotEl.className = 'safeword-dot listening';
+    if (textEl) textEl.textContent = 'Actief — luistert bij ontvanger';
+  } else if (data.status === 'error') {
+    if (dotEl) dotEl.className = 'safeword-dot error';
+    if (textEl) textEl.textContent = '⚠️ ' + (data.reason || 'Spraakherkenning mislukt');
+    showNotification('⚠️ Safeword spraakherkenning mislukt bij ontvanger!');
+  } else {
+    if (dotEl) dotEl.className = 'safeword-dot off';
+    if (textEl) textEl.textContent = 'Gestopt';
+  }
+}
+
+function handleSafewordTriggered() {
+  safewordState.paused = true;
+  // Stop everything on sender side
+  stateManager.stopAll();
+  clearAllPatternTimeouts();
+  stopRandom();
+  cancelScheduledShock();
+  sendLog('⚠️ SAFEWORD GEDETECTEERD!', true);
+
+  // Show alert overlay
+  const alert = document.getElementById('safeword-alert');
+  if (alert) alert.classList.add('visible');
+
+  // Vibrate sender phone
+  vibrateDevice(1000);
+}
+
+function resumeAfterSafeword() {
+  safewordState.paused = false;
+  const alert = document.getElementById('safeword-alert');
+  if (alert) alert.classList.remove('visible');
+
+  // Tell receiver to resume
+  if (conn && conn.open) {
+    conn.send({ type: 'safeword_resume', ts: Date.now() });
+  }
+  sendLog('✅ Sessie hervat na safeword');
+}
+
+// --- Receiver-side: listen for safeword ---
+function startSafewordListening(word) {
+  stopSafewordListening();
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    recvLog('⚠️ Spraakherkenning niet beschikbaar');
+    if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: 'SpeechRecognition API niet beschikbaar', ts: Date.now() });
+    return;
+  }
+
+  safewordState.word = word.toLowerCase();
+  safewordState.enabled = true;
+
+  const rec = new SR();
+  rec.lang = 'nl-NL';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 3;
+
+  rec.onstart = () => {
+    recvLog('🛡️ Safeword-detectie actief: "' + word + '"');
+    if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'active', ts: Date.now() });
+  };
+
+  rec.onresult = (e) => {
+    if (safewordState.paused) return; // al gedetecteerd
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      for (let j = 0; j < e.results[i].length; j++) {
+        const transcript = e.results[i][j].transcript.toLowerCase().trim();
+        if (transcript.includes(safewordState.word)) {
+          recvLog('🛡️ SAFEWORD GEDETECTEERD: "' + transcript + '"');
+          triggerSafewordReceiver();
+          return;
+        }
+      }
+    }
+  };
+
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech') {
+      // Normal — gewoon herstarten
+    } else if (e.error === 'aborted' || e.error === 'network') {
+      recvLog('⚠️ Safeword herkenning onderbroken: ' + e.error);
+    } else {
+      recvLog('⚠️ Safeword fout: ' + e.error);
+      if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: e.error, ts: Date.now() });
+    }
+  };
+
+  rec.onend = () => {
+    // Auto-restart als nog actief en niet gepauzeerd
+    if (safewordState.enabled && !safewordState.paused) {
+      safewordState.restartTimer = setTimeout(() => {
+        if (safewordState.enabled && safewordState.recognition) {
+          try { safewordState.recognition.start(); } catch(e) {}
+        }
+      }, 300);
+    }
+  };
+
+  safewordState.recognition = rec;
+  try { rec.start(); } catch(e) {
+    recvLog('⚠️ Kan safeword-detectie niet starten: ' + e.message);
+    if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: e.message, ts: Date.now() });
+  }
+}
+
+function stopSafewordListening() {
+  safewordState.enabled = false;
+  if (safewordState.restartTimer) { clearTimeout(safewordState.restartTimer); safewordState.restartTimer = null; }
+  if (safewordState.recognition) {
+    try { safewordState.recognition.stop(); } catch(e) {}
+    safewordState.recognition = null;
+  }
+}
+
+function triggerSafewordReceiver() {
+  safewordState.paused = true;
+
+  // Stop ALL audio/stimulation
+  stateManager.stopAll();
+  clearAllPatternTimeouts();
+  stopBaseline();
+  stopAudioImmediately();
+  stopReceiverHoldLocal();
+  stopCarrier();
+  stopContinuousMode('send');
+  if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
+
+  // Show calming pause screen
+  const pauseScreen = document.getElementById('tv-safeword-paused');
+  if (pauseScreen) pauseScreen.classList.add('visible');
+
+  // Notify sender
+  if (conn && conn.open) {
+    conn.send({ type: 'safeword_triggered', ts: Date.now() });
+  }
+
+  // TTS: let receiver know
+  speak('Sessie gepauzeerd. Alles is oké.');
+
+  recvLog('⚠️ SAFEWORD — alle stimulatie gestopt');
+}
+
+function resumeSafewordReceiver() {
+  safewordState.paused = false;
+
+  // Hide pause screen
+  const pauseScreen = document.getElementById('tv-safeword-paused');
+  if (pauseScreen) pauseScreen.classList.remove('visible');
+
+  // Restart safeword listening
+  if (safewordState.enabled && safewordState.word) {
+    setTimeout(() => startSafewordListening(safewordState.word), 500);
+  }
+
+  recvLog('✅ Sessie hervat');
+}
+
+// ==================== CAMERA COMPANION SYSTEM (v1.0067) ====================
+let cameraRole = null; // null | 'camera'
+let cameraPeer = null;
+let cameraConn = null;   // data connection camera <-> sender
+let cameraCall = null;   // media call camera -> sender
+let cameraStream = null;
+let senderCamStream = null; // sender's own camera stream
+let senderCamCall = null;   // media call sender -> receiver for PiP
+let camControlsFadeTimer = null;
+let camChatOpen = false;
+
+// --- Receiver: detect duplicate connection and offer camera role ---
+let cameraPeerConn = null;  // separate peer connection for camera device
+let cameraMediaConn = null; // media call from camera
+
+// Store camera peer on receiver side
+let receiverCameraPeer = null;
+
+function handleCameraOffer(recvPeerId) {
+  // Called when someone opens the same session code and receiver exists
+  // Show camera choice overlay
+  const overlay = document.getElementById('camera-choice-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  // Store the receiver code to connect to
+  window._cameraTargetCode = recvPeerId;
+}
+
+function cancelCameraChoice() {
+  const overlay = document.getElementById('camera-choice-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function joinAsCamera() {
+  const overlay = document.getElementById('camera-choice-overlay');
+  if (overlay) overlay.style.display = 'none';
+
+  cameraRole = 'camera';
+  myRole = 'camera';
+  showScreen('camera-screen');
+
+  // Request wake lock
+  requestWakeLock();
+
+  // Get camera (back camera for iPhone = environment facing)
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: true
+  }).then(stream => {
+    cameraStream = stream;
+    // Mute audio by default
+    stream.getAudioTracks().forEach(t => { t.enabled = false; });
+
+    // Show local preview
+    const preview = document.getElementById('camera-local-preview');
+    if (preview) { preview.srcObject = stream; }
+
+    // Connect to the receiver peer as camera companion
+    const code = document.getElementById('send-code-input')?.value?.trim() || window._cameraTargetCode || '';
+    cameraPeer = new Peer(undefined, { debug: 0 });
+
+    cameraPeer.on('open', (myId) => {
+      // Connect data channel to receiver
+      cameraConn = cameraPeer.connect(getPeerId(code), { reliable: true, metadata: { role: 'camera' } });
+
+      cameraConn.on('open', () => {
+        const statusEl = document.getElementById('cam-conn-status');
+        if (statusEl) statusEl.textContent = 'Verbonden — camera streamt';
+
+        // Call receiver with video (receiver will relay to sender)
+        cameraCall = cameraPeer.call(getPeerId(code), stream, { metadata: { role: 'camera' } });
+
+        // Send battery status periodically
+        startCameraBatteryReporting();
+      });
+
+      cameraConn.on('data', (data) => {
+        // Handle commands from sender via receiver relay
+        if (data.type === 'cam_audio_toggle') {
+          const audioTrack = cameraStream?.getAudioTracks()[0];
+          if (audioTrack) audioTrack.enabled = !!data.enabled;
+        }
+      });
+
+      cameraConn.on('close', () => {
+        const statusEl = document.getElementById('cam-conn-status');
+        if (statusEl) statusEl.textContent = 'Verbinding verbroken';
+      });
+    });
+
+  }).catch(err => {
+    const statusEl = document.getElementById('cam-conn-status');
+    if (statusEl) statusEl.textContent = 'Camera niet beschikbaar: ' + err.message;
+  });
+}
+
+function startCameraBatteryReporting() {
+  if (!navigator.getBattery) return;
+  navigator.getBattery().then(battery => {
+    function sendBattery() {
+      if (cameraConn && cameraConn.open) {
+        cameraConn.send({ type: 'cam_battery', level: Math.round(battery.level * 100), charging: battery.charging, ts: Date.now() });
+      }
+    }
+    sendBattery();
+    battery.addEventListener('levelchange', sendBattery);
+    battery.addEventListener('chargingchange', sendBattery);
+    // Also send every 60s
+    setInterval(sendBattery, 60000);
+  }).catch(() => {});
+}
+
+// --- Receiver: handle incoming camera connection ---
+function handleCameraConnection(call) {
+  cameraMediaConn = call;
+  call.answer(); // Answer without sending own stream back
+
+  call.on('stream', (remoteStream) => {
+    recvLog('📷 Camera-companion verbonden');
+    // Relay camera stream to sender via a new PeerJS call
+    relayCameraToSender(remoteStream);
+  });
+
+  call.on('close', () => {
+    recvLog('📷 Camera-companion verbroken');
+    if (conn && conn.open) conn.send({ type: 'cam_disconnected', ts: Date.now() });
+  });
+}
+
+function relayCameraToSender(remoteStream) {
+  // Receiver tells sender about camera, sender then calls receiver to get the stream
+  // Simpler approach: receiver stores the stream and sender requests it
+  window._cameraRelayStream = remoteStream;
+  if (conn && conn.open) {
+    conn.send({ type: 'cam_available', ts: Date.now() });
+  }
+}
+
+// --- Sender: handle camera availability ---
+function handleCamAvailable() {
+  sendLog('📷 Camera-companion verbonden!');
+  const notConnEl = document.getElementById('cam-not-connected');
+  const connEl = document.getElementById('cam-connected-controls');
+  if (notConnEl) notConnEl.style.display = 'none';
+  if (connEl) connEl.style.display = 'block';
+
+  // Request camera stream from receiver via PeerJS call
+  if (peer && conn && conn.open) {
+    const code = document.getElementById('send-code-input')?.value?.trim()?.toUpperCase() || '';
+    // Create a dummy silent stream to initiate a call, receiver answers with camera stream
+    try {
+      const dummyCtx = new AudioContext();
+      const dest = dummyCtx.createMediaStreamDestination();
+      const dummyStream = dest.stream;
+      const call = peer.call(getPeerId(code), dummyStream, { metadata: { role: 'sender_wants_cam' } });
+      call.on('stream', (remoteStream) => {
+        dummyCtx.close();
+        handleCamStream(remoteStream);
+      });
+      call.on('close', () => {
+        dummyCtx.close().catch(() => {});
+      });
+    } catch(e) {
+      sendLog('⚠️ Kan camera stream niet ophalen: ' + e.message);
+    }
+  }
+}
+
+function handleCamStream(remoteStream) {
+  // Show preview on sender
+  const preview = document.getElementById('cam-preview-video');
+  if (preview) preview.srcObject = remoteStream;
+
+  // Also set for fullscreen
+  const fsVideo = document.getElementById('cam-remote-video-fs');
+  if (fsVideo) fsVideo.srcObject = remoteStream;
+}
+
+function handleCamDisconnected() {
+  sendLog('📷 Camera offline!');
+  showNotification('📷 Camera offline!');
+  const notConnEl = document.getElementById('cam-not-connected');
+  const connEl = document.getElementById('cam-connected-controls');
+  if (notConnEl) { notConnEl.style.display = 'block'; notConnEl.innerHTML = '<span style="color:#e94560;">📷 Camera offline — verbinding verloren</span>'; }
+  if (connEl) connEl.style.display = 'none';
+
+  const fsDot = document.getElementById('cam-fs-dot');
+  const fsStatus = document.getElementById('cam-fs-status');
+  if (fsDot) fsDot.className = 'cam-status-dot offline';
+  if (fsStatus) fsStatus.textContent = 'Offline';
+}
+
+function handleCamBattery(data) {
+  const level = data.level || 0;
+  const charging = data.charging || false;
+  const text = (charging ? '🔌 ' : '🔋 ') + level + '%';
+
+  const senderBat = document.getElementById('cam-sender-battery');
+  const fsBat = document.getElementById('cam-fs-battery');
+  if (senderBat) senderBat.textContent = text;
+  if (fsBat) fsBat.textContent = text;
+
+  // Low battery warning
+  if (level <= 15 && !charging) {
+    showNotification('⚠️ Camera-iPhone batterij laag: ' + level + '%');
+    sendLog('⚠️ Camera batterij laag: ' + level + '%');
+  }
+}
+
+// --- Sender: camera fullscreen mode ---
+function openCamFullscreen() {
+  const overlay = document.getElementById('cam-fullscreen');
+  if (!overlay) return;
+  overlay.classList.add('visible');
+  resetCamControlsFade();
+  // Tap to toggle controls
+  overlay.onclick = (e) => {
+    if (e.target === overlay || e.target.tagName === 'VIDEO') {
+      toggleCamControls();
+    }
+  };
+}
+
+function closeCamFullscreen() {
+  const overlay = document.getElementById('cam-fullscreen');
+  if (overlay) overlay.classList.remove('visible');
+  if (camControlsFadeTimer) clearTimeout(camControlsFadeTimer);
+}
+
+function toggleCamControls() {
+  const controls = document.getElementById('cam-controls');
+  if (!controls) return;
+  if (controls.classList.contains('faded')) {
+    controls.classList.remove('faded');
+    resetCamControlsFade();
+  } else {
+    controls.classList.add('faded');
+  }
+}
+
+function resetCamControlsFade() {
+  const controls = document.getElementById('cam-controls');
+  if (!controls) return;
+  controls.classList.remove('faded');
+  if (camControlsFadeTimer) clearTimeout(camControlsFadeTimer);
+  camControlsFadeTimer = setTimeout(() => {
+    controls.classList.add('faded');
+  }, 3000);
+}
+
+function camQuickShock() {
+  // Use the intensity slider value
+  const vol = parseInt(document.getElementById('cam-intensity-slider')?.value || 50);
+  if (conn && conn.open) {
+    const limit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+    const clampedVol = Math.min(vol, limit);
+    conn.send({ type: 'shock', volume: clampedVol, duration: 500, freq: 200, ts: Date.now() });
+    sendLog('⚡ Cam-schok: ' + clampedVol + '%');
+  }
+  resetCamControlsFade();
+}
+
+function camUpdateIntensity(val) {
+  resetCamControlsFade();
+}
+
+function camToggleMic() {
+  const btn = document.getElementById('cam-mic-btn');
+  const isActive = btn?.classList.toggle('active');
+  // Send to receiver to relay to camera
+  if (conn && conn.open) {
+    conn.send({ type: 'cam_cmd', cmd: 'audio_toggle', enabled: isActive, ts: Date.now() });
+  }
+  resetCamControlsFade();
+}
+
+function camToggleShowOnRecv() {
+  const btn = document.getElementById('cam-show-recv-btn');
+  const isActive = btn?.classList.toggle('active');
+  // Tell receiver to show/hide sender PiP
+  if (conn && conn.open) {
+    conn.send({ type: 'cam_cmd', cmd: 'show_sender_pip', enabled: isActive, ts: Date.now() });
+  }
+  resetCamControlsFade();
+}
+
+function camToggleBlindfold() {
+  const btn = document.getElementById('cam-blindfold-btn');
+  const isActive = btn?.classList.toggle('active');
+  // Toggle TV blindfold
+  const tvToggle = document.getElementById('tv-tog-blindfold');
+  if (tvToggle) {
+    if (isActive) tvToggle.classList.add('on');
+    else tvToggle.classList.remove('on');
+    sendTvToggles();
+  }
+  resetCamControlsFade();
+}
+
+function camToggleChat() {
+  camChatOpen = !camChatOpen;
+  const drawer = document.getElementById('cam-chat-drawer');
+  if (drawer) drawer.classList.toggle('open', camChatOpen);
+  const input = document.getElementById('cam-chat-input');
+  if (camChatOpen && input) input.focus();
+  resetCamControlsFade();
+}
+
+function camSendChat() {
+  const input = document.getElementById('cam-chat-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  if (conn && conn.open) {
+    const tts = document.getElementById('send-tts-out-toggle')?.classList.contains('on') || false;
+    conn.send({ type: 'chat', text, tts, ts: Date.now() });
+    addChatMessage('sender', text);
+    // Also show in cam chat
+    const msgs = document.getElementById('cam-chat-messages');
+    if (msgs) {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:0.85em;color:#4488ff;padding:4px 0;';
+      div.textContent = 'Jij: ' + text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+  }
+}
+
+function camToggleAudio() {
+  const toggle = document.getElementById('cam-audio-toggle');
+  const isOn = toggle?.classList.contains('on');
+  if (conn && conn.open) {
+    conn.send({ type: 'cam_cmd', cmd: 'audio_toggle', enabled: isOn, ts: Date.now() });
+  }
+}
+
+// --- Sender: share own camera (front camera) ---
+function toggleSenderCamShare() {
+  const toggle = document.getElementById('sender-cam-share-toggle');
+  const isOn = toggle?.classList.contains('on');
+
+  if (isOn) {
+    // Start front camera
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    }).then(stream => {
+      senderCamStream = stream;
+      // Send to receiver
+      if (peer && conn && conn.open) {
+        conn.send({ type: 'sender_cam_start', ts: Date.now() });
+        // Call receiver with video
+        senderCamCall = peer.call(getPeerId(document.getElementById('send-code-input')?.value?.trim()?.toUpperCase()), stream, { metadata: { role: 'sender_cam' } });
+      }
+      sendLog('🤳 Eigen camera gedeeld');
+    }).catch(err => {
+      sendLog('⚠️ Camera niet beschikbaar: ' + err.message);
+      if (toggle) toggle.classList.remove('on');
+    });
+  } else {
+    // Stop camera
+    if (senderCamStream) {
+      senderCamStream.getTracks().forEach(t => t.stop());
+      senderCamStream = null;
+    }
+    if (senderCamCall) {
+      try { senderCamCall.close(); } catch(e) {}
+      senderCamCall = null;
+    }
+    if (conn && conn.open) {
+      conn.send({ type: 'sender_cam_stop', ts: Date.now() });
+    }
+    sendLog('🤳 Eigen camera gestopt');
+  }
+}
+
+// --- Receiver: handle sender camera PiP ---
+function handleSenderCamStream(stream) {
+  const pip = document.getElementById('sender-pip');
+  const video = document.getElementById('sender-pip-video');
+  if (pip && video) {
+    video.srcObject = stream;
+    pip.classList.add('visible');
+    recvLog('🤳 Zender camera zichtbaar');
+
+    // Make draggable
+    makeDraggable(pip);
+  }
+}
+
+function hideSenderPip() {
+  const pip = document.getElementById('sender-pip');
+  if (pip) pip.classList.remove('visible');
+}
+
+function makeDraggable(el) {
+  let isDragging = false;
+  let startX, startY, origX, origY;
+
+  el.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    origX = el.offsetLeft;
+    origY = el.offsetTop;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    el.style.left = (origX + dx) + 'px';
+    el.style.top = (origY + dy) + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => { isDragging = false; });
+}
 </script>
 
 <div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
@@ -14260,6 +15294,71 @@ document.addEventListener('visibilitychange', function() {
 
 <div id="tease-overlay" class="tease-overlay">
   <div id="tease-text" class="tease-text"></div>
+</div>
+
+<!-- Safeword paused screen (receiver TV) -->
+<div id="tv-safeword-paused" class="tv-safeword-paused">
+  <div class="pause-icon">🫧</div>
+  <div class="pause-text">Sessie gepauzeerd</div>
+  <div class="pause-sub">Even rust. Alles is oké.</div>
+</div>
+
+<!-- Safeword alert (sender) -->
+<div id="safeword-alert" class="safeword-alert">
+  <div class="alert-icon">⚠️</div>
+  <div class="alert-title">SAFEWORD GEDETECTEERD</div>
+  <div class="alert-sub">Alle stimulatie is gestopt. Neem contact op met je partner.</div>
+  <button class="resume-btn" onclick="resumeAfterSafeword()">✅ Hervat sessie</button>
+</div>
+
+<!-- Camera companion choice overlay -->
+<div id="camera-choice-overlay" class="camera-choice-overlay" style="display:none;">
+  <div style="font-size:3em;margin-bottom:16px;">📷</div>
+  <div style="font-size:1.3em;color:#fff;margin-bottom:8px;">Er is al een ontvanger</div>
+  <div style="color:#888;margin-bottom:24px;max-width:300px;">Wil je als camera meedoen? Je iPhone wordt een cameracompanion.</div>
+  <button onclick="joinAsCamera()" style="padding:16px 40px;font-size:1.1em;background:#4caf50;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold;margin-bottom:12px;">📷 Ja, als camera meedoen</button>
+  <button onclick="cancelCameraChoice()" style="padding:10px 24px;font-size:0.9em;background:transparent;border:1px solid #666;color:#888;border-radius:8px;cursor:pointer;">Annuleer</button>
+</div>
+
+<!-- Camera-only screen (iPhone) -->
+<div id="camera-screen" class="screen">
+  <div class="camera-screen">
+    <div style="margin-bottom:24px;">
+      <div class="camera-indicator" id="cam-status-indicator">📷 Camera actief</div>
+    </div>
+    <video id="camera-local-preview" autoplay playsinline muted style="width:120px;height:90px;border-radius:8px;object-fit:cover;opacity:0.4;"></video>
+    <div style="margin-top:16px;font-size:0.8em;color:#555;" id="cam-conn-status">Verbinden...</div>
+  </div>
+</div>
+
+<!-- Sender camera fullscreen view -->
+<div id="cam-fullscreen" class="cam-fullscreen">
+  <video id="cam-remote-video-fs" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+  <div id="cam-controls" class="cam-controls-overlay">
+    <div class="cam-top-bar">
+      <button class="cam-back-btn" onclick="closeCamFullscreen()">← Terug</button>
+      <div id="cam-fs-dot" class="cam-status-dot online"></div>
+      <span style="color:#ccc;font-size:0.85em;" id="cam-fs-status">Verbonden</span>
+      <span class="cam-battery" id="cam-fs-battery"></span>
+    </div>
+    <input type="range" id="cam-intensity-slider" class="cam-intensity-slider" min="0" max="100" value="50" oninput="camUpdateIntensity(this.value)">
+    <div class="cam-bottom-bar">
+      <button class="cam-action-btn danger" onclick="camQuickShock()" title="Schok">⚡</button>
+      <button class="cam-action-btn" id="cam-mic-btn" onclick="camToggleMic()" title="Mic">🎤</button>
+      <button class="cam-action-btn" id="cam-show-recv-btn" onclick="camToggleShowOnRecv()" title="Toon bij ontvanger">👁️</button>
+      <button class="cam-action-btn" id="cam-blindfold-btn" onclick="camToggleBlindfold()" title="Blinddoek">🙈</button>
+      <button class="cam-action-btn" id="cam-chat-btn" onclick="camToggleChat()" title="Chat">💬</button>
+    </div>
+  </div>
+  <div id="cam-chat-drawer" class="cam-chat-drawer">
+    <div id="cam-chat-messages" style="max-height:120px;overflow-y:auto;margin-bottom:8px;"></div>
+    <input type="text" id="cam-chat-input" placeholder="Bericht..." onkeydown="if(event.key==='Enter')camSendChat()">
+  </div>
+</div>
+
+<!-- Sender camera PiP on receiver TV -->
+<div id="sender-pip" class="sender-pip">
+  <video id="sender-pip-video" autoplay playsinline></video>
 </div>
 
 <!-- Background tab warning overlay -->
