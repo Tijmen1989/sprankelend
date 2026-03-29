@@ -1580,7 +1580,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0059</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0060</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -1622,6 +1622,11 @@
     <div id="setup-device-status" style="font-size:0.8em;color:#888;text-align:center;margin-bottom:12px;"></div>
 
     <button onclick="wizardNext(2)" style="width:100%;padding:12px;font-size:1em;background:#f39c12;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Volgende →</button>
+
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #333;text-align:center;">
+      <div style="font-size:0.8em;color:#666;margin-bottom:8px;">Ga je zelf niet het apparaat dragen?</div>
+      <button onclick="showScreen('sender-choice')" style="width:100%;padding:10px;font-size:0.9em;background:linear-gradient(135deg,#1a1a3e,#3e2a2a);border:2px solid #e94560;color:#e0e0e0;border-radius:8px;cursor:pointer;">📱 Ik ben de zender → sla setup over</button>
+    </div>
   </div>
 
   <!-- Step 2: MacBook & 2B Check -->
