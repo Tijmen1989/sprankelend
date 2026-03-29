@@ -1580,7 +1580,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0055</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0059</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3221,7 +3221,7 @@
     <h3>🔒 Veiligheidslimiet</h3>
     <div class="control-row">
       <label>Max volume</label>
-      <input type="range" id="send-safety-limit" min="0" max="100" value="80">
+      <input type="range" id="send-safety-limit" min="0" max="100" value="80" oninput="document.getElementById('send-safety-label').textContent=this.value+'%'; updateSendQS()">
       <span id="send-safety-label" class="value">80%</span>
     </div>
     <div class="preset-bar">
@@ -6798,8 +6798,8 @@ function toggleHoldMode() {
 // Quick shock buttons - Sender
 function quickShockSend(pct) {
   if (!conn || conn.open !== true) return;
-  const baseVol = parseInt(document.getElementById('send-volume').value);
-  const volume = Math.round(baseVol * pct / 100);
+  const limit = parseInt(document.getElementById('send-safety-limit').value) || 80;
+  const volume = Math.round(limit * pct / 100); // Bug #480: percentage van safety limit
   const duration = parseInt(document.getElementById('send-duration').value);
   const freq = parseInt(document.getElementById('send-freq').value);
 
@@ -6811,10 +6811,10 @@ function quickShockSend(pct) {
 }
 
 function updateSendQS() {
-  const baseVol = parseInt(document.getElementById('send-volume').value);
+  const limit = parseInt(document.getElementById('send-safety-limit').value) || 80;
   [25, 50, 75, 100].forEach(pct => {
     const el = document.getElementById('qs-send-' + pct + '-vol');
-    if (el) el.textContent = Math.round(baseVol * pct / 100);
+    if (el) el.textContent = Math.round(limit * pct / 100);
   });
 }
 
@@ -6823,6 +6823,7 @@ function quickShockRecv(pct) {
   // Bug #111 fix: respect cooldown to prevent rapid-fire
   if (Date.now() < shockCooldownUntil) return;
   ensureAudio();
+  // Bug #480: receiver has no own safety limit — use recv-volume as max
   const baseVol = parseInt(document.getElementById('recv-volume').value);
   const volume = Math.round(baseVol * pct / 100);
   const duration = parseInt(document.getElementById('recv-duration').value);
@@ -7504,7 +7505,8 @@ function getSoloSettings() {
 function soloShock(pct, e) {
   ensureAudio();
   const s = getSoloSettings();
-  const volume = Math.round(s.volume * pct / 100);
+  const limit = parseInt(document.getElementById('solo-safety-limit').value) || 50;
+  const volume = Math.round(limit * pct / 100); // percentage van safety limit
   doSoloShock(s.freq, volume, s.duration);
 
   // Visual feedback — use passed event or fallback to global event (inline onclick)
@@ -7751,6 +7753,12 @@ function updateSoloSafetyLimit() {
   const contSafetyPct = document.getElementById('solo-cont-safety-pct');
   if (contSafetyBar) contSafetyBar.style.width = limit + '%';
   if (contSafetyPct) contSafetyPct.textContent = limit + '%';
+  // Bug #480: update quick shock labels when safety limit changes
+  const lim = parseInt(limit) || 50;
+  [25, 50, 75, 100].forEach(pct => {
+    const el = document.getElementById('qs-solo-' + pct + '-vol');
+    if (el) el.textContent = Math.round(lim * pct / 100);
+  });
   // Als continuous actief is: onmiddellijk volume hercappen
   reCapContinuousMode('solo');
 }
@@ -7780,11 +7788,11 @@ function updateSoloLabels() {
   document.getElementById('solo-rand-vol-min-label').textContent = document.getElementById('solo-rand-vol-min').value + '%';
   document.getElementById('solo-rand-vol-max-label').textContent = document.getElementById('solo-rand-vol-max').value + '%';
 
-  // Update quick shock labels
-  const baseVol = parseInt(document.getElementById('solo-volume').value);
+  // Update quick shock labels — Bug #480: percentage van safety limit
+  const limit = parseInt(document.getElementById('solo-safety-limit').value) || 50;
   [25, 50, 75, 100].forEach(pct => {
     const el = document.getElementById('qs-solo-' + pct + '-vol');
-    if (el) el.textContent = Math.round(baseVol * pct / 100);
+    if (el) el.textContent = Math.round(limit * pct / 100);
   });
 }
 
