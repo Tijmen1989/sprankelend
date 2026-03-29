@@ -5459,12 +5459,21 @@ function getConfigIntensityScale() {
 
 function startReceiver() {
   myRole = 'receiver';
-  pendingScreenAfterSetup = 'receiver';
-  showScreen('electrode-setup');
-  document.getElementById('setup-step-1').classList.add('active');
   updateRecvQS();
   updateSafetyLimit();
   updateFloatingPanic();
+
+  // If electrode config was already set in wizard step 4, skip old electrode-setup screen
+  if (selectedElectrodeConfig) {
+    const configMap = { loops_plug: 'loops_and_plug', loops_only: 'loops_only', plug_only: 'plug_only', custom: 'custom' };
+    electrodeConfig.type = configMap[selectedElectrodeConfig] || selectedElectrodeConfig;
+    applyElectrodeConfig();
+    showScreen('receiver');
+  } else {
+    pendingScreenAfterSetup = 'receiver';
+    showScreen('electrode-setup');
+    document.getElementById('setup-step-1').classList.add('active');
+  }
 
   // Show audio activation gate
   const gate = document.getElementById('audio-activation-gate');
@@ -7377,10 +7386,20 @@ function selectElectrodeConfig(config) {
 
 function startSolo() {
   myRole = 'solo';
-  pendingScreenAfterSetup = 'solo';
-  showScreen('electrode-setup');
-  document.getElementById('setup-step-1').classList.add('active');
   ensureAudio();
+
+  // If electrode config was already set in wizard step 4, skip old electrode-setup screen
+  if (selectedElectrodeConfig) {
+    // Map wizard config to electrodeConfig.type for applyElectrodeConfig()
+    const configMap = { loops_plug: 'loops_and_plug', loops_only: 'loops_only', plug_only: 'plug_only', custom: 'custom' };
+    electrodeConfig.type = configMap[selectedElectrodeConfig] || selectedElectrodeConfig;
+    applyElectrodeConfig();
+    showScreen('solo');
+  } else {
+    pendingScreenAfterSetup = 'solo';
+    showScreen('electrode-setup');
+    document.getElementById('setup-step-1').classList.add('active');
+  }
 
   // Rest of solo setup continues in background
   updateSoloLabels();
