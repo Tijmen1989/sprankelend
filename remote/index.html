@@ -4739,9 +4739,10 @@ function deduplicateAudioDevices(outputs) {
 }
 
 // Format device label for dropdown display (adds emoji hints for BT / headphone jack)
-function formatDeviceLabel(label) {
+// isStim=true adds ⚠️ to BT (latency matters for e-stim); false = only 🔵 (fine for UI/TTS)
+function formatDeviceLabel(label, isStim) {
   if (/bluetooth|airpods|buds|galaxy buds|bose|sony wh|jabra|beats|jbl/i.test(label)) {
-    return '🔵 ' + label + ' ⚠️';
+    return isStim ? '🔵 ' + label + ' ⚠️' : '🔵 ' + label;
   }
   if (/headphone|koptelefoon|external headphones|3\.5\s*mm|line.out|usb.*audio|scarlett|focusrite|behringer/i.test(label)) {
     return '🎧 ' + label;
@@ -4761,6 +4762,7 @@ async function detectGlobalAudioDevices() {
     ['setup-stim-device', 'setup-ui-device'].forEach(selectId => {
       const sel = document.getElementById(selectId);
       if (!sel) return;
+      const isStim = selectId.includes('stim');
       const currentVal = sel.value;
       sel.innerHTML = '<option value="default">Standaard audio output</option>';
       uniqueOutputs.forEach(d => {
@@ -4768,7 +4770,7 @@ async function detectGlobalAudioDevices() {
         const opt = document.createElement('option');
         opt.value = d.deviceId;
         const label = d.label || 'Audio output ' + d.deviceId.substr(0,8);
-        opt.textContent = formatDeviceLabel(label);
+        opt.textContent = formatDeviceLabel(label, isStim);
         sel.appendChild(opt);
       });
       // Restore selection if possible
@@ -4800,12 +4802,13 @@ function populateLegacyDeviceSelects(outputs) {
   ['stim-output-device', 'ui-output-device', 'solo-stim-output-device', 'solo-ui-output-device'].forEach(selectId => {
     const sel = document.getElementById(selectId);
     if (!sel) return;
+    const isStim = selectId.includes('stim');
     sel.innerHTML = '<option value="default">Standaard audio output</option>';
     outputs.forEach(d => {
       if (d.deviceId === 'default') return;
       const opt = document.createElement('option');
       opt.value = d.deviceId;
-      opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
+      opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8), isStim);
       sel.appendChild(opt);
     });
   });
@@ -4887,12 +4890,13 @@ async function detectAudioDevices() {
     ['stim-output-device', 'ui-output-device'].forEach(selectId => {
       const sel = document.getElementById(selectId);
       if (!sel) return;
+      const isStim = selectId.includes('stim');
       sel.innerHTML = '<option value="default">Standaard audio output</option>';
       outputs.forEach(d => {
         if (d.deviceId === 'default') return;
         const opt = document.createElement('option');
         opt.value = d.deviceId;
-        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
+        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8), isStim);
         sel.appendChild(opt);
       });
     });
@@ -4953,7 +4957,7 @@ async function detectSoloAudioDevices() {
         if (d.deviceId === 'default') return;
         const opt = document.createElement('option');
         opt.value = d.deviceId;
-        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
+        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8), selectId.includes('stim'));
         sel.appendChild(opt);
       });
     });
