@@ -6154,6 +6154,12 @@ function getConfigIntensityScale() {
 function handleReceiverData(data) {
   if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
 
+  // Bug #500: Block ALL stimulation commands while safeword is paused
+  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'stereo_tone', 'timer_start', 'sched_shock_start'].includes(data.type)) {
+    recvLog('🛡️ Geblokkeerd (safeword actief): ' + data.type);
+    return;
+  }
+
   // Anti-burst: reject old messages
   if (data.ts && (Date.now() - data.ts) > 3000) {
     recvLog('⏭ Oud bericht genegeerd (' + Math.round((Date.now() - data.ts)/1000) + 's vertraging)');
@@ -6350,8 +6356,8 @@ function startReceiver() {
 
   peer.on('connection', (c) => {
     const meta = c.metadata || {};
-    // Camera companion data connection — handle separately
-    if (meta.role === 'camera' && conn) {
+    // Bug #502: Camera companion data connection — handle separately (regardless of sender connection state)
+    if (meta.role === 'camera') {
       cameraPeerConn = c;
       c.on('open', () => { recvLog('📷 Camera data-verbinding open'); });
       c.on('data', (data) => {
@@ -13483,6 +13489,13 @@ function stopVoiceQuiz(mode) {
 
   updateMicStatus(prefix, false);
   tvHideQuiz(); // TV Display: hide quiz
+
+  // Bug #501: Start deferred safeword listening if it was waiting for quiz to end
+  if (safewordState._pendingWord) {
+    const pendingWord = safewordState._pendingWord;
+    safewordState._pendingWord = null;
+    setTimeout(() => startSafewordListening(pendingWord), 500);
+  }
 }
 
 function updateMicStatus(prefix, active) {
@@ -14811,7 +14824,9 @@ function showAutoReconnectPrompt(code) {
     '<div style="color:#666;margin-bottom:24px;max-width:300px;">Wil je deze sessie hervatten? De zender kan opnieuw verbinden met dezelfde code.</div>' +
     '<button onclick="autoReconnectReceiver(\'' + code + '\')" style="padding:16px 40px;font-size:1.1em;background:#4caf50;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold;margin-bottom:12px;">✅ Ja, hervat sessie</button>' +
     '<button onclick="dismissAutoReconnect()" style="padding:10px 24px;font-size:0.9em;background:transparent;border:1px solid #666;color:#888;border-radius:8px;cursor:pointer;">Nee, nieuwe sessie</button>';
-  document.body.appendChild(overlay);
+  // Bug #503: Guard against DOM not ready
+  if (document.body) document.body.appendChild(overlay);
+  else document.addEventListener('DOMContentLoaded', () => document.body.appendChild(overlay));
 }
 
 function autoReconnectReceiver(code) {
@@ -14865,7 +14880,7 @@ function autoReconnectReceiver(code) {
 
   peer.on('connection', (c) => {
     const meta = c.metadata || {};
-    if (meta.role === 'camera' && conn) {
+    if (meta.role === 'camera') {
       cameraPeerConn = c;
       c.on('open', () => { recvLog('📷 Camera data-verbinding open'); });
       c.on('data', (data) => {
@@ -15038,6 +15053,15 @@ function resumeAfterSafeword() {
 // --- Receiver-side: listen for safeword ---
 function startSafewordListening(word) {
   stopSafewordListening();
+
+  // Bug #501: Stop voice quiz speech recognition to prevent conflict
+  // Both use SpeechRecognition API — only one can be active at a time
+  if (typeof voiceQuizState !== 'undefined' && voiceQuizState.active) {
+    recvLog('⚠️ Voice quiz actief — safeword wacht tot quiz stopt');
+    // Defer: retry after quiz ends
+    safewordState._pendingWord = word;
+    return;
+  }
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
