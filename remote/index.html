@@ -5512,28 +5512,30 @@ function startReceiver() {
       } else if (data.type === 'reaction_start') {
         startReactionGameReceiver();
       } else if (data.type === 'tease') {
+        const teaseMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #401 fix
         const overlay = document.getElementById('tease-overlay');
         const teaseText = document.getElementById('tease-text');
-        if (overlay && teaseText) {
-          teaseText.textContent = data.text;
+        if (teaseMsg && overlay && teaseText) {
+          teaseText.textContent = teaseMsg;
           overlay.classList.add('visible');
           vibrateDevice(200);
           trackTimeout(() => overlay.classList.remove('visible'), 3000);
         }
-        recvLog('😈 ' + data.text, false);
+        if (teaseMsg) recvLog('😈 ' + teaseMsg, false);
       } else if (data.type === 'tease_fakeout') {
+        const fakeMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #402 fix
         const overlay = document.getElementById('tease-overlay');
         const teaseText = document.getElementById('tease-text');
-        if (overlay && teaseText) {
-          teaseText.textContent = data.text;
+        if (fakeMsg && overlay && teaseText) {
+          teaseText.textContent = fakeMsg;
           overlay.classList.add('visible');
           vibrateDevice(200);
           trackTimeout(() => {
-            teaseText.textContent = '😏 ...of toch niet?';
+            if (teaseText) teaseText.textContent = '😏 ...of toch niet?';
             trackTimeout(() => overlay.classList.remove('visible'), 1500);
           }, 1500);
         }
-        recvLog('😏 Fake-out: ' + data.text, false);
+        if (fakeMsg) recvLog('😏 Fake-out: ' + fakeMsg, false);
       } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
         handleVoiceQuizMessage(data);
       } else if (data.type === 'stereo_tone') {
@@ -10097,7 +10099,7 @@ function loadPreset(prefix) {
         ['texture','modulation','pulsewidth','noise'].forEach(k => {
           const el = document.getElementById('solo-sens-' + k);
           // Bug #272 fix: clamp sensatie values to valid slider range [0-100]
-          if (el && data.sensatie[k] !== undefined) el.value = Math.max(0, Math.min(100, Number(data.sensatie[k]) || 50));
+          if (el && data.sensatie[k] !== undefined) { const v = Number(data.sensatie[k]); el.value = Math.max(0, Math.min(100, isNaN(v) ? 50 : v)); } // Bug #424b fix: 0 is valid
         });
         updateSensatieAdvice('solo');
       }
@@ -10434,8 +10436,8 @@ function lisanneStopAll() {
 let lisanneTimerInterval = null;
 
 function startLisanneTimer() {
-  const seconds = parseInt(document.getElementById('lisanne-timer-seconds').value) || 15;
-  const intensity = parseInt(document.getElementById('lisanne-timer-intensity').value) || 40;
+  const seconds = Math.max(1, Math.min(300, parseInt(document.getElementById('lisanne-timer-seconds').value) || 15)); // Bug #425b fix: clamp
+  const intensity = Math.max(0, Math.min(100, parseInt(document.getElementById('lisanne-timer-intensity').value) || 40));
 
   // Send timer start to receiver
   if (!conn || !conn.open) {
@@ -10999,13 +11001,14 @@ function processVoiceInput(transcript) {
     const t = text.replace(/[ëé]/g, 'e').replace(/-/g, '').trim();
     // Direct digit
     if (/^\d+$/.test(t)) return parseInt(t);
-    // Simple word
-    if (dutchNumbers[text]) return parseInt(dutchNumbers[text]);
+    // Simple word (Bug #430 fix: use normalized 't' not original 'text')
+    if (dutchNumbers[t]) return parseInt(dutchNumbers[t]);
     // Compound: "tweeenvijftig" = 2+50, "drieentwintig" = 3+20
     const compoundMatch = t.match(/^(een|twee|drie|vier|vijf|zes|zeven|acht|negen)en(twintig|dertig|veertig|vijftig|zestig|zeventig|tachtig|negentig)$/);
     if (compoundMatch) {
-      const ones = dutchNumbers[compoundMatch[1]] || '0';
-      const tens = dutchNumbers[compoundMatch[2]] || '0';
+      const ones = dutchNumbers[compoundMatch[1]];
+      const tens = dutchNumbers[compoundMatch[2]];
+      if (!ones || !tens) return null; // Bug #433 fix: don't default to 0
       return parseInt(tens) + parseInt(ones);
     }
     return null;
