@@ -1696,7 +1696,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0062</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0063</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3619,7 +3619,12 @@ const stateManager = {
     lisanne_mood: () => { if (typeof lisanneStopAll === 'function') lisanneStopAll(); },
     session_engine: (prefix) => { if (typeof stopSession === 'function') stopSession(prefix || 'sender'); },
     looping_pattern: (prefix) => { if (typeof stopLoopingPattern === 'function') stopLoopingPattern(prefix || 'sender'); },
-    voice_quiz: () => { if (voiceQuizState && voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode); }
+    voice_quiz: () => { if (voiceQuizState && voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode); },
+    random_mode: () => { if (typeof stopRandom === 'function') stopRandom(); },
+    durf_game: () => { if (typeof stopDurfGame === 'function') { stopDurfGame('solo', true); stopDurfGame('sender', true); } },
+    trivia_game: () => { if (typeof stopTriviaGame === 'function') stopTriviaGame(); },
+    solo_random: () => { if (typeof stopSoloRandom === 'function') stopSoloRandom(); },
+    solo_countdown: () => { /* countdown is one-shot, no persistent stop needed */ }
   },
   requestContinuous(source, startFn) {
     if (this.continuousSource && this.continuousSource !== source) {
@@ -7217,6 +7222,8 @@ function toggleRandom() {
   toggle.classList.toggle('on', randomActive);
 
   if (randomActive) {
+    // Bug #500: stop conflicting autopilot activities
+    stateManager.requestAutopilot('random_mode');
     escalationLevel = 0;
     const display = document.getElementById('escalation-display');
     if (document.getElementById('escalation-toggle').classList.contains('on')) {
@@ -7238,6 +7245,7 @@ function stopRandom() {
   if (toggle) toggle.classList.remove('on');
   const display = document.getElementById('escalation-display');
   if (display) display.style.display = 'none';
+  stateManager.clearAutopilot('random_mode');
 }
 
 function scheduleRandom() {
@@ -7949,6 +7957,7 @@ function toggleSoloRandom() {
   toggle.classList.toggle('on', soloRandomActive);
 
   if (soloRandomActive) {
+    stateManager.requestAutopilot('solo_random');
     ensureAudio();
     scheduleSoloRandom();
     soloLog('Random modus gestart');
@@ -7964,6 +7973,7 @@ function stopSoloRandom() {
   const toggle = document.getElementById('solo-random-toggle');
   if (toggle) toggle.classList.remove('on');
   document.getElementById('solo-rand-next').textContent = '';
+  stateManager.clearAutopilot('solo_random');
 }
 
 function scheduleSoloRandom() {
@@ -9522,7 +9532,8 @@ let sessionEngine = { active: false, mode: null, type: null, startTime: 0, durat
 
 function startSession(mode, type) {
   stopSession(mode);
-  // Mutual exclusion: stop continuous en looping patterns
+  // Bug #500: stop ALL conflicting autopilot activities
+  stateManager.requestAutopilot('session_engine', null, mode === 'solo' ? 'solo' : 'sender');
   stopContinuousMode(mode === 'solo' ? 'solo' : 'send');
   stopLoopingPattern(mode);
   const prefix = mode === 'solo' ? 'solo' : 'sender';
@@ -9767,6 +9778,8 @@ let durfState = { active: false, value: 0, interval: null, mode: null };
 
 function startDurfGame(mode) {
   if (durfState.active) return;
+  // Bug #500: stop conflicting autopilot activities
+  stateManager.requestAutopilot('durf_game');
   durfState = { active: true, value: 0, interval: null, mode: mode };
 
   const prefix = mode === 'solo' ? 'solo' : 'sender';
@@ -9873,10 +9886,12 @@ function stopTriviaGame() {
   const display = document.getElementById(prefix + '-trivia-display');
   if (display) display.style.display = 'none';
   triviaState = { active: false, mode: null, questionIndex: 0, score: 0, wrong: 0, usedQuestions: [] };
+  stateManager.clearAutopilot('trivia_game');
 }
 
 function startTriviaGame(mode) {
-  // Mutual exclusion: stop voice quiz and old trivia
+  // Bug #500: stop ALL conflicting autopilot activities
+  stateManager.requestAutopilot('trivia_game');
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
   if (triviaState.active) stopTriviaGame();
   triviaState = {
@@ -10638,6 +10653,8 @@ function updateLisanneIntensity() {
 }
 
 function lisanneMood(mood) {
+  // Bug #500: stop conflicting autopilot activities
+  stateManager.requestAutopilot('lisanne_mood');
   // Stop current mood
   lisanneStopAll();
 
@@ -10836,6 +10853,7 @@ function lisanneStopAll() {
   }
   document.querySelectorAll('#lisanne .mood-btn').forEach(b => b.classList.remove('active'));
   setLisanneActivity('😴', 'Gestopt');
+  stateManager.clearAutopilot('lisanne_mood');
 }
 
 // --- Lisanne Timer Feature ---
