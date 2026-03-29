@@ -4701,6 +4701,54 @@ function updateAudioLoop() {
   }
 }
 
+// ==================== AUDIO DEVICE DEDUPLICATION ====================
+// Chrome/macOS reports the same hardware device multiple times:
+// 1. "default" (virtual — follows system setting)
+// 2. "Standaard - MacBook Air luidsprekers (Built-in)" (communications default — duplicate)
+// 3. "MacBook Air luidsprekers (Built-in)" (real hardware device)
+// This function filters out the "Standaard - ..." variants and marks Bluetooth/3.5mm devices.
+function deduplicateAudioDevices(outputs) {
+  const result = [];
+  const realDeviceLabels = new Set();
+
+  // First pass: collect real device labels (non-default, non-"Standaard - ...")
+  outputs.forEach(d => {
+    const label = (d.label || '').trim();
+    if (d.deviceId !== 'default' && !/^Standaard\s*[-–—]\s*/i.test(label) && !/^Default\s*[-–—]\s*/i.test(label)) {
+      realDeviceLabels.add(label);
+    }
+  });
+
+  // Second pass: keep "default" + real devices, skip "Standaard - ..." duplicates
+  const seen = new Set();
+  outputs.forEach(d => {
+    const label = (d.label || '').trim();
+
+    // Always skip the "Standaard - ..." / "Default - ..." communications variant
+    if (/^Standaard\s*[-–—]\s*/i.test(label) || /^Default\s*[-–—]\s*/i.test(label)) return;
+
+    // Skip exact label duplicates
+    const key = d.deviceId === 'default' ? '__default__' : label;
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    result.push(d);
+  });
+
+  return result;
+}
+
+// Format device label for dropdown display (adds emoji hints for BT / headphone jack)
+function formatDeviceLabel(label) {
+  if (/bluetooth|airpods|buds|galaxy buds|bose|sony wh|jabra|beats|jbl/i.test(label)) {
+    return '🔵 ' + label + ' ⚠️';
+  }
+  if (/headphone|koptelefoon|external headphones|3\.5\s*mm|line.out|usb.*audio|scarlett|focusrite|behringer/i.test(label)) {
+    return '🎧 ' + label;
+  }
+  return label;
+}
+
 // ==================== CENTRALIZED AUDIO SETUP ====================
 async function detectGlobalAudioDevices() {
   try {
@@ -4708,18 +4756,7 @@ async function detectGlobalAudioDevices() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const outputs = devices.filter(d => d.kind === 'audiooutput');
 
-    // Deduplicate devices by label (macOS lists Bluetooth devices multiple times)
-    const seen = new Map();
-    const uniqueOutputs = [];
-    outputs.forEach(d => {
-      const label = (d.label || '').trim();
-      // Normalize: remove "(Built-in)", trailing numbers, etc.
-      const normalizedLabel = label.replace(/\s*\(Built-in\)/i, '').replace(/\s*\(\d+\)$/, '').trim();
-      if (!seen.has(normalizedLabel) || d.deviceId === 'default') {
-        seen.set(normalizedLabel, d);
-        uniqueOutputs.push(d);
-      }
-    });
+    const uniqueOutputs = deduplicateAudioDevices(outputs);
 
     ['setup-stim-device', 'setup-ui-device'].forEach(selectId => {
       const sel = document.getElementById(selectId);
@@ -4727,18 +4764,11 @@ async function detectGlobalAudioDevices() {
       const currentVal = sel.value;
       sel.innerHTML = '<option value="default">Standaard audio output</option>';
       uniqueOutputs.forEach(d => {
+        if (d.deviceId === 'default') return; // already added as first option
         const opt = document.createElement('option');
         opt.value = d.deviceId;
         const label = d.label || 'Audio output ' + d.deviceId.substr(0,8);
-        opt.textContent = label;
-        // Mark Bluetooth devices
-        if (/bluetooth|airpods|buds|headphones|bt/i.test(label)) {
-          opt.textContent = '🔵 ' + label;
-        }
-        // Mark headphone jack
-        if (/headphone|koptelefoon|external|macbook.*speaker/i.test(label)) {
-          // no special marking needed
-        }
+        opt.textContent = formatDeviceLabel(label);
         sel.appendChild(opt);
       });
       // Restore selection if possible
@@ -4772,9 +4802,10 @@ function populateLegacyDeviceSelects(outputs) {
     if (!sel) return;
     sel.innerHTML = '<option value="default">Standaard audio output</option>';
     outputs.forEach(d => {
+      if (d.deviceId === 'default') return;
       const opt = document.createElement('option');
       opt.value = d.deviceId;
-      opt.textContent = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+      opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
       sel.appendChild(opt);
     });
   });
@@ -4851,20 +4882,21 @@ async function detectAudioDevices() {
   try {
     await navigator.mediaDevices.getUserMedia({ audio: true });
     const devices = await navigator.mediaDevices.enumerateDevices();
-    const outputs = devices.filter(d => d.kind === 'audiooutput');
+    const outputs = deduplicateAudioDevices(devices.filter(d => d.kind === 'audiooutput'));
 
     ['stim-output-device', 'ui-output-device'].forEach(selectId => {
       const sel = document.getElementById(selectId);
+      if (!sel) return;
       sel.innerHTML = '<option value="default">Standaard audio output</option>';
       outputs.forEach(d => {
+        if (d.deviceId === 'default') return;
         const opt = document.createElement('option');
         opt.value = d.deviceId;
-        opt.textContent = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
         sel.appendChild(opt);
       });
     });
     recvLog('🔊 ' + outputs.length + ' audio apparaten gevonden');
-    // Toon hint als er meerdere outputs zijn
     const hint = document.getElementById('audio-routing-hint');
     if (hint && outputs.length > 1) hint.style.display = 'block';
   } catch(e) {
@@ -4911,16 +4943,17 @@ async function detectSoloAudioDevices() {
   try {
     await navigator.mediaDevices.getUserMedia({ audio: true });
     const devices = await navigator.mediaDevices.enumerateDevices();
-    const outputs = devices.filter(d => d.kind === 'audiooutput');
+    const outputs = deduplicateAudioDevices(devices.filter(d => d.kind === 'audiooutput'));
 
     ['solo-stim-output-device', 'solo-ui-output-device'].forEach(selectId => {
       const sel = document.getElementById(selectId);
       if (!sel) return;
       sel.innerHTML = '<option value="default">Standaard audio output</option>';
       outputs.forEach(d => {
+        if (d.deviceId === 'default') return;
         const opt = document.createElement('option');
         opt.value = d.deviceId;
-        opt.textContent = d.label || 'Audio output ' + d.deviceId.substr(0,8);
+        opt.textContent = formatDeviceLabel(d.label || 'Audio output ' + d.deviceId.substr(0,8));
         sel.appendChild(opt);
       });
     });
