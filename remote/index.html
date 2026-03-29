@@ -2079,7 +2079,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0067</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0068</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -4330,16 +4330,14 @@ function startHeartbeatMonitor() {
   lastHeartbeat = Date.now();
   heartbeatCheckInterval = setInterval(() => {
     const elapsed = Date.now() - lastHeartbeat;
-    if (elapsed > 10000 && elapsed <= 20000) {
+    if (elapsed > 5000 && elapsed <= 8000) {
       setRecvStatus('waiting', 'Verbinding onstabiel... (' + Math.round(elapsed/1000) + 's)');
-    } else if (elapsed > 20000) {
-      recvLog('⚠️ Geen heartbeat — alles gestopt voor veiligheid', true);
-      stateManager.stopAll();
-      clearAllPatternTimeouts();
-      setRecvStatus('error', 'Verbinding verloren — alles gestopt');
+    } else if (elapsed > 8000) {
+      // v1.0068: Enhanced connection loss handling
+      handleSenderConnectionLost();
       stopHeartbeatMonitor();
     }
-  }, 2000);
+  }, 1500);
 }
 
 function stopHeartbeatMonitor() {
@@ -5720,6 +5718,9 @@ function goBack() {
   stopRandom();
   stopSessionTimer();
   stopSoloRandom();
+  stopSafewordListening();
+  clearReceiverSessionCode();
+  senderConnectionLost = false;
   if (myRole === 'receiver') {
     stopPanicCooldown();
   }
@@ -6149,6 +6150,165 @@ function getConfigIntensityScale() {
   return 1.0; // custom
 }
 
+// v1.0068: Extracted receiver data handler for reuse in reconnect
+function handleReceiverData(data) {
+  if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
+
+  // Anti-burst: reject old messages
+  if (data.ts && (Date.now() - data.ts) > 3000) {
+    recvLog('⏭ Oud bericht genegeerd (' + Math.round((Date.now() - data.ts)/1000) + 's vertraging)');
+    return;
+  }
+
+  // Reconnect cooldown
+  if (reconnectCooldown) {
+    if (data.type !== 'heartbeat' && data.type !== 'panic') return;
+  }
+
+  // Heartbeat handling
+  if (data.type === 'heartbeat') {
+    lastHeartbeat = Date.now();
+    // v1.0068: Clear connection lost state on heartbeat
+    if (senderConnectionLost) {
+      senderConnectionLost = false;
+      setRecvStatus('connected', 'Verbonden met zender!');
+      document.getElementById('recv-connected-indicator').style.display = 'block';
+      tvShowConnectionLost(false);
+      if (!heartbeatCheckInterval) startHeartbeatMonitor();
+    }
+    return;
+  }
+
+  // SAFETY: Validate & sanitize ALL incoming numeric values from sender
+  function safeNum(val, min, max, fallback) {
+    const n = parseFloat(val);
+    if (isNaN(n) || !isFinite(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+  const safetyLimitPct = parseInt(document.getElementById('safety-limit')?.value || 50);
+
+  if (data.type === 'shock') {
+    doReceiverShock(
+      safeNum(data.freq, 20, 1000, 200),
+      safeNum(data.volume, 0, safetyLimitPct, 0),
+      safeNum(data.duration, 50, 5000, 300),
+      data.volume_l != null ? safeNum(data.volume_l, 0, safetyLimitPct, 0) : null,
+      data.volume_r != null ? safeNum(data.volume_r, 0, safetyLimitPct, 0) : null
+    );
+  } else if (data.type === 'pattern') {
+    const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging','ademhaling','pingpong','slowramp','stereo_sweep','stereo_drift','stereo_pulse'];
+    const safePat = allowedPatterns.includes(data.pattern) ? data.pattern : 'ratata';
+    doReceiverPattern(safePat, safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
+  } else if (data.type === 'hold_start') {
+    startReceiverHold(safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
+  } else if (data.type === 'hold_stop') {
+    stopReceiverHold();
+  } else if (data.type === 'chat') {
+    const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
+    addChatMessage('sender', chatText);
+    if (data.tts && chatText) { speak(chatText); }
+  } else if (data.type === 'sched_shock_start') {
+    const sec = Math.max(1, Math.min(600, parseInt(data.delaySec) || 60));
+    const vol = Math.max(0, Math.min(100, parseInt(data.volume) || 50));
+    const withCountdown = !!data.doCountdown;
+    recvLog('⏱️ Schok gepland: ' + vol + '% over ' + Math.round(sec) + 's' + (withCountdown ? ' (met aftellen)' : ' (verrassing!)'));
+    if (fsOpen) { fsUpdateMain('⏱️ Schok over ' + formatSchedTime(sec) + (withCountdown ? '' : ' (verrassing!)'), 'tease'); }
+    startRecvSchedCountdown(sec, withCountdown);
+  } else if (data.type === 'sched_shock_cancel') {
+    recvLog('❌ Geplande schok geannuleerd');
+    cancelRecvSchedCountdown();
+    if (fsOpen) fsUpdateMain('❌ Geannuleerd', 'waiting');
+  } else if (data.type === 'safeword_config') {
+    const word = typeof data.word === 'string' ? data.word.slice(0, 50).toLowerCase().trim() : '';
+    if (data.enabled && word) { startSafewordListening(word); }
+    else { stopSafewordListening(); if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'off', ts: Date.now() }); }
+  } else if (data.type === 'safeword_resume') {
+    resumeSafewordReceiver();
+  } else if (data.type === 'cam_cmd') {
+    if (data.cmd === 'audio_toggle' && cameraPeerConn && cameraPeerConn.open) {
+      cameraPeerConn.send({ type: 'cam_audio_toggle', enabled: data.enabled });
+    } else if (data.cmd === 'show_sender_pip') {
+      const pip = document.getElementById('sender-pip');
+      if (pip) pip.classList.toggle('visible', !!data.enabled);
+    }
+  } else if (data.type === 'cam_request_stream') {
+    // Handled via peer.on('call') sender_wants_cam
+  } else if (data.type === 'sender_cam_start') {
+    recvLog('🤳 Zender deelt camera');
+  } else if (data.type === 'sender_cam_stop') {
+    hideSenderPip();
+    recvLog('🤳 Zender camera gestopt');
+  } else if (data.type === 'tv_cmd') {
+    handleTvCommand(data);
+  } else if (data.type === 'countdown') {
+    showCountdownReceiver(data.number);
+  } else if (data.type === 'reaction_start') {
+    startReactionGameReceiver();
+  } else if (data.type === 'tease') {
+    const teaseMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
+    const overlay = document.getElementById('tease-overlay');
+    const teaseText = document.getElementById('tease-text');
+    if (teaseMsg && overlay && teaseText) {
+      teaseText.textContent = teaseMsg;
+      overlay.classList.add('visible');
+      vibrateDevice(200);
+      trackTimeout(() => overlay.classList.remove('visible'), 3000);
+    }
+    if (teaseMsg) recvLog('😈 ' + teaseMsg, false);
+    if (fsOpen && teaseMsg) {
+      fsUpdateMain('😈 ' + teaseMsg, 'tease');
+      trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
+    }
+    if (tvState.open && teaseMsg) tvShowChat('😈 ' + teaseMsg);
+  } else if (data.type === 'tease_fakeout') {
+    const fakeMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
+    const overlay = document.getElementById('tease-overlay');
+    const teaseText = document.getElementById('tease-text');
+    if (fakeMsg && overlay && teaseText) {
+      teaseText.textContent = fakeMsg;
+      overlay.classList.add('visible');
+      vibrateDevice(200);
+      trackTimeout(() => {
+        if (teaseText) teaseText.textContent = '😏 ...of toch niet?';
+        trackTimeout(() => overlay.classList.remove('visible'), 1500);
+      }, 1500);
+    }
+    if (fakeMsg) recvLog('😏 Fake-out: ' + fakeMsg, false);
+    if (fsOpen && fakeMsg) {
+      fsUpdateMain(fakeMsg, 'tease');
+      trackTimeout(() => fsUpdateMain('😏 ...of toch niet?', 'tease'), 1500);
+      trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
+    }
+  } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
+    handleVoiceQuizMessage(data);
+  } else if (data.type === 'stereo_tone') {
+    const safeData = Object.assign({}, data, {
+      freqL: safeNum(data.freqL, 20, 1000, 200),
+      freqR: safeNum(data.freqR, 20, 1000, 200),
+      volume: safeNum(data.volume, 0, safetyLimitPct, 0),
+      duration: safeNum(data.duration, 50, 5000, 300),
+      lfoRateL: safeNum(data.lfoRateL, 0, 50, 0),
+      lfoRateR: safeNum(data.lfoRateR, 0, 50, 0),
+      lfoDepthL: safeNum(data.lfoDepthL, 0, 1, 0),
+      lfoDepthR: safeNum(data.lfoDepthR, 0, 1, 0),
+      delayR: safeNum(data.delayR, 0, 2, 0)
+    });
+    playToneStereoAdvanced(safeData);
+    recordIntensity(data.volume, 'stereo_tone');
+  } else if (data.type === 'sender_returned') {
+    recvLog('📱 Zender is terug — klaar voor commando\'s');
+    setRecvStatus('connected', 'Verbonden met zender!');
+    lastHeartbeat = Date.now();
+    if (!heartbeatCheckInterval) startHeartbeatMonitor();
+    tvShowConnectionLost(false);
+    sendSessionStateToSender();
+  } else if (data.type === 'timer_start') {
+    startRecvTimer(safeNum(data.seconds, 5, 120, 15), safeNum(data.intensity, 10, 90, 40));
+  } else if (data.type === 'panic') {
+    recvLog('⚠️ PANIC - Verbinding gestopt door zender');
+  }
+}
+
 function startReceiver() {
   myRole = 'receiver';
   updateRecvQS();
@@ -6184,6 +6344,8 @@ function startReceiver() {
     recvLog('Klaar. Code: ' + code);
     setRecvStatus('waiting', 'Wacht op verbinding van zender...');
     requestWakeLock();
+    // v1.0068: Save session code for auto-reconnect
+    saveReceiverSessionCode(code);
   });
 
   peer.on('connection', (c) => {
@@ -6215,190 +6377,15 @@ function startReceiver() {
     startHeartbeatMonitor();
     startIntensityReporting();
 
-    conn.on('data', (data) => {
-      if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
-
-      // Anti-burst: reject old messages
-      if (data.ts && (Date.now() - data.ts) > 3000) {
-        recvLog('⏭ Oud bericht genegeerd (' + Math.round((Date.now() - data.ts)/1000) + 's vertraging)');
-        return;
-      }
-
-      // Reconnect cooldown
-      if (reconnectCooldown) {
-        if (data.type !== 'heartbeat' && data.type !== 'panic') return;
-      }
-
-      // Heartbeat handling
-      if (data.type === 'heartbeat') {
-        lastHeartbeat = Date.now();
-        return;
-      }
-
-      // SAFETY: Validate & sanitize ALL incoming numeric values from sender
-      function safeNum(val, min, max, fallback) {
-        const n = parseFloat(val);
-        if (isNaN(n) || !isFinite(n)) return fallback;
-        return Math.max(min, Math.min(max, n));
-      }
-      const safetyLimitPct = parseInt(document.getElementById('safety-limit')?.value || 50);
-
-      if (data.type === 'shock') {
-        doReceiverShock(
-          safeNum(data.freq, 20, 1000, 200),
-          safeNum(data.volume, 0, safetyLimitPct, 0),
-          safeNum(data.duration, 50, 5000, 300),
-          data.volume_l != null ? safeNum(data.volume_l, 0, safetyLimitPct, 0) : null,
-          data.volume_r != null ? safeNum(data.volume_r, 0, safetyLimitPct, 0) : null
-        );
-      } else if (data.type === 'pattern') {
-        // Whitelist pattern names to prevent injection
-        const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging','ademhaling','pingpong','slowramp','stereo_sweep','stereo_drift','stereo_pulse'];
-        const safePat = allowedPatterns.includes(data.pattern) ? data.pattern : 'ratata';
-        doReceiverPattern(safePat, safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
-      } else if (data.type === 'hold_start') {
-        startReceiverHold(safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
-      } else if (data.type === 'hold_stop') {
-        stopReceiverHold();
-      } else if (data.type === 'chat') {
-        // Bug #322 fix: limit chat message length to prevent DoS
-        const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
-        addChatMessage('sender', chatText);
-        // TTS: sender requested this message to be read aloud
-        if (data.tts && chatText) {
-          speak(chatText);
-        }
-      } else if (data.type === 'sched_shock_start') {
-        const sec = Math.max(1, Math.min(600, parseInt(data.delaySec) || 60));
-        const vol = Math.max(0, Math.min(100, parseInt(data.volume) || 50));
-        const withCountdown = !!data.doCountdown;
-        recvLog('⏱️ Schok gepland: ' + vol + '% over ' + Math.round(sec) + 's' + (withCountdown ? ' (met aftellen)' : ' (verrassing!)'));
-        if (fsOpen) {
-          fsUpdateMain('⏱️ Schok over ' + formatSchedTime(sec) + (withCountdown ? '' : ' (verrassing!)'), 'tease');
-        }
-        // Start a receiver-side countdown display
-        startRecvSchedCountdown(sec, withCountdown);
-      } else if (data.type === 'sched_shock_cancel') {
-        recvLog('❌ Geplande schok geannuleerd');
-        cancelRecvSchedCountdown();
-        if (fsOpen) fsUpdateMain('❌ Geannuleerd', 'waiting');
-      } else if (data.type === 'safeword_config') {
-        // Sender configured safeword
-        const word = typeof data.word === 'string' ? data.word.slice(0, 50).toLowerCase().trim() : '';
-        if (data.enabled && word) {
-          startSafewordListening(word);
-        } else {
-          stopSafewordListening();
-          if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'off', ts: Date.now() });
-        }
-      } else if (data.type === 'safeword_resume') {
-        resumeSafewordReceiver();
-      } else if (data.type === 'cam_cmd') {
-        // Relay camera commands from sender to camera companion
-        if (data.cmd === 'audio_toggle' && cameraMediaConn) {
-          // Relay to camera data connection
-          if (cameraPeerConn && cameraPeerConn.open) cameraPeerConn.send({ type: 'cam_audio_toggle', enabled: data.enabled });
-        } else if (data.cmd === 'show_sender_pip') {
-          const pip = document.getElementById('sender-pip');
-          if (pip) pip.classList.toggle('visible', !!data.enabled);
-        }
-      } else if (data.type === 'cam_request_stream') {
-        // Sender wants camera stream — handled via peer.on('call') sender_wants_cam
-        // Nothing to do here, the call handler answers with the relay stream
-      } else if (data.type === 'sender_cam_start') {
-        recvLog('🤳 Zender deelt camera');
-      } else if (data.type === 'sender_cam_stop') {
-        hideSenderPip();
-        recvLog('🤳 Zender camera gestopt');
-      } else if (data.type === 'tv_cmd') {
-        handleTvCommand(data);
-      } else if (data.type === 'countdown') {
-        showCountdownReceiver(data.number);
-      } else if (data.type === 'reaction_start') {
-        startReactionGameReceiver();
-      } else if (data.type === 'tease') {
-        const teaseMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #401 fix
-        const overlay = document.getElementById('tease-overlay');
-        const teaseText = document.getElementById('tease-text');
-        if (teaseMsg && overlay && teaseText) {
-          teaseText.textContent = teaseMsg;
-          overlay.classList.add('visible');
-          vibrateDevice(200);
-          trackTimeout(() => overlay.classList.remove('visible'), 3000);
-        }
-        if (teaseMsg) recvLog('😈 ' + teaseMsg, false);
-        if (fsOpen && teaseMsg) {
-          fsUpdateMain('😈 ' + teaseMsg, 'tease');
-          trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
-        }
-        if (tvState.open && teaseMsg) tvShowChat('😈 ' + teaseMsg);
-      } else if (data.type === 'tease_fakeout') {
-        const fakeMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #402 fix
-        const overlay = document.getElementById('tease-overlay');
-        const teaseText = document.getElementById('tease-text');
-        if (fakeMsg && overlay && teaseText) {
-          teaseText.textContent = fakeMsg;
-          overlay.classList.add('visible');
-          vibrateDevice(200);
-          trackTimeout(() => {
-            if (teaseText) teaseText.textContent = '😏 ...of toch niet?';
-            trackTimeout(() => overlay.classList.remove('visible'), 1500);
-          }, 1500);
-        }
-        if (fakeMsg) recvLog('😏 Fake-out: ' + fakeMsg, false);
-        if (fsOpen && fakeMsg) {
-          fsUpdateMain(fakeMsg, 'tease');
-          trackTimeout(() => fsUpdateMain('😏 ...of toch niet?', 'tease'), 1500);
-          trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
-        }
-      } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
-        handleVoiceQuizMessage(data);
-      } else if (data.type === 'stereo_tone') {
-        // Sanitize stereo tone params before passing
-        const safeData = Object.assign({}, data, {
-          freqL: safeNum(data.freqL, 20, 1000, 200),
-          freqR: safeNum(data.freqR, 20, 1000, 200),
-          volume: safeNum(data.volume, 0, safetyLimitPct, 0),
-          duration: safeNum(data.duration, 50, 5000, 300),
-          lfoRateL: safeNum(data.lfoRateL, 0, 50, 0),
-          lfoRateR: safeNum(data.lfoRateR, 0, 50, 0),
-          lfoDepthL: safeNum(data.lfoDepthL, 0, 1, 0),
-          lfoDepthR: safeNum(data.lfoDepthR, 0, 1, 0),
-          delayR: safeNum(data.delayR, 0, 2, 0)
-        });
-        playToneStereoAdvanced(safeData);
-        recordIntensity(data.volume, 'stereo_tone');
-      } else if (data.type === 'sender_returned') {
-        recvLog('📱 Zender is terug — klaar voor commando\'s');
-        setRecvStatus('connected', 'Verbonden met zender!');
-        lastHeartbeat = Date.now(); // Reset heartbeat
-        if (!heartbeatCheckInterval) startHeartbeatMonitor(); // Restart monitor if stopped
-      } else if (data.type === 'timer_start') {
-        startRecvTimer(safeNum(data.seconds, 5, 120, 15), safeNum(data.intensity, 10, 90, 40));
-      } else if (data.type === 'panic') {
-        // Remote panic was triggered
-        recvLog('⚠️ PANIC - Verbinding gestopt door zender');
-      }
-    });
+    conn.on('data', handleReceiverData);
 
     conn.on('close', () => {
-      setRecvStatus('waiting', 'Verbinding verbroken. Wacht op herverbinding...');
-      document.getElementById('recv-connected-indicator').style.display = 'none';
-      // Stop alle audio bij verbroken verbinding
-      stateManager.stopAll();
-      clearAllPatternTimeouts();
-      stopReceiverHoldLocal();
-      stopCarrier();
-      stopContinuousMode('send');
-      stopAudioPlayback();
-      stopHeartbeatMonitor();
-      stopDeadManSwitch();
-      stopIntensityReporting();
-      recvLog('⚠️ Verbinding verbroken — alle audio gestopt voor veiligheid');
-      // Clean up old connection reference
-      conn = null;
+      // v1.0068: Use enhanced connection loss handler
+      handleSenderConnectionLost();
     });
   });
+
+  // NOTE: old inline handler removed — now uses handleReceiverData function
 
   // Handle incoming media calls (camera companion, sender camera)
   peer.on('call', (call) => {
@@ -7532,6 +7519,8 @@ function connectToReceiver() {
         } else {
           sendLog('❌ Reactiespel: Ontvanger was te laat!', true);
         }
+      } else if (data.type === 'session_state') {
+        handleSessionStateRestore(data);
       } else if (data.type === 'safeword_status') {
         handleSafewordStatus(data);
       } else if (data.type === 'safeword_triggered') {
@@ -14607,6 +14596,360 @@ document.addEventListener('visibilitychange', function() {
   }
 });
 
+// ==================== CONNECTION SAFETY & RECONNECT (v1.0068) ====================
+let senderConnectionLost = false;
+
+// --- Receiver: handle sender connection lost ---
+function handleSenderConnectionLost() {
+  if (senderConnectionLost) return; // Already handling
+  senderConnectionLost = true;
+
+  // 1. Stop ALL e-stim immediately
+  stateManager.stopAll();
+  clearAllPatternTimeouts();
+  stopBaseline();
+  stopAudioImmediately();
+  stopReceiverHoldLocal();
+  stopCarrier();
+  stopContinuousMode('send');
+  if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
+  stopDeadManSwitch();
+  stopIntensityReporting();
+
+  // 2. Update status
+  setRecvStatus('error', 'Verbinding met zender verloren — e-stim gestopt');
+  document.getElementById('recv-connected-indicator').style.display = 'none';
+  recvLog('⚠️ Verbinding verloren — ALLE e-stim gestopt', true);
+
+  // 3. Show on TV display
+  tvShowConnectionLost(true);
+
+  // 4. Safeword-detectie blijft actief (niet stoppen!)
+  // safewordState remains active
+
+  // 5. Save session state for reconnect
+  saveReceiverSessionState();
+
+  // 6. Clean up connection but keep peer alive for reconnect
+  conn = null;
+  // DON'T destroy peer — we keep listening for new connections
+}
+
+// --- TV connection lost message ---
+function tvShowConnectionLost(show) {
+  if (show) {
+    // Show on TV overlay
+    if (tvState.open) {
+      tvShowInfo('⚠️ Verbinding met zender verloren — e-stim gestopt');
+    }
+    // Also show on the safeword-style paused screen if TV is open
+    const overlay = document.getElementById('tv-overlay');
+    if (overlay && overlay.classList.contains('visible')) {
+      // Repurpose info layer for connection lost message
+      tvShowLayer('tv-info-layer', true);
+      const infoEl = document.getElementById('tv-info-text');
+      if (infoEl) {
+        infoEl.textContent = '⚠️ Verbinding met zender verloren — e-stim gestopt';
+        infoEl.style.color = '#ff9800';
+        infoEl.style.fontSize = 'clamp(1.2em, 4vw, 2.5em)';
+      }
+    }
+  } else {
+    // Clear connection lost message
+    const infoEl = document.getElementById('tv-info-text');
+    if (infoEl) {
+      infoEl.style.color = '';
+      infoEl.style.fontSize = '';
+    }
+    tvShowLayer('tv-info-layer', false);
+  }
+}
+
+// --- Receiver: save session state ---
+function saveReceiverSessionState() {
+  try {
+    const state = {
+      safetyLimit: document.getElementById('safety-limit')?.value || 50,
+      safeword: safewordState.enabled ? safewordState.word : null,
+      safewordEnabled: safewordState.enabled,
+      tvOpen: tvState.open,
+      tvToggles: tvState.toggles,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('estim-session-state', JSON.stringify(state));
+  } catch(e) {
+    console.warn('Session state save failed:', e);
+  }
+}
+
+// --- Receiver: save session code for auto-reconnect ---
+function saveReceiverSessionCode(code) {
+  try {
+    localStorage.setItem('estim-session-code', code);
+    localStorage.setItem('estim-session-role', 'receiver');
+    localStorage.setItem('estim-session-time', Date.now().toString());
+  } catch(e) {}
+}
+
+function clearReceiverSessionCode() {
+  try {
+    localStorage.removeItem('estim-session-code');
+    localStorage.removeItem('estim-session-role');
+    localStorage.removeItem('estim-session-time');
+    localStorage.removeItem('estim-session-state');
+  } catch(e) {}
+}
+
+// --- Receiver: send session state to sender on reconnect ---
+function sendSessionStateToSender() {
+  if (!conn || !conn.open) return;
+  try {
+    const state = {
+      type: 'session_state',
+      safetyLimit: parseInt(document.getElementById('safety-limit')?.value || 50),
+      safewordEnabled: safewordState.enabled,
+      safewordWord: safewordState.word,
+      tvOpen: tvState.open,
+      tvToggles: tvState.toggles,
+      ts: Date.now()
+    };
+    conn.send(state);
+  } catch(e) {}
+}
+
+// --- Receiver: accept reconnecting sender ---
+function handleSenderReconnect(c) {
+  // A new sender is connecting while we still have our session
+  senderConnectionLost = false;
+  conn = c;
+
+  setRecvStatus('connected', 'Zender herverbonden!');
+  document.getElementById('recv-connected-indicator').style.display = 'block';
+  recvLog('📱 Zender herverbonden — sessie hersteld', true);
+
+  // Clear TV connection lost message
+  tvShowConnectionLost(false);
+
+  // Restart monitoring
+  lastHeartbeat = Date.now();
+  startHeartbeatMonitor();
+  startIntensityReporting();
+
+  // Send current state back to sender
+  sendSessionStateToSender();
+}
+
+// --- Sender: handle session state restore ---
+function handleSessionStateRestore(data) {
+  sendLog('📱 Sessie hersteld — ontvanger-state ontvangen');
+
+  // Restore safeword toggle state
+  if (data.safewordEnabled) {
+    const swToggle = document.getElementById('safeword-enable-toggle');
+    if (swToggle && !swToggle.classList.contains('on')) swToggle.classList.add('on');
+    const swInput = document.getElementById('safeword-input');
+    if (swInput && data.safewordWord) swInput.value = data.safewordWord;
+    // Safeword is still active on receiver, just update sender UI
+    handleSafewordStatus({ status: 'active' });
+  }
+
+  // Show reconnect info banner
+  showSenderSessionRestoredBanner();
+}
+
+function showSenderSessionRestoredBanner() {
+  let banner = document.getElementById('sender-session-restored');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sender-session-restored';
+    banner.style.cssText = 'background:linear-gradient(135deg,#1a3a2a,#2a4a3a);border:2px solid #4caf50;color:#e0e0e0;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;font-size:0.95em;';
+    banner.innerHTML = '<div style="font-size:1.1em;font-weight:bold;color:#4caf50;margin-bottom:8px;">✅ Sessie hersteld</div>' +
+      '<div style="color:#aaa;margin-bottom:8px;">Intensiteit staat op 0 — bouw bewust opnieuw op</div>' +
+      '<button onclick="this.parentElement.remove()" style="padding:8px 24px;background:#4caf50;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Begrepen</button>';
+
+    const senderScreen = document.getElementById('sender') || document.getElementById('lisanne');
+    if (senderScreen) {
+      const statusBar = senderScreen.querySelector('.status-bar');
+      if (statusBar) statusBar.after(banner);
+      else senderScreen.insertBefore(banner, senderScreen.firstChild);
+    }
+  }
+  banner.style.display = 'block';
+
+  // Reset volume sliders to 0 for safety
+  const volSlider = document.getElementById('send-volume');
+  if (volSlider) { volSlider.value = 0; }
+  const volLabel = document.getElementById('send-vol-label');
+  if (volLabel) volLabel.textContent = '0%';
+}
+
+// --- Receiver: auto-reconnect from localStorage on page load ---
+function checkAutoReconnect() {
+  try {
+    const savedCode = localStorage.getItem('estim-session-code');
+    const savedRole = localStorage.getItem('estim-session-role');
+    const savedTime = parseInt(localStorage.getItem('estim-session-time') || '0');
+
+    // Only auto-reconnect within 30 minutes
+    if (savedRole === 'receiver' && savedCode && (Date.now() - savedTime) < 1800000) {
+      // Show auto-reconnect prompt
+      showAutoReconnectPrompt(savedCode);
+    } else {
+      clearReceiverSessionCode();
+    }
+  } catch(e) {}
+}
+
+function showAutoReconnectPrompt(code) {
+  const overlay = document.createElement('div');
+  overlay.id = 'auto-reconnect-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:20000;background:rgba(10,10,26,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;';
+  overlay.innerHTML =
+    '<div style="font-size:2.5em;margin-bottom:16px;">🔄</div>' +
+    '<div style="font-size:1.3em;color:#fff;margin-bottom:8px;">Sessie gevonden</div>' +
+    '<div style="color:#888;margin-bottom:6px;">Sessiecode: <strong style="color:#e94560;letter-spacing:3px;">' + code + '</strong></div>' +
+    '<div style="color:#666;margin-bottom:24px;max-width:300px;">Wil je deze sessie hervatten? De zender kan opnieuw verbinden met dezelfde code.</div>' +
+    '<button onclick="autoReconnectReceiver(\'' + code + '\')" style="padding:16px 40px;font-size:1.1em;background:#4caf50;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold;margin-bottom:12px;">✅ Ja, hervat sessie</button>' +
+    '<button onclick="dismissAutoReconnect()" style="padding:10px 24px;font-size:0.9em;background:transparent;border:1px solid #666;color:#888;border-radius:8px;cursor:pointer;">Nee, nieuwe sessie</button>';
+  document.body.appendChild(overlay);
+}
+
+function autoReconnectReceiver(code) {
+  const overlay = document.getElementById('auto-reconnect-overlay');
+  if (overlay) overlay.remove();
+
+  // Restore saved state
+  try {
+    const savedState = JSON.parse(localStorage.getItem('estim-session-state') || '{}');
+    if (savedState.safetyLimit) {
+      const slider = document.getElementById('safety-limit');
+      if (slider) { slider.value = savedState.safetyLimit; updateSafetyLimit(); }
+    }
+  } catch(e) {}
+
+  // Start receiver with the saved code instead of generating a new one
+  myRole = 'receiver';
+  updateRecvQS();
+  updateSafetyLimit();
+  updateFloatingPanic();
+
+  if (selectedElectrodeConfig) {
+    const configMap = { loops_plug: 'loops_and_plug', loops_only: 'loops_only', plug_only: 'plug_only', custom: 'custom' };
+    electrodeConfig.type = configMap[selectedElectrodeConfig] || selectedElectrodeConfig;
+    applyElectrodeConfig();
+    showScreen('receiver');
+  } else {
+    showScreen('receiver');
+  }
+
+  const gate = document.getElementById('audio-activation-gate');
+  if (gate) gate.style.display = 'flex';
+
+  initTabDetection();
+
+  const recvCodeEl = document.getElementById('recv-code');
+  if (recvCodeEl) recvCodeEl.textContent = code;
+
+  peer = new Peer(getPeerId(code), { debug: 0 });
+
+  peer.on('open', () => {
+    recvLog('🔄 Sessie hervat. Code: ' + code);
+    setRecvStatus('waiting', 'Wacht op herverbinding van zender...');
+    requestWakeLock();
+    saveReceiverSessionCode(code);
+  });
+
+  // Re-attach all the same event handlers as startReceiver()
+  // We reuse the existing peer.on('connection') by triggering startReceiver logic
+  // Actually, the peer event handlers are set in startReceiver, so we duplicate the minimal set here
+
+  peer.on('connection', (c) => {
+    const meta = c.metadata || {};
+    if (meta.role === 'camera' && conn) {
+      cameraPeerConn = c;
+      c.on('open', () => { recvLog('📷 Camera data-verbinding open'); });
+      c.on('data', (data) => {
+        if (data.type === 'cam_battery' && conn && conn.open) conn.send(data);
+      });
+      c.on('close', () => {
+        cameraPeerConn = null;
+        if (conn && conn.open) conn.send({ type: 'cam_disconnected', ts: Date.now() });
+      });
+      return;
+    }
+
+    handleSenderReconnect(c);
+
+    // Bug #452 fix: activate reconnect cooldown
+    reconnectCooldown = true;
+    setTimeout(() => { reconnectCooldown = false; }, 2000);
+
+    c.on('data', (data) => {
+      // Reuse the same data handler - by this point conn is set to c
+      // We emit a custom event to reuse the handler
+      handleReceiverData(data);
+    });
+
+    c.on('close', () => {
+      handleSenderConnectionLost();
+    });
+  });
+
+  peer.on('call', (call) => {
+    const meta = call.metadata || {};
+    if (meta.role === 'camera') {
+      call.answer();
+      call.on('stream', (remoteStream) => {
+        window._cameraRelayStream = remoteStream;
+        handleCameraConnection(call);
+      });
+    } else if (meta.role === 'sender_cam') {
+      call.answer();
+      call.on('stream', (remoteStream) => { handleSenderCamStream(remoteStream); });
+      call.on('close', () => { hideSenderPip(); });
+    } else if (meta.role === 'sender_wants_cam') {
+      if (window._cameraRelayStream) {
+        call.answer(window._cameraRelayStream);
+      } else { call.answer(); }
+    }
+  });
+
+  peer.on('error', (err) => {
+    setRecvStatus('error', 'Fout: ' + err.type);
+    recvLog('Fout: ' + err.type);
+    // If peer ID is taken (receiver already exists), clear and retry with new code
+    if (err.type === 'unavailable-id') {
+      clearReceiverSessionCode();
+      recvLog('⚠️ Sessiecode al in gebruik — start nieuwe sessie');
+      if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+      startReceiver();
+    }
+  });
+}
+
+function dismissAutoReconnect() {
+  const overlay = document.getElementById('auto-reconnect-overlay');
+  if (overlay) overlay.remove();
+  clearReceiverSessionCode();
+}
+
+// --- Camera reconnect ---
+function handleCameraReconnect() {
+  // Camera is not critical — just update UI
+  // Camera-iPhone reconnects by opening the same session code again
+  // The existing peer.on('connection') + peer.on('call') with role='camera' handles this
+  sendLog('📷 Camera opnieuw verbonden');
+  const notConnEl = document.getElementById('cam-not-connected');
+  const connEl = document.getElementById('cam-connected-controls');
+  if (notConnEl) notConnEl.style.display = 'none';
+  if (connEl) connEl.style.display = 'block';
+
+  const fsDot = document.getElementById('cam-fs-dot');
+  const fsStatus = document.getElementById('cam-fs-status');
+  if (fsDot) fsDot.className = 'cam-status-dot online';
+  if (fsStatus) fsStatus.textContent = 'Verbonden';
+}
+
 // ==================== SAFEWORD VOICE DETECTION (v1.0067) ====================
 const safewordState = {
   enabled: false,
@@ -15375,6 +15718,11 @@ setTimeout(() => {
     detectGlobalAudioDevices();
   }
 }, 1000);
+
+// v1.0068: Check for auto-reconnect on page load
+setTimeout(() => {
+  checkAutoReconnect();
+}, 500);
 </script>
 
 </body>
