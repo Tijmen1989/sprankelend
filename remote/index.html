@@ -1580,7 +1580,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0060</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0061</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -5972,6 +5972,8 @@ function doReceiverPattern(pattern, freq, volume) {
     recvLog('⚠️ Audio niet geactiveerd — tik eerst op Activeer Audio', true);
     return;
   }
+  // Bug #490: stop lopend patroon voordat nieuw patroon start
+  clearAllPatternTimeouts();
   // Duck baseline during patterns (estimate ~3s for most patterns)
   duckBaseline(3500);
   const display = document.getElementById('recv-pattern-display');
@@ -6903,6 +6905,10 @@ function sendPatternOnce(pattern) {
 function sendPattern(pattern) {
   if (!conn || conn.open !== true) return;
 
+  // Bug #490: stop lopend patroon voordat nieuw patroon start
+  clearAllPatternTimeouts();
+  stopLoopingPattern('sender');
+
   const patternNames = {
     'ratata': 'Ratata', 'golf': 'Golf', 'hartslag': 'Hartslag',
     'opbouw': 'Opbouw', 'staccato': 'Staccato', 'ademhaling': 'Ademhaling',
@@ -7521,6 +7527,10 @@ function soloShock(pct, e) {
 }
 
 function soloPattern(pattern) {
+  // Bug #490: stop lopend patroon voordat nieuw patroon start
+  clearAllPatternTimeouts();
+  stopLoopingPattern('solo');
+
   duckBaseline(3500);
   ensureAudio();
   const names = { 'ratata':'Ratata','golf':'Golf','hartslag':'Hartslag','opbouw':'Opbouw','staccato':'Staccato','ademhaling':'Ademhaling','pingpong':'Ping Pong','slowramp':'Langzaam↑','chaos':'Chaos' };
