@@ -7609,7 +7609,9 @@ function soloCountdown() {
       display.style.display = 'none';
       if (vizText) { vizText.textContent = '⚡ SCHOK!'; vizText.style.color = '#e94560'; }
       speak('Schok!');
-      const vol = Math.round(Math.random() * 80 + 20);
+      const volMin = parseInt(document.getElementById('solo-rand-vol-min')?.value) || 20;
+      const volMax = Math.max(volMin, parseInt(document.getElementById('solo-rand-vol-max')?.value) || 80);
+      const vol = Math.round(volMin + Math.random() * (volMax - volMin));
       doSoloShock(s.freq, vol, s.duration);
       soloLog('⏱️ Countdown afgelopen! Schok: ' + vol + '%', true);
     }
