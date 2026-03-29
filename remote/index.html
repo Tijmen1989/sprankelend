@@ -1696,7 +1696,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0064</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0065</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3474,6 +3474,10 @@
     <div class="tts-toggle-row">
       <label>🔊 Antwoorden voorlezen</label>
       <div id="send-tts-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="tts-toggle-row">
+      <label>🔊 Mijn berichten voorlezen bij ontvanger</label>
+      <div id="send-tts-out-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
     </div>
   </div>
 
@@ -5756,6 +5760,10 @@ function startReceiver() {
         // Bug #322 fix: limit chat message length to prevent DoS
         const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
         addChatMessage('sender', chatText);
+        // TTS: sender requested this message to be read aloud
+        if (data.tts && chatText) {
+          speak(chatText);
+        }
       } else if (data.type === 'sched_shock_start') {
         const sec = Math.max(1, Math.min(600, parseInt(data.delaySec) || 60));
         const vol = Math.max(0, Math.min(100, parseInt(data.volume) || 50));
@@ -7406,7 +7414,8 @@ function sendChatMessage() {
   if (!text) return;
   if (!conn || conn.open !== true) return;
 
-  conn.send({ type: 'chat', text, ts: Date.now() });
+  const tts = document.getElementById('send-tts-out-toggle')?.classList.contains('on') || false;
+  conn.send({ type: 'chat', text, tts, ts: Date.now() });
   addChatMessage('sender', text);
   input.value = '';
 }
