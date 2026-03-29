@@ -4810,9 +4810,7 @@ async function updateGlobalStimDevice() {
 async function updateGlobalUIDevice() {
   const deviceId = document.getElementById('setup-ui-device').value;
 
-  if (!uiAudioCtx) {
-    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  ensureUiAudio(); // Bug #250 fix: use ensureUiAudio to also create uiMasterGain
   if (uiAudioCtx.setSinkId && deviceId !== 'default') {
     try {
       await uiAudioCtx.setSinkId(deviceId);
@@ -4897,9 +4895,7 @@ async function updateAudioRouting() {
 
 async function updateUIAudioRouting() {
   const deviceId = document.getElementById('ui-output-device').value;
-  if (!uiAudioCtx) {
-    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  ensureUiAudio(); // Bug #250 fix: use ensureUiAudio to also create uiMasterGain
   if (uiAudioCtx.setSinkId && deviceId !== 'default') {
     try {
       await uiAudioCtx.setSinkId(deviceId);
@@ -4948,9 +4944,7 @@ async function updateSoloAudioRouting() {
 
 async function updateSoloUIAudioRouting() {
   const deviceId = document.getElementById('solo-ui-output-device').value;
-  if (!uiAudioCtx) {
-    uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  ensureUiAudio(); // Bug #250 fix: use ensureUiAudio to also create uiMasterGain
   if (uiAudioCtx.setSinkId && deviceId !== 'default') {
     try {
       await uiAudioCtx.setSinkId(deviceId);
@@ -5882,6 +5876,11 @@ function shouldUseStereoEngine() {
 }
 
 function doReceiverPattern(pattern, freq, volume) {
+  // Bug #268 fix: check audio activation gate (same as doReceiverShock)
+  if (!audioActivated) {
+    recvLog('⚠️ Audio niet geactiveerd — tik eerst op Activeer Audio', true);
+    return;
+  }
   // Duck baseline during patterns (estimate ~3s for most patterns)
   duckBaseline(3500);
   const display = document.getElementById('recv-pattern-display');
@@ -8585,6 +8584,7 @@ function contRealtimeTick(prefix) {
     // Extra freq movement to compensate for no stereo
     targetFreq += Math.sin(Date.now() / 1800) * 12;
   }
+  targetFreq = Math.max(20, Math.min(targetFreq, 800)); // Bug #271 fix: clamp to safe range
   state.currentFreq = lerp(state.currentFreq, targetFreq, 0.04);
   n.osc1.frequency.linearRampToValueAtTime(state.currentFreq, now + 0.12);
   n.osc2.frequency.linearRampToValueAtTime(state.currentFreq * (wave > 0.5 ? 1.02 : 0.5), now + 0.12);
@@ -10042,7 +10042,12 @@ function savePreset(prefix) {
     // Update load button
     const loadBtn = document.getElementById(prefix + '-load-preset');
     if (loadBtn) loadBtn.classList.add('has-data');
-  } catch(e) {}
+  } catch(e) {
+    // Bug #270 fix: notify user when localStorage save fails (e.g. quota exceeded)
+    const log = prefix === 'solo' ? soloLog : sendLog;
+    log('⚠️ Opslaan mislukt — opslag vol?', true);
+    console.warn('localStorage save failed:', e);
+  }
 }
 
 function loadPreset(prefix) {
@@ -10059,7 +10064,8 @@ function loadPreset(prefix) {
       if (data.sensatie) {
         ['texture','modulation','pulsewidth','noise'].forEach(k => {
           const el = document.getElementById('solo-sens-' + k);
-          if (el && data.sensatie[k] !== undefined) el.value = data.sensatie[k];
+          // Bug #272 fix: clamp sensatie values to valid slider range [0-100]
+          if (el && data.sensatie[k] !== undefined) el.value = Math.max(0, Math.min(100, Number(data.sensatie[k]) || 50));
         });
         updateSensatieAdvice('solo');
       }
@@ -10710,7 +10716,8 @@ function testMicrophone() {
     }, 500);
 
     // Auto-stop na 8 seconden
-    setTimeout(() => { clearInterval(levelCheck); stream.getTracks().forEach(t => t.stop()); }, 8500);
+    // Bug #253 fix: also close AudioContext and abort recognition on timeout
+    setTimeout(() => { clearInterval(levelCheck); stream.getTracks().forEach(t => t.stop()); actx.close().catch(()=>{}); }, 8500);
 
   }).catch(e => {
     log('❌ Mic niet beschikbaar: ' + e.message);
