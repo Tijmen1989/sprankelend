@@ -7548,28 +7548,74 @@ function soloDice() {
 function soloCountdown() {
   ensureAudio();
   const s = getSoloSettings();
-  const num = Math.floor(Math.random() * 11) + 5;
-  let current = num;
+
+  // Random total duration: 2-6 minutes (in seconds)
+  const totalSeconds = (Math.floor(Math.random() * 5) + 2) * 60;
+  let remaining = totalSeconds;
+  let countdownCancelled = false;
+
   const display = document.getElementById('solo-countdown-display');
+  const vizText = document.getElementById('solo-viz-text');
   display.style.display = 'block';
 
-  const doNext = () => {
-    display.textContent = current;
-    const text = document.getElementById('solo-viz-text');
-    text.textContent = 'Countdown: ' + current;
-    text.style.color = '#e94560';
+  soloLog('⏱️ Countdown gestart: ' + Math.round(totalSeconds / 60) + ' minuten', true);
+  speak(Math.round(totalSeconds / 60) + ' minuten');
 
-    if (current > 0) {
-      current--;
-      trackTimeout(doNext, 1000);
+  // Determine which seconds get a TTS announcement
+  function shouldSpeak(sec) {
+    if (sec <= 10) return true;                          // 10-9-8-...-1
+    if (sec === 30) return true;                          // "30 seconden"
+    if (sec === 60) return true;                          // "1 minuut"
+    if (sec % 60 === 0 && sec >= 120) return true;        // "2 minuten", "3 minuten", etc.
+    return false;
+  }
+
+  function speakText(sec) {
+    if (sec <= 10) return String(sec);
+    if (sec === 30) return '30 seconden';
+    if (sec === 60) return '1 minuut';
+    return Math.round(sec / 60) + ' minuten';
+  }
+
+  function formatDisplay(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m > 0 ? m + ':' + String(s).padStart(2, '0') : String(s);
+  }
+
+  const tick = () => {
+    if (countdownCancelled) return;
+
+    display.textContent = formatDisplay(remaining);
+    if (vizText) {
+      vizText.textContent = '⏱️ ' + formatDisplay(remaining);
+      vizText.style.color = remaining <= 10 ? '#e94560' : '#ff9800';
+    }
+
+    // Vibrate in final 10 seconds
+    if (remaining <= 10 && remaining > 0) {
+      vibrateDevice(50);
+      playCountdownTick();
+    }
+
+    if (remaining > 0) {
+      if (shouldSpeak(remaining)) {
+        speak(speakText(remaining));
+      }
+      remaining--;
+      trackTimeout(tick, 1000);
     } else {
+      // SCHOK!
       display.style.display = 'none';
+      if (vizText) { vizText.textContent = '⚡ SCHOK!'; vizText.style.color = '#e94560'; }
+      speak('Schok!');
       const vol = Math.round(Math.random() * 80 + 20);
       doSoloShock(s.freq, vol, s.duration);
-      soloLog('Countdown afgelopen! Schok: ' + vol + '%', true);
+      soloLog('⏱️ Countdown afgelopen! Schok: ' + vol + '%', true);
     }
   };
-  doNext();
+
+  tick();
 }
 
 function soloReaction() {
