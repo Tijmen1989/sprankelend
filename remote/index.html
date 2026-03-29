@@ -4881,7 +4881,7 @@ async function updateAudioRouting() {
   if (deviceId !== 'default') {
     try {
       await audioCtx.setSinkId(deviceId);
-      recvLog('🔊 Stim output: ' + document.getElementById('stim-output-device').selectedOptions[0].text);
+      recvLog('🔊 Stim output: ' + (document.getElementById('stim-output-device')?.selectedOptions[0]?.text || 'onbekend'));
     } catch(e) {
       recvLog('⚠️ Kan output niet wijzigen: ' + e.message);
     }
@@ -4899,7 +4899,7 @@ async function updateUIAudioRouting() {
   if (uiAudioCtx.setSinkId && deviceId !== 'default') {
     try {
       await uiAudioCtx.setSinkId(deviceId);
-      recvLog('🔔 UI geluid output: ' + document.getElementById('ui-output-device').selectedOptions[0].text);
+      recvLog('🔔 UI geluid output: ' + (document.getElementById('ui-output-device')?.selectedOptions[0]?.text || 'onbekend'));
     } catch(e) {
       recvLog('⚠️ Kan UI output niet wijzigen: ' + e.message);
     }
@@ -4935,7 +4935,7 @@ async function updateSoloAudioRouting() {
   if (audioCtx && audioCtx.setSinkId && deviceId !== 'default') {
     try {
       await audioCtx.setSinkId(deviceId);
-      soloLog('🔊 Stim output: ' + document.getElementById('solo-stim-output-device').selectedOptions[0].text);
+      soloLog('🔊 Stim output: ' + (document.getElementById('solo-stim-output-device')?.selectedOptions[0]?.text || 'onbekend'));
     } catch(e) {
       soloLog('⚠️ Kan output niet wijzigen: ' + e.message);
     }
@@ -4948,7 +4948,7 @@ async function updateSoloUIAudioRouting() {
   if (uiAudioCtx.setSinkId && deviceId !== 'default') {
     try {
       await uiAudioCtx.setSinkId(deviceId);
-      soloLog('🔔 UI geluid output: ' + document.getElementById('solo-ui-output-device').selectedOptions[0].text);
+      soloLog('🔔 UI geluid output: ' + (document.getElementById('solo-ui-output-device')?.selectedOptions[0]?.text || 'onbekend'));
     } catch(e) {
       soloLog('⚠️ Kan UI output niet wijzigen: ' + e.message);
     }
@@ -5782,25 +5782,43 @@ function stopReceiverHoldLocal() {
 
 // Legacy wrappers voor PeerJS data handler
 let holdSafetyTimer = null;
+let holdStartedAt = 0; // Bug #364 fix: track when hold first started
 const MAX_HOLD_SECONDS = 60;
 
 function startReceiverHold(freq, volume) {
   startReceiverHoldLocal(freq, volume);
-  // SAFETY: auto-stop hold after MAX_HOLD_SECONDS to prevent indefinite stimulation
-  clearTimeout(holdSafetyTimer);
-  holdSafetyTimer = setTimeout(() => {
-    if (holdOscNodes) {
-      stopReceiverHoldLocal();
-      recvLog('⏱️ Hold automatisch gestopt na ' + MAX_HOLD_SECONDS + 's (veiligheid)', true);
-      // Notify sender that hold was auto-stopped
-      if (conn && conn.open) {
-        conn.send({ type: 'chat', text: '⏱️ Hold auto-gestopt na ' + MAX_HOLD_SECONDS + 's', ts: Date.now() });
+  // Bug #364 SAFETY fix: only set safety timer on FIRST hold_start, not on repeats.
+  // This prevents a sender from spamming hold_start to reset the timer indefinitely.
+  if (!holdSafetyTimer) {
+    holdStartedAt = Date.now();
+    holdSafetyTimer = setTimeout(() => {
+      if (holdOscNodes) {
+        stopReceiverHoldLocal();
+        recvLog('⏱️ Hold automatisch gestopt na ' + MAX_HOLD_SECONDS + 's (veiligheid)', true);
+        if (conn && conn.open) {
+          conn.send({ type: 'chat', text: '⏱️ Hold auto-gestopt na ' + MAX_HOLD_SECONDS + 's', ts: Date.now() });
+        }
       }
+      holdSafetyTimer = null;
+      holdStartedAt = 0;
+    }, MAX_HOLD_SECONDS * 1000);
+  } else {
+    // Hold already active — check if we've exceeded the limit (belt-and-suspenders)
+    const elapsed = Date.now() - holdStartedAt;
+    if (elapsed >= MAX_HOLD_SECONDS * 1000) {
+      stopReceiverHoldLocal();
+      clearTimeout(holdSafetyTimer);
+      holdSafetyTimer = null;
+      holdStartedAt = 0;
+      recvLog('⏱️ Hold automatisch gestopt — tijdslimiet bereikt', true);
+      return;
     }
-  }, MAX_HOLD_SECONDS * 1000);
+  }
 }
 function stopReceiverHold() {
   clearTimeout(holdSafetyTimer);
+  holdSafetyTimer = null;
+  holdStartedAt = 0;
   stopReceiverHoldLocal();
 }
 
@@ -6414,11 +6432,14 @@ function addChatMessage(sender, text) {
 }
 
 function showCountdownReceiver(number) {
+  // Bug #362 fix: validate number to prevent CSS injection via width property
+  const safeNum = Math.max(0, Math.min(10, parseInt(number) || 0));
   const bar = document.getElementById('recv-viz-bar');
   const text = document.getElementById('recv-viz-text');
-  text.textContent = 'Countdown: ' + number;
+  if (!bar || !text) return;
+  text.textContent = 'Countdown: ' + safeNum;
   text.style.color = '#e94560';
-  bar.style.width = (number * 10) + '%';
+  bar.style.width = (safeNum * 10) + '%';
 }
 
 function startReactionGameReceiver() {
@@ -11146,11 +11167,13 @@ function showVoiceHeard(text) {
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   const mic = document.getElementById(prefix + '-vq-mic');
   if (mic) {
-    mic.querySelector('span').textContent = '"' + text + '"';
+    const micSpan353a = mic.querySelector('span'); // Bug #353 fix: null-safe
+    if (micSpan353a) micSpan353a.textContent = '"' + text + '"';
     // Reset back to "Luistert..." after 2 seconds
     clearTimeout(mic._resetTimer);
     mic._resetTimer = setTimeout(() => {
-      if (speechRecognitionActive) mic.querySelector('span').textContent = 'Luistert...';
+      const s = mic.querySelector('span');
+      if (speechRecognitionActive && s) s.textContent = 'Luistert...';
     }, 2500);
   }
 }
@@ -11979,7 +12002,7 @@ function startVoiceQuiz(mode, useCustom, config) {
   optionsEl.innerHTML = '<div style="text-align:center;font-size:2em;padding:20px;color:#4488ff;">3...</div>';
   updateMicStatus(prefix, false);
   const mic = document.getElementById(prefix + '-vq-mic');
-  if (mic) mic.querySelector('span').textContent = 'Start over 3...';
+  if (mic) { const s = mic.querySelector('span'); if (s) s.textContent = 'Start over 3...'; }
 
   speak(qs.length + ' vragen. Klaar?');
 
@@ -11987,13 +12010,13 @@ function startVoiceQuiz(mode, useCustom, config) {
   trackTimeout(() => {
     if (!voiceQuizState.active) return;
     optionsEl.innerHTML = '<div style="text-align:center;font-size:2em;padding:20px;color:#ff9800;">2...</div>';
-    if (mic) mic.querySelector('span').textContent = '2...';
+    if (mic) { const s = mic.querySelector('span'); if (s) s.textContent = '2...'; }
   }, 1200);
 
   trackTimeout(() => {
     if (!voiceQuizState.active) return;
     optionsEl.innerHTML = '<div style="text-align:center;font-size:2em;padding:20px;color:#e94560;">1...</div>';
-    if (mic) mic.querySelector('span').textContent = '1...';
+    if (mic) { const s = mic.querySelector('span'); if (s) s.textContent = '1...'; }
   }, 2400);
 
   trackTimeout(() => {
@@ -12099,7 +12122,7 @@ function showVoiceQuizQuestion(mode) {
   // Update mic status: voorlezen
   updateMicStatus(prefix, false);
   const mic = document.getElementById(prefix + '-vq-mic');
-  if (mic) mic.querySelector('span').textContent = 'Voorlezen...';
+  if (mic) { const s = mic.querySelector('span'); if (s) s.textContent = 'Voorlezen...'; }
 
   // BUG FIX #2: use questionId to prevent stale fallback timers
   const questionId = voiceQuizState.currentIndex;
@@ -12184,7 +12207,7 @@ function repeatCurrentQuestion() {
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   updateMicStatus(prefix, false);
   const mic = document.getElementById(prefix + '-vq-mic');
-  if (mic) mic.querySelector('span').textContent = 'Herhaalt...';
+  if (mic) { const s = mic.querySelector('span'); if (s) s.textContent = 'Herhaalt...'; }
 
   const ttsOn = !voiceQuizState.config || voiceQuizState.config.ttsEnabled !== false;
   function resumeTimer() {
@@ -13024,19 +13047,23 @@ function stopClipDetector() {
 }
 
 function runDiagnostics() {
+  // Bug #370-D fix: null checks for all DOM elements
   // Tab focus
   const tabVal = document.getElementById('diag-tab-val');
-  if (document.hidden) {
-    tabVal.textContent = 'ACHTERGROND';
-    tabVal.style.color = '#e94560';
-  } else {
-    tabVal.textContent = 'Voorgrond';
-    tabVal.style.color = '#4caf50';
+  if (tabVal) {
+    if (document.hidden) {
+      tabVal.textContent = 'ACHTERGROND';
+      tabVal.style.color = '#e94560';
+    } else {
+      tabVal.textContent = 'Voorgrond';
+      tabVal.style.color = '#4caf50';
+    }
   }
 
   // Audio output device
   const audioVal = document.getElementById('diag-audio-val');
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+  if (!audioVal) { /* skip if element missing */ }
+  else if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
     navigator.mediaDevices.enumerateDevices().then(devices => {
       const outputs = devices.filter(d => d.kind === 'audiooutput');
       const active = outputs.find(d => d.deviceId === 'default') || outputs[0];
@@ -13061,7 +13088,8 @@ function runDiagnostics() {
 
   // Clipping
   const clipVal = document.getElementById('diag-clip-val');
-  if (audioCtx) {
+  if (!clipVal) { /* skip */ }
+  else if (audioCtx) {
     startClipDetector();
     const prevCount = clipCount;
     setTimeout(() => {
@@ -13084,7 +13112,8 @@ function runDiagnostics() {
 
   // Sample rate
   const srVal = document.getElementById('diag-sr-val');
-  if (audioCtx) {
+  if (!srVal) { /* skip */ }
+  else if (audioCtx) {
     srVal.textContent = audioCtx.sampleRate + ' Hz';
     srVal.style.color = '#4caf50';
   } else {
@@ -13125,7 +13154,7 @@ document.addEventListener('visibilitychange', function() {
 });
 </script>
 
-<div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
+<div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
   <button id="floating-softer" onclick="softerNow()" style="flex:1;padding:18px;font-size:1em;background:#e67e22;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">🔽 Zachter</button>
   <button id="floating-panic" onclick="if(myRole==='solo')panicStopSolo();else panicStop();" style="flex:2;padding:18px;font-size:1.2em;background:#c0392b;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">⚠️ PANIC STOP</button>
 </div>
