@@ -5000,6 +5000,9 @@ function goBack() {
   if (myRole === 'receiver') {
     stopPanicCooldown();
   }
+  // Bug #218 fix: reset cooldowns so next role starts fresh
+  shockCooldownUntil = 0;
+  soloCooldownUntil = 0;
   showScreen('mode-select');
 }
 
@@ -11921,7 +11924,7 @@ function startVoiceQuiz(mode, useCustom, config) {
   voiceQuizState.streak = 0;
   voiceQuizState.maxStreak = 0;
   voiceQuizState.waitingForAnswer = false;
-  voiceQuizState.timerMax = config.timePerQuestion;
+  voiceQuizState.timerMax = Math.max(1, config.timePerQuestion || 20); // Bug #230 fix: prevent division by zero
 
   const prefix = mode === 'solo' ? 'solo' : (mode === 'recv' ? 'recv' : 'sender');
   document.getElementById(prefix + '-vq-display').style.display = 'block';
@@ -12043,7 +12046,12 @@ function showVoiceQuizQuestion(mode) {
     const div = document.createElement('div');
     div.className = 'vq-option';
     div.id = prefix + '-vq-opt-' + i;
-    div.innerHTML = '<span class="vq-option-num">' + (i + 1) + '</span> ' + opt;
+    // Bug #238 fix: safe DOM creation to prevent XSS from custom questions
+    const numSpan = document.createElement('span');
+    numSpan.className = 'vq-option-num';
+    numSpan.textContent = (i + 1);
+    div.appendChild(numSpan);
+    div.appendChild(document.createTextNode(' ' + opt));
     // Klik-handler alleen als tikken is toegestaan
     if (inputMode !== 'spraak') {
       div.onclick = () => { if (voiceQuizState.waitingForAnswer) handleVoiceQuizAnswer(i); };
@@ -12609,6 +12617,7 @@ function doQuizPunishment(mode) {
 // --- Finish Quiz ---
 function finishVoiceQuiz(mode) {
   clearInterval(voiceQuizState.timerInterval);
+  stopQuizReward(); // Bug #235 fix: stop any active reward audio/countdown
   voiceQuizState.waitingForAnswer = false;
   voiceQuizState.active = false; // BUG FIX #9: stop accepting answers + stop mic restart loop
 
@@ -12804,7 +12813,12 @@ function handleVoiceQuizSenderMessage(data) {
       data.options.forEach((opt, i) => {
         const div = document.createElement('div');
         div.className = 'vq-option';
-        div.innerHTML = '<span class="vq-option-num">' + (i + 1) + '</span> ' + opt;
+        // Bug #238 fix: safe DOM creation to prevent XSS from custom questions
+    const numSpan = document.createElement('span');
+    numSpan.className = 'vq-option-num';
+    numSpan.textContent = (i + 1);
+    div.appendChild(numSpan);
+    div.appendChild(document.createTextNode(' ' + opt));
         senderOpts.appendChild(div);
       });
     }
