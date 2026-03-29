@@ -5454,6 +5454,10 @@ function startReceiver() {
     document.getElementById('recv-connected-indicator').style.display = 'block';
     recvLog('Zender verbonden!', true);
 
+    // Bug #452 fix: activate reconnect cooldown to filter stale queued messages
+    reconnectCooldown = true;
+    setTimeout(() => { reconnectCooldown = false; }, 2000);
+
     // Start heartbeat monitoring
     startHeartbeatMonitor();
     startIntensityReporting();
@@ -6605,7 +6609,7 @@ function connectToReceiver() {
       if (data.type === 'vq_question' || data.type === 'vq_answer' || data.type === 'vq_finished') {
         handleVoiceQuizSenderMessage(data);
       } else if (data.type === 'intensity_report') {
-        updateIntensityDisplay(data.level);
+        updateIntensityDisplay(Math.max(0, Math.min(100, parseInt(data.level) || 0))); // Bug #463 fix
       } else if (data.type === 'panic') {
         stopRandom();
         setSendStatus('error', '🛑 Ontvanger heeft paniekknop gebruikt!');
@@ -8359,8 +8363,8 @@ function updateChannelBalance(prefix, value) {
   // Update display
   const display = document.getElementById(prefix + '-cont-balance-display');
   if (display) {
-    const a = Math.round((100 - val) * 100 / 100);
-    const b = Math.round(val * 100 / 100);
+    const a = Math.round(100 - val); // Bug #472 fix: remove redundant *100/100
+    const b = Math.round(val);
     display.textContent = a + '/' + b;
     display.style.color = val === 50 ? '#ccc' : (val < 50 ? '#4caf50' : '#ff9800');
   }
