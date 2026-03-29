@@ -2329,7 +2329,21 @@
         <div id="solo-rand-next" style="color:#666;font-size:0.8em;margin-top:6px;text-align:center;"></div>
       </div>
 
-      <button class="game-btn" onclick="soloCountdown()">⏱️ Countdown</button>
+      <button class="game-btn" onclick="document.getElementById('solo-countdown-config').style.display = document.getElementById('solo-countdown-config').style.display === 'none' ? 'block' : 'none'">⏱️ Countdown</button>
+      <div id="solo-countdown-config" style="display:none;margin:8px 0;padding:10px;background:#0f0f23;border-radius:8px;border:1px solid #333;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <label style="font-size:0.8em;color:#aaa;white-space:nowrap;">Min volume:</label>
+          <input type="range" id="solo-cd-vol-min" min="0" max="100" value="30" oninput="document.getElementById('solo-cd-vol-min-label').textContent=this.value+'%'" style="flex:1;">
+          <span id="solo-cd-vol-min-label" style="font-size:0.8em;min-width:35px;color:#fff;">30%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <label style="font-size:0.8em;color:#aaa;white-space:nowrap;">Max volume:</label>
+          <input type="range" id="solo-cd-vol-max" min="0" max="100" value="70" oninput="document.getElementById('solo-cd-vol-max-label').textContent=this.value+'%'" style="flex:1;">
+          <span id="solo-cd-vol-max-label" style="font-size:0.8em;min-width:35px;color:#fff;">70%</span>
+        </div>
+        <div style="font-size:0.7em;color:#666;margin-bottom:8px;text-align:center;">Altijd begrensd door safety limit</div>
+        <button onclick="soloCountdown()" style="width:100%;padding:10px;background:#e94560;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.95em;">⏱️ Start Countdown</button>
+      </div>
       <div id="solo-countdown-display" class="countdown-display" style="display: none;">-</div>
       <button class="game-btn" onclick="showQuizConfig('solo')" id="solo-voice-quiz-btn" style="border-color:#4488ff;color:#4488ff;">🎤 Voice Quiz</button>
 
@@ -7609,8 +7623,8 @@ function soloCountdown() {
       display.style.display = 'none';
       if (vizText) { vizText.textContent = '⚡ SCHOK!'; vizText.style.color = '#e94560'; }
       speak('Schok!');
-      const volMin = parseInt(document.getElementById('solo-rand-vol-min')?.value) || 20;
-      const volMax = Math.max(volMin, parseInt(document.getElementById('solo-rand-vol-max')?.value) || 80);
+      const volMin = parseInt(document.getElementById('solo-cd-vol-min')?.value) || 30;
+      const volMax = Math.max(volMin, parseInt(document.getElementById('solo-cd-vol-max')?.value) || 70);
       const vol = Math.round(volMin + Math.random() * (volMax - volMin));
       doSoloShock(s.freq, vol, s.duration);
       soloLog('⏱️ Countdown afgelopen! Schok: ' + vol + '%', true);
