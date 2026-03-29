@@ -571,6 +571,145 @@
   }
   .tts-toggle-row label { font-size: 0.8em; color: #888; }
 
+  /* TV Display — receiver fullscreen controlled by sender */
+  .tv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    overflow: hidden;
+    transition: background 0.5s;
+  }
+  .tv-overlay.visible { display: flex; }
+  .tv-overlay.blindfold { background: #000 !important; }
+  .tv-overlay.blindfold .tv-layer { opacity: 0 !important; }
+
+  .tv-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .tv-layer.hidden { opacity: 0; }
+
+  #tv-chat-layer {
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 60px;
+  }
+  #tv-chat-layer .tv-chat-msg {
+    font-size: clamp(1.5em, 4vw, 3em);
+    color: #4488ff;
+    margin: 8px 0;
+    animation: tvFadeIn 0.3s ease;
+    max-width: 85vw;
+    word-break: break-word;
+  }
+  @keyframes tvFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  #tv-countdown-layer .tv-countdown-num {
+    font-size: clamp(6em, 25vw, 16em);
+    font-weight: 900;
+    color: #e94560;
+    text-shadow: 0 0 60px rgba(233,69,96,0.5);
+    line-height: 1;
+  }
+  #tv-countdown-layer .tv-countdown-label {
+    font-size: clamp(1em, 3vw, 2em);
+    color: #888;
+    margin-top: 10px;
+  }
+
+  #tv-quiz-layer {
+    flex-direction: column;
+    gap: 20px;
+  }
+  #tv-quiz-layer .tv-quiz-q {
+    font-size: clamp(1.5em, 5vw, 3.5em);
+    color: #f39c12;
+    font-weight: bold;
+    max-width: 85vw;
+  }
+  #tv-quiz-layer .tv-quiz-opts {
+    font-size: clamp(1em, 3vw, 2em);
+    color: #ccc;
+    line-height: 1.8;
+  }
+
+  #tv-clock-layer {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    font-size: clamp(1.2em, 3vw, 2.5em);
+    color: #333;
+    font-variant-numeric: tabular-nums;
+    font-weight: 300;
+  }
+
+  #tv-shock-layer .tv-shock-flash {
+    font-size: clamp(4em, 15vw, 10em);
+    font-weight: 900;
+    color: #e94560;
+    text-shadow: 0 0 80px rgba(233,69,96,0.7);
+    animation: tvShockPulse 0.3s ease;
+  }
+  @keyframes tvShockPulse { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+  #tv-info-layer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: clamp(0.9em, 2vw, 1.5em);
+    color: #555;
+  }
+
+  #tv-pattern-layer .tv-pattern-name {
+    font-size: clamp(2em, 6vw, 4em);
+    color: #9b59b6;
+    font-weight: bold;
+  }
+
+  /* Sender TV control panel */
+  .tv-control-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .tv-ctrl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: #0d1117;
+    border-radius: 8px;
+    border: 1px solid #222;
+  }
+  .tv-ctrl-item label {
+    font-size: 0.78em;
+    color: #aaa;
+  }
+  .tv-ctrl-item .toggle {
+    transform: scale(0.85);
+  }
+  .tv-ctrl-blindfold {
+    grid-column: 1 / -1;
+    background: #1a0a0a;
+    border-color: #e94560;
+  }
+
   /* Receiver visualization */
   .viz {
     background: #111;
@@ -1696,7 +1835,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0065</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0066</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3478,6 +3617,56 @@
     <div class="tts-toggle-row">
       <label>🔊 Mijn berichten voorlezen bij ontvanger</label>
       <div id="send-tts-out-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
+    </div>
+  </div>
+
+  <!-- TV Display Control Panel -->
+  <div class="control-card" id="tv-control-panel">
+    <h3>🖥️ Ontvanger TV-weergave</h3>
+    <div style="font-size:0.78em;color:#888;margin-bottom:8px;">Beheer wat de ontvanger op fullscreen ziet</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button id="tv-open-btn" disabled onclick="sendTvCommand('open')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #4caf50;background:transparent;color:#4caf50;font-weight:bold;cursor:pointer;">🖥️ Open TV</button>
+      <button id="tv-close-btn" disabled onclick="sendTvCommand('close')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #666;background:transparent;color:#888;cursor:pointer;">✕ Sluit TV</button>
+    </div>
+
+    <div class="tv-control-grid">
+      <div class="tv-ctrl-item">
+        <label>💬 Chat</label>
+        <div id="tv-tog-chat" class="toggle on" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item">
+        <label>⏱️ Countdown</label>
+        <div id="tv-tog-countdown" class="toggle on" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item">
+        <label>❓ Quiz</label>
+        <div id="tv-tog-quiz" class="toggle on" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item">
+        <label>⚡ Schok</label>
+        <div id="tv-tog-shock" class="toggle on" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item">
+        <label>🎵 Patroon</label>
+        <div id="tv-tog-pattern" class="toggle on" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item">
+        <label>🕐 Klok</label>
+        <div id="tv-tog-clock" class="toggle" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+      <div class="tv-ctrl-item tv-ctrl-blindfold">
+        <label>🙈 Blinddoekmodus</label>
+        <div id="tv-tog-blindfold" class="toggle" onclick="this.classList.toggle('on'); sendTvToggles()"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <input type="text" id="tv-custom-msg" placeholder="Typ bericht voor TV..." style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.9em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')sendTvMessage()">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button onclick="sendTvMessage()" style="flex:1;padding:8px;border-radius:6px;border:none;background:#4488ff;color:#fff;font-weight:bold;cursor:pointer;font-size:0.85em;">📺 Toon op TV</button>
+        <button onclick="sendTvCommand('clear_info')" style="padding:8px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#888;cursor:pointer;font-size:0.85em;">Wis</button>
+      </div>
     </div>
   </div>
 
@@ -5778,6 +5967,8 @@ function startReceiver() {
         recvLog('❌ Geplande schok geannuleerd');
         cancelRecvSchedCountdown();
         if (fsOpen) fsUpdateMain('❌ Geannuleerd', 'waiting');
+      } else if (data.type === 'tv_cmd') {
+        handleTvCommand(data);
       } else if (data.type === 'countdown') {
         showCountdownReceiver(data.number);
       } else if (data.type === 'reaction_start') {
@@ -5797,6 +5988,7 @@ function startReceiver() {
           fsUpdateMain('😈 ' + teaseMsg, 'tease');
           trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
         }
+        if (tvState.open && teaseMsg) tvShowChat('😈 ' + teaseMsg);
       } else if (data.type === 'tease_fakeout') {
         const fakeMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #402 fix
         const overlay = document.getElementById('tease-overlay');
@@ -5937,6 +6129,9 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
     fsUpdateMain('⚡ SCHOK! ' + cappedVol + '%', 'countdown');
     trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), duration + 500);
   }
+
+  // TV Display: show shock flash
+  tvShowShock(cappedVol);
 
   recvLog('Schok: ' + cappedVol + '% vol, ' + freq + 'Hz, ' + duration + 'ms', true);
 
@@ -6217,6 +6412,9 @@ function doReceiverPattern(pattern, freq, volume) {
     fsUpdateMain('🎵 ' + patternLabel, 'pattern');
     trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 4000);
   }
+
+  // TV Display: show pattern
+  tvShowPattern(patternLabel);
 
   // SAFETY: Cap volume to receiver's safety limit BEFORE pattern scaling
   const limit = parseInt(document.getElementById('safety-limit')?.value || 50);
@@ -6740,6 +6938,11 @@ function addChatMessage(sender, text) {
     }
   }
 
+  // TV Display: show sender messages
+  if (myRole === 'receiver' && sender === 'sender' && tvState.open) {
+    tvShowChat(text);
+  }
+
   // TTS: read receiver messages aloud on sender side
   if (myRole === 'sender' && sender === 'receiver' && shouldReadReceiverChat()) {
     speak(text);
@@ -6763,6 +6966,9 @@ function showCountdownReceiver(number) {
       trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 2000);
     }
   }
+
+  // TV Display: show countdown
+  tvShowCountdown(safeNum);
 }
 
 function startReactionGameReceiver() {
@@ -6915,6 +7121,9 @@ function connectToReceiver() {
       document.querySelectorAll('#sender .game-btn').forEach(b => b.disabled = false);
       document.querySelectorAll('#sender .session-type-btn').forEach(b => b.disabled = false);
       document.getElementById('session-start-btn').disabled = false;
+      document.getElementById('sched-start-btn').disabled = false;
+      document.getElementById('tv-open-btn').disabled = false;
+      document.getElementById('tv-close-btn').disabled = false;
       updateSendQS();
       sendLog('Verbonden met ontvanger');
       // Start heartbeat to receiver
@@ -7641,6 +7850,210 @@ function fsQuickMsg(text) {
 function shouldReadReceiverChat() {
   const toggle = document.getElementById('send-tts-toggle');
   return toggle && toggle.classList.contains('on');
+}
+
+// ==================== TV DISPLAY (sender-controlled fullscreen) ====================
+const tvState = {
+  open: false,
+  toggles: { chat: true, countdown: true, quiz: true, shock: true, pattern: true, clock: false, blindfold: false },
+  clockInterval: null,
+  chatMessages: [] // last N messages shown on TV
+};
+
+// --- Sender-side: send commands to receiver ---
+function sendTvCommand(cmd, data) {
+  if (!conn || conn.open !== true) return;
+  conn.send({ type: 'tv_cmd', cmd, data: data || null, ts: Date.now() });
+  if (cmd === 'open') sendLog('🖥️ TV-weergave geopend bij ontvanger');
+  else if (cmd === 'close') sendLog('🖥️ TV-weergave gesloten');
+}
+
+function sendTvToggles() {
+  const toggles = {};
+  ['chat', 'countdown', 'quiz', 'shock', 'pattern', 'clock', 'blindfold'].forEach(key => {
+    const el = document.getElementById('tv-tog-' + key);
+    toggles[key] = el ? el.classList.contains('on') : false;
+  });
+  sendTvCommand('toggles', toggles);
+}
+
+function sendTvMessage() {
+  const input = document.getElementById('tv-custom-msg');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  sendTvCommand('show_info', text);
+  input.value = '';
+  sendLog('📺 TV-bericht: ' + text);
+}
+
+// --- Receiver-side: handle TV commands ---
+function handleTvCommand(data) {
+  const cmd = data.cmd;
+
+  if (cmd === 'open') {
+    openTvDisplay();
+  } else if (cmd === 'close') {
+    closeTvDisplay();
+  } else if (cmd === 'toggles' && data.data) {
+    tvState.toggles = data.data;
+    applyTvToggles();
+  } else if (cmd === 'show_info') {
+    const text = typeof data.data === 'string' ? data.data.slice(0, 500) : '';
+    tvShowInfo(text);
+  } else if (cmd === 'clear_info') {
+    tvShowLayer('tv-info-layer', false);
+  }
+}
+
+function openTvDisplay() {
+  const overlay = document.getElementById('tv-overlay');
+  if (!overlay) return;
+  overlay.classList.add('visible');
+  tvState.open = true;
+  applyTvToggles();
+  // Try real fullscreen
+  try { document.documentElement.requestFullscreen(); } catch(e) {}
+  recvLog('🖥️ TV-weergave geopend');
+}
+
+function closeTvDisplay() {
+  const overlay = document.getElementById('tv-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('visible');
+  tvState.open = false;
+  if (tvState.clockInterval) { clearInterval(tvState.clockInterval); tvState.clockInterval = null; }
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+  recvLog('🖥️ TV-weergave gesloten');
+}
+
+function applyTvToggles() {
+  const t = tvState.toggles;
+  const overlay = document.getElementById('tv-overlay');
+  if (!overlay) return;
+
+  // Blindfold mode
+  overlay.classList.toggle('blindfold', !!t.blindfold);
+
+  // Clock
+  if (t.clock && !tvState.clockInterval) {
+    tvShowLayer('tv-clock-layer', true);
+    updateTvClock();
+    tvState.clockInterval = setInterval(updateTvClock, 1000);
+  } else if (!t.clock && tvState.clockInterval) {
+    clearInterval(tvState.clockInterval);
+    tvState.clockInterval = null;
+    tvShowLayer('tv-clock-layer', false);
+  }
+}
+
+function tvShowLayer(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden', !visible);
+}
+
+function updateTvClock() {
+  const el = document.getElementById('tv-clock-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+
+// --- TV content update functions (called by existing event handlers) ---
+function tvShowChat(text) {
+  if (!tvState.open || !tvState.toggles.chat) return;
+  const layer = document.getElementById('tv-chat-layer');
+  if (!layer) return;
+  tvShowLayer('tv-chat-layer', true);
+
+  // Add message
+  const msg = document.createElement('div');
+  msg.className = 'tv-chat-msg';
+  msg.textContent = text;
+  layer.appendChild(msg);
+  tvState.chatMessages.push(msg);
+
+  // Keep max 5 messages visible
+  while (tvState.chatMessages.length > 5) {
+    const old = tvState.chatMessages.shift();
+    if (old.parentNode) old.parentNode.removeChild(old);
+  }
+
+  // Auto-fade after 8 seconds
+  setTimeout(() => {
+    if (msg.parentNode) {
+      msg.style.transition = 'opacity 1s';
+      msg.style.opacity = '0';
+      setTimeout(() => { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 1000);
+    }
+  }, 8000);
+}
+
+function tvShowCountdown(number) {
+  if (!tvState.open || !tvState.toggles.countdown) return;
+  const num = document.getElementById('tv-countdown-num');
+  const label = document.getElementById('tv-countdown-label');
+  if (!num) return;
+
+  tvShowLayer('tv-countdown-layer', true);
+  if (number === 0) {
+    num.textContent = '⚡';
+    if (label) label.textContent = 'SCHOK!';
+    setTimeout(() => tvShowLayer('tv-countdown-layer', false), 2000);
+  } else {
+    num.textContent = number;
+    if (label) label.textContent = 'seconden';
+  }
+}
+
+function tvShowShock(volume) {
+  if (!tvState.open || !tvState.toggles.shock) return;
+  const flash = document.getElementById('tv-shock-flash');
+  if (!flash) return;
+
+  tvShowLayer('tv-shock-layer', true);
+  tvShowLayer('tv-countdown-layer', false); // hide countdown when shock fires
+  flash.textContent = '⚡ ' + volume + '%';
+
+  setTimeout(() => tvShowLayer('tv-shock-layer', false), 1500);
+}
+
+function tvShowQuiz(question, options) {
+  if (!tvState.open || !tvState.toggles.quiz) return;
+  const q = document.getElementById('tv-quiz-q');
+  const opts = document.getElementById('tv-quiz-opts');
+  if (!q) return;
+
+  tvShowLayer('tv-quiz-layer', true);
+  q.textContent = question;
+  if (opts && options) {
+    opts.innerHTML = '';
+    options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.textContent = (i + 1) + '. ' + opt;
+      opts.appendChild(div);
+    });
+  }
+}
+
+function tvHideQuiz() {
+  tvShowLayer('tv-quiz-layer', false);
+}
+
+function tvShowPattern(name) {
+  if (!tvState.open || !tvState.toggles.pattern) return;
+  const el = document.getElementById('tv-pattern-name');
+  if (!el) return;
+
+  tvShowLayer('tv-pattern-layer', true);
+  el.textContent = '🎵 ' + name;
+  setTimeout(() => tvShowLayer('tv-pattern-layer', false), 4000);
+}
+
+function tvShowInfo(text) {
+  if (!tvState.open) return;
+  const el = document.getElementById('tv-info-text');
+  if (!el) return;
+  tvShowLayer('tv-info-layer', true);
+  el.textContent = text;
 }
 
 function showNotification(text) {
@@ -12674,6 +13087,7 @@ function stopVoiceQuiz(mode) {
   logFn('🎤 Voice Quiz gestopt. Score: ' + voiceQuizState.score + '/' + (voiceQuizState.score + voiceQuizState.wrong), true);
 
   updateMicStatus(prefix, false);
+  tvHideQuiz(); // TV Display: hide quiz
 }
 
 function updateMicStatus(prefix, active) {
@@ -12707,6 +13121,11 @@ function showVoiceQuizQuestion(mode) {
   if (fsOpen && prefix === 'recv') {
     const optList = q.o.map((opt, i) => (i + 1) + '. ' + opt).join('\n');
     fsUpdateMain(q.v, 'quiz');
+  }
+
+  // TV Display: show quiz question + options
+  if (prefix === 'recv') {
+    tvShowQuiz(q.v, q.o);
   }
 
   const optionsEl = document.getElementById(prefix + '-vq-options');
@@ -13786,6 +14205,33 @@ document.addEventListener('visibilitychange', function() {
 <div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
   <button id="floating-softer" onclick="softerNow()" style="flex:1;padding:18px;font-size:1em;background:#e67e22;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">🔽 Zachter</button>
   <button id="floating-panic" onclick="if(myRole==='solo')panicStopSolo();else panicStop();" style="flex:2;padding:18px;font-size:1.2em;background:#c0392b;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">⚠️ PANIC STOP</button>
+</div>
+
+<!-- TV Display — fullscreen receiver controlled by sender -->
+<div id="tv-overlay" class="tv-overlay">
+  <div id="tv-chat-layer" class="tv-layer hidden"></div>
+  <div id="tv-countdown-layer" class="tv-layer hidden">
+    <div>
+      <div id="tv-countdown-num" class="tv-countdown-num"></div>
+      <div id="tv-countdown-label" class="tv-countdown-label"></div>
+    </div>
+  </div>
+  <div id="tv-quiz-layer" class="tv-layer hidden">
+    <div id="tv-quiz-q" class="tv-quiz-q"></div>
+    <div id="tv-quiz-opts" class="tv-quiz-opts"></div>
+  </div>
+  <div id="tv-shock-layer" class="tv-layer hidden">
+    <div id="tv-shock-flash" class="tv-shock-flash"></div>
+  </div>
+  <div id="tv-pattern-layer" class="tv-layer hidden">
+    <div id="tv-pattern-name" class="tv-pattern-name"></div>
+  </div>
+  <div id="tv-clock-layer" class="tv-layer hidden">
+    <span id="tv-clock-time"></span>
+  </div>
+  <div id="tv-info-layer" class="tv-layer hidden">
+    <span id="tv-info-text"></span>
+  </div>
 </div>
 
 <!-- Tease overlay for receiver -->
