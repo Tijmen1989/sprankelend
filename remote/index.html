@@ -1696,7 +1696,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0063</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0064</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3103,6 +3103,48 @@
         <span class="qs-pct">100%</span>
         <span class="qs-vol" id="qs-send-100-vol">--</span>
       </button>
+    </div>
+  </div>
+
+  <!-- Scheduled shock -->
+  <div class="control-card">
+    <h3>⏱️ Geplande Schok</h3>
+    <div style="font-size:0.8em;color:#888;margin-bottom:10px;">Stel in wanneer en hoe hard de volgende schok wordt</div>
+
+    <div class="control-row">
+      <label>Sterkte</label>
+      <input type="range" id="sched-volume" min="10" max="100" value="50" oninput="document.getElementById('sched-vol-label').textContent=this.value+'%'">
+      <span id="sched-vol-label" class="value">50%</span>
+    </div>
+
+    <div class="control-row">
+      <label>Wachttijd</label>
+      <select id="sched-delay" style="flex:1;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+        <option value="30">30 seconden</option>
+        <option value="60" selected>1 minuut</option>
+        <option value="120">2 minuten</option>
+        <option value="180">3 minuten</option>
+        <option value="300">5 minuten</option>
+        <option value="random">Random (1-5 min)</option>
+      </select>
+    </div>
+
+    <div class="toggle-row" style="margin-bottom:8px;">
+      <label style="flex:1;">🔊 Aftellen (laatste 10 sec)</label>
+      <div id="sched-countdown-toggle" class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <div class="toggle-row" style="margin-bottom:8px;">
+      <label style="flex:1;">📱 Toon op ontvanger scherm</label>
+      <div id="sched-show-toggle" class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <button id="sched-start-btn" disabled onclick="startScheduledShock()" style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-weight:bold;font-size:1em;cursor:pointer;">
+      ⏱️ Plan schok
+    </button>
+    <div id="sched-status" style="text-align:center;margin-top:6px;font-size:0.85em;color:#888;display:none;">
+      <span id="sched-countdown-display"></span>
+      <button onclick="cancelScheduledShock()" style="margin-left:8px;padding:4px 10px;border-radius:6px;border:1px solid #e94560;background:transparent;color:#e94560;cursor:pointer;font-size:0.85em;">Annuleer</button>
     </div>
   </div>
 
@@ -5714,6 +5756,20 @@ function startReceiver() {
         // Bug #322 fix: limit chat message length to prevent DoS
         const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
         addChatMessage('sender', chatText);
+      } else if (data.type === 'sched_shock_start') {
+        const sec = Math.max(1, Math.min(600, parseInt(data.delaySec) || 60));
+        const vol = Math.max(0, Math.min(100, parseInt(data.volume) || 50));
+        const withCountdown = !!data.doCountdown;
+        recvLog('⏱️ Schok gepland: ' + vol + '% over ' + Math.round(sec) + 's' + (withCountdown ? ' (met aftellen)' : ' (verrassing!)'));
+        if (fsOpen) {
+          fsUpdateMain('⏱️ Schok over ' + formatSchedTime(sec) + (withCountdown ? '' : ' (verrassing!)'), 'tease');
+        }
+        // Start a receiver-side countdown display
+        startRecvSchedCountdown(sec, withCountdown);
+      } else if (data.type === 'sched_shock_cancel') {
+        recvLog('❌ Geplande schok geannuleerd');
+        cancelRecvSchedCountdown();
+        if (fsOpen) fsUpdateMain('❌ Geannuleerd', 'waiting');
       } else if (data.type === 'countdown') {
         showCountdownReceiver(data.number);
       } else if (data.type === 'reaction_start') {
@@ -7365,6 +7421,137 @@ function handleChatInput(input, e) {
   if (e && e.key === 'Enter') {
     sendChatMessage();
   }
+}
+
+// ==================== SCHEDULED SHOCK (sender) ====================
+let schedTimer = null;
+let schedCountdownInterval = null;
+
+function startScheduledShock() {
+  if (!conn || conn.open !== true) return;
+  cancelScheduledShock(); // clear any existing
+
+  const volume = parseInt(document.getElementById('sched-volume').value) || 50;
+  const delaySelect = document.getElementById('sched-delay').value;
+  const doCountdown = document.getElementById('sched-countdown-toggle').classList.contains('on');
+  const showOnReceiver = document.getElementById('sched-show-toggle').classList.contains('on');
+
+  let delaySec;
+  if (delaySelect === 'random') {
+    delaySec = 60 + Math.floor(Math.random() * 240); // 1-5 min
+  } else {
+    delaySec = parseInt(delaySelect) || 60;
+  }
+
+  const endTime = Date.now() + delaySec * 1000;
+  const statusEl = document.getElementById('sched-status');
+  const displayEl = document.getElementById('sched-countdown-display');
+  statusEl.style.display = 'block';
+
+  // Tell receiver a shock is coming (if show toggle is on)
+  if (showOnReceiver) {
+    conn.send({ type: 'sched_shock_start', delaySec, doCountdown, volume, ts: Date.now() });
+  }
+
+  sendLog('⏱️ Schok gepland: ' + volume + '% over ' + formatSchedTime(delaySec));
+
+  // Update countdown display
+  schedCountdownInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    displayEl.textContent = '⏱️ ' + formatSchedTime(remaining);
+
+    // Send countdown to receiver in the last 10 seconds
+    if (doCountdown && remaining <= 10 && remaining > 0) {
+      conn.send({ type: 'countdown', number: remaining, ts: Date.now() });
+    }
+
+    if (remaining <= 0) {
+      clearInterval(schedCountdownInterval);
+      schedCountdownInterval = null;
+    }
+  }, 500);
+
+  // Schedule the actual shock
+  schedTimer = setTimeout(() => {
+    // Send final countdown 0
+    if (doCountdown) {
+      conn.send({ type: 'countdown', number: 0, ts: Date.now() });
+    }
+
+    // Fire the shock
+    const freq = parseInt(document.getElementById('send-freq').value) || 200;
+    const duration = parseInt(document.getElementById('send-duration').value) || 500;
+    sendShock(volume, duration, freq);
+
+    sendLog('⚡ Geplande schok afgevuurd: ' + volume + '%');
+    statusEl.style.display = 'none';
+    schedTimer = null;
+  }, delaySec * 1000);
+}
+
+function cancelScheduledShock() {
+  if (schedTimer) { clearTimeout(schedTimer); schedTimer = null; }
+  if (schedCountdownInterval) { clearInterval(schedCountdownInterval); schedCountdownInterval = null; }
+  const statusEl = document.getElementById('sched-status');
+  if (statusEl) statusEl.style.display = 'none';
+
+  // Tell receiver it's cancelled
+  if (conn && conn.open) {
+    conn.send({ type: 'sched_shock_cancel', ts: Date.now() });
+  }
+}
+
+function formatSchedTime(sec) {
+  if (sec >= 60) {
+    const min = Math.floor(sec / 60);
+    const s = sec % 60;
+    return min + ':' + String(s).padStart(2, '0');
+  }
+  return sec + 's';
+}
+
+// ==================== RECEIVER SCHEDULED COUNTDOWN ====================
+let recvSchedInterval = null;
+
+function startRecvSchedCountdown(sec, withCountdown) {
+  cancelRecvSchedCountdown();
+  const endTime = Date.now() + sec * 1000;
+  const text = document.getElementById('recv-viz-text');
+  const bar = document.getElementById('recv-viz-bar');
+
+  recvSchedInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+
+    if (text) {
+      if (withCountdown || remaining <= 10) {
+        text.textContent = '⏱️ Schok over ' + formatSchedTime(remaining);
+        text.style.color = remaining <= 10 ? '#e94560' : '#f39c12';
+      } else {
+        text.textContent = '⏱️ Er komt een schok... (verrassing!)';
+        text.style.color = '#f39c12';
+      }
+    }
+    if (bar) bar.style.width = Math.max(0, (1 - remaining / sec) * 100) + '%';
+
+    // Fullscreen update
+    if (fsOpen) {
+      if (withCountdown || remaining <= 10) {
+        fsUpdateMain('⏱️ ' + formatSchedTime(remaining), remaining <= 10 ? 'countdown' : 'tease');
+      }
+    }
+
+    if (remaining <= 0) {
+      cancelRecvSchedCountdown();
+      if (text) { text.textContent = 'Wacht op schok...'; text.style.color = '#888'; }
+      if (bar) bar.style.width = '0%';
+    }
+  }, 500);
+}
+
+function cancelRecvSchedCountdown() {
+  if (recvSchedInterval) { clearInterval(recvSchedInterval); recvSchedInterval = null; }
+  const text = document.getElementById('recv-viz-text');
+  if (text) { text.textContent = 'Wacht op schok...'; text.style.color = '#888'; }
 }
 
 // ==================== RECEIVER CHAT (two-way) ====================
