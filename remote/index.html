@@ -6360,6 +6360,7 @@ function panicStop() {
   rouletteActive = false;
   uncertainCountdownActive = false;
   waitGameActive.solo = false;
+  waitGameActive.sender = false; // Safety fix: also reset sender wait game
   panicCooldown = true;
 
   const btn = document.getElementById('panic-btn');
@@ -7565,7 +7566,12 @@ function scheduleSoloRandom() {
   soloLog('Volgende schok gepland: ' + nextTime.toLocaleTimeString('nl-NL'));
 }
 
+let soloPanicCooldown = false; // Safety fix: prevent panic spam
 function panicStopSolo() {
+  if (soloPanicCooldown) return;
+  soloPanicCooldown = true;
+  setTimeout(() => { soloPanicCooldown = false; }, 2000);
+  stateManager.stopAll(); // Safety fix: stop session engine + all managed audio sources
   clearAllPatternTimeouts();
   stopBaseline();
   stopAudioImmediately();
