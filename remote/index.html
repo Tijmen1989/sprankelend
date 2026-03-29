@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>E-Stim Remote Control</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <style>
@@ -5504,7 +5504,9 @@ function startReceiver() {
       } else if (data.type === 'hold_stop') {
         stopReceiverHold();
       } else if (data.type === 'chat') {
-        addChatMessage('sender', data.text);
+        // Bug #322 fix: limit chat message length to prevent DoS
+        const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
+        addChatMessage('sender', chatText);
       } else if (data.type === 'countdown') {
         showCountdownReceiver(data.number);
       } else if (data.type === 'reaction_start') {
@@ -6586,7 +6588,9 @@ function connectToReceiver() {
         showNotification('Ontvanger heeft paniekknop gebruikt!');
         sendLog('🛑 PANIC - Ontvanger heeft paniekknop gebruikt!');
       } else if (data.type === 'chat') {
-        addChatMessage('receiver', data.text);
+        // Bug #322 fix: limit chat message length to prevent DoS
+        const chatText = typeof data.text === 'string' ? data.text.slice(0, 500) : '';
+        addChatMessage('receiver', chatText);
       } else if (data.type === 'reaction_result') {
         if (data.hit) {
           sendLog('✅ Reactiespel: Ontvanger was op tijd!', true);
@@ -6655,7 +6659,8 @@ function sendShock(volume, duration, freq, _bypassCooldown) {
     volumeR = parseInt(document.getElementById('channel-b-vol').value);
   }
 
-  conn.send({ type: 'shock', volume, duration, freq, volume_l: volumeL, volume_r: volumeR, ts: Date.now() });
+  try { conn.send({ type: 'shock', volume, duration, freq, volume_l: volumeL, volume_r: volumeR, ts: Date.now() }); } // Bug #320 fix
+  catch(e) { sendLog('⚠️ Verzenden mislukt', true); return; }
 
   const btn = document.getElementById('shock-btn');
   btn.classList.add('firing');
@@ -6957,10 +6962,10 @@ function stopRandom() {
 function scheduleRandom() {
   if (!randomActive || !conn || conn.open !== true) return;
 
-  const minInt = parseInt(document.getElementById('rand-min').value);
-  const maxInt = parseInt(document.getElementById('rand-max').value);
+  const minInt = parseInt(document.getElementById('rand-min').value) || 5; // Bug #310 fix: NaN-safe
+  const maxInt = parseInt(document.getElementById('rand-max').value) || 15;
   const actualMax = Math.max(minInt, maxInt);
-  const delay = (minInt + Math.random() * (actualMax - minInt)) * 60 * 1000;
+  const delay = Math.max(60000, (minInt + Math.random() * (actualMax - minInt)) * 60 * 1000); // min 1 min
 
   randomTimer = setTimeout(() => {
     if (!randomActive || !conn || conn.open !== true) return;
@@ -7539,10 +7544,10 @@ function stopSoloRandom() {
 
 function scheduleSoloRandom() {
   if (!soloRandomActive) return;
-  const minInt = parseInt(document.getElementById('solo-rand-min').value);
-  const maxInt = parseInt(document.getElementById('solo-rand-max').value);
+  const minInt = parseInt(document.getElementById('solo-rand-min').value) || 5; // Bug #310 fix: NaN-safe
+  const maxInt = parseInt(document.getElementById('solo-rand-max').value) || 15;
   const actualMax = Math.max(minInt, maxInt);
-  const delay = (minInt + Math.random() * (actualMax - minInt)) * 60 * 1000;
+  const delay = Math.max(60000, (minInt + Math.random() * (actualMax - minInt)) * 60 * 1000); // min 1 min
 
   soloRandomTimer = setTimeout(() => {
     if (!soloRandomActive) return;
@@ -10221,7 +10226,7 @@ function lisanneMood(mood) {
       if (statusEl) statusEl.textContent = '⚠️ Verbinding verloren — mood gestopt';
       return false;
     }
-    conn.send(data);
+    try { conn.send(data); } catch(e) { console.warn('[Lisanne] send failed:', e); return false; } // Bug #320 fix
     return true;
   }
 
