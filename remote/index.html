@@ -455,6 +455,122 @@
   }
   .quick-msg-btn:hover { background: #222; }
 
+  /* Fullscreen receiver display */
+  .fs-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: #000;
+    flex-direction: column;
+    color: #e0e0e0;
+    font-family: inherit;
+    overflow: hidden;
+  }
+  .fs-overlay.visible { display: flex; }
+  .fs-top {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    min-height: 0;
+  }
+  .fs-main-text {
+    font-size: clamp(2em, 8vw, 5em);
+    font-weight: bold;
+    transition: all 0.3s;
+    word-break: break-word;
+    max-width: 90vw;
+  }
+  .fs-main-text.countdown { color: #e94560; font-size: clamp(4em, 20vw, 12em); }
+  .fs-main-text.chat { color: #4488ff; font-size: clamp(1.5em, 5vw, 3em); }
+  .fs-main-text.quiz { color: #f39c12; }
+  .fs-main-text.pattern { color: #9b59b6; }
+  .fs-main-text.tease { color: #e94560; }
+  .fs-main-text.waiting { color: #444; font-size: clamp(1.2em, 4vw, 2em); }
+  .fs-bottom {
+    padding: 12px 16px;
+    background: #111;
+    border-top: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 35vh;
+  }
+  .fs-chat-log {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 20vh;
+    font-size: 0.85em;
+  }
+  .fs-chat-log .chat-message { margin: 3px 0; }
+  .fs-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .fs-input-row input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-size: 1em;
+  }
+  .fs-input-row button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #4caf50;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .fs-quick-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fs-quick-btns button {
+    padding: 6px 12px;
+    border-radius: 16px;
+    border: 1px solid #333;
+    background: #1a1a2e;
+    color: #ccc;
+    font-size: 0.8em;
+    cursor: pointer;
+  }
+  .fs-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 9999;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #444;
+    color: #aaa;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fs-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* TTS toggle for sender */
+  .tts-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 4px 0;
+  }
+  .tts-toggle-row label { font-size: 0.8em; color: #888; }
+
   /* Receiver visualization */
   .viz {
     background: #111;
@@ -1580,7 +1696,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0061</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0062</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -2860,11 +2976,24 @@
 
   <!-- Chat section -->
   <div class="chat-section">
-    <h3>💬 Berichten van Lisanne</h3>
+    <h3>💬 Chat</h3>
     <div id="recv-chat-messages" class="chat-messages"></div>
+    <div class="chat-input-row">
+      <input type="text" id="recv-chat-input" placeholder="Antwoord..." onkeydown="if(event.key==='Enter')recvSendChat()">
+      <button onclick="recvSendChat()">Stuur</button>
+    </div>
+    <div class="quick-message-buttons">
+      <button class="quick-msg-btn" onclick="recvQuickMsg('Ja')">Ja</button>
+      <button class="quick-msg-btn" onclick="recvQuickMsg('Nee')">Nee</button>
+      <button class="quick-msg-btn" onclick="recvQuickMsg('Harder!')">Harder!</button>
+      <button class="quick-msg-btn" onclick="recvQuickMsg('Zachter')">Zachter</button>
+      <button class="quick-msg-btn" onclick="recvQuickMsg('Stop')">Stop</button>
+      <button class="quick-msg-btn" onclick="recvQuickMsg('❤️')">❤️</button>
+    </div>
     <div id="recv-reaction-container" style="display: none;">
       <button class="reaction-button" id="recv-reaction-btn" onclick="reactToGame()">DRUK NU! ⚡</button>
     </div>
+    <button onclick="openFullscreen()" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #333;background:#1a1a2e;color:#ccc;cursor:pointer;font-size:0.85em;">🖥️ Fullscreen weergave</button>
   </div>
 
   <!-- Standalone random mode -->
@@ -3291,7 +3420,7 @@
     <h3>💬 Chat met ontvanger</h3>
     <div id="send-chat-messages" class="chat-messages"></div>
     <div class="chat-input-row">
-      <input type="text" id="send-chat-input" placeholder="Bericht..." oninput="handleChatInput(this)">
+      <input type="text" id="send-chat-input" placeholder="Bericht..." onkeydown="if(event.key==='Enter')sendChatMessage()">
       <button onclick="sendChatMessage()">Stuur</button>
     </div>
     <div class="quick-message-buttons">
@@ -3299,6 +3428,10 @@
       <button class="quick-msg-btn" onclick="sendQuickMessage('Harder!')">Harder!</button>
       <button class="quick-msg-btn" onclick="sendQuickMessage('Stop')">Stop</button>
       <button class="quick-msg-btn" onclick="sendQuickMessage('❤️')">❤️</button>
+    </div>
+    <div class="tts-toggle-row">
+      <label>🔊 Antwoorden voorlezen</label>
+      <div id="send-tts-toggle" class="toggle" onclick="this.classList.toggle('on')"></div>
     </div>
   </div>
 
@@ -5591,6 +5724,10 @@ function startReceiver() {
           trackTimeout(() => overlay.classList.remove('visible'), 3000);
         }
         if (teaseMsg) recvLog('😈 ' + teaseMsg, false);
+        if (fsOpen && teaseMsg) {
+          fsUpdateMain('😈 ' + teaseMsg, 'tease');
+          trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
+        }
       } else if (data.type === 'tease_fakeout') {
         const fakeMsg = typeof data.text === 'string' ? data.text.slice(0, 500) : ''; // Bug #402 fix
         const overlay = document.getElementById('tease-overlay');
@@ -5605,6 +5742,11 @@ function startReceiver() {
           }, 1500);
         }
         if (fakeMsg) recvLog('😏 Fake-out: ' + fakeMsg, false);
+        if (fsOpen && fakeMsg) {
+          fsUpdateMain(fakeMsg, 'tease');
+          trackTimeout(() => fsUpdateMain('😏 ...of toch niet?', 'tease'), 1500);
+          trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 3500);
+        }
       } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
         handleVoiceQuizMessage(data);
       } else if (data.type === 'stereo_tone') {
@@ -5720,6 +5862,12 @@ function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
   bar.style.background = cappedVol > 60 ? 'linear-gradient(90deg, #e94560, #ff2020)' : 'linear-gradient(90deg, #e94560, #ff6b6b)';
   text.textContent = 'SCHOK! ' + cappedVol + '% — ' + freq + 'Hz';
   text.style.color = '#e94560';
+
+  // Fullscreen: flash shock
+  if (fsOpen) {
+    fsUpdateMain('⚡ SCHOK! ' + cappedVol + '%', 'countdown');
+    trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), duration + 500);
+  }
 
   recvLog('Schok: ' + cappedVol + '% vol, ' + freq + 'Hz, ' + duration + 'ms', true);
 
@@ -5992,7 +6140,14 @@ function doReceiverPattern(pattern, freq, volume) {
     'stereo_pulse': 'Stereo Pulse'
   };
   // SAFETY: Only display known pattern names (prevent XSS via textContent is safe, but be explicit)
-  display.textContent = 'Patroon: ' + (patternNames[pattern] || 'Onbekend');
+  const patternLabel = patternNames[pattern] || 'Onbekend';
+  display.textContent = 'Patroon: ' + patternLabel;
+
+  // Fullscreen: show pattern name
+  if (fsOpen) {
+    fsUpdateMain('🎵 ' + patternLabel, 'pattern');
+    trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 4000);
+  }
 
   // SAFETY: Cap volume to receiver's safety limit BEFORE pattern scaling
   const limit = parseInt(document.getElementById('safety-limit')?.value || 50);
@@ -6502,6 +6657,24 @@ function addChatMessage(sender, text) {
   msg.textContent = text;
   container.appendChild(msg);
   container.scrollTop = container.scrollHeight;
+
+  // Fullscreen: sync chat + show latest message
+  if (myRole === 'receiver' && fsOpen) {
+    syncChatToFullscreen();
+    if (sender === 'sender') {
+      fsUpdateMain(text, 'chat');
+      // Reset to waiting after 5 seconds (unless overridden by countdown/quiz)
+      trackTimeout(() => {
+        const el = document.getElementById('fs-main-text');
+        if (el && el.textContent === text) fsUpdateMain('Wacht op actie...', 'waiting');
+      }, 5000);
+    }
+  }
+
+  // TTS: read receiver messages aloud on sender side
+  if (myRole === 'sender' && sender === 'receiver' && shouldReadReceiverChat()) {
+    speak(text);
+  }
 }
 
 function showCountdownReceiver(number) {
@@ -6513,6 +6686,14 @@ function showCountdownReceiver(number) {
   text.textContent = 'Countdown: ' + safeNum;
   text.style.color = '#e94560';
   bar.style.width = (safeNum * 10) + '%';
+
+  // Fullscreen: show countdown
+  if (fsOpen) {
+    fsUpdateMain(safeNum === 0 ? '⚡ SCHOK!' : String(safeNum), 'countdown');
+    if (safeNum === 0) {
+      trackTimeout(() => fsUpdateMain('Wacht op actie...', 'waiting'), 2000);
+    }
+  }
 }
 
 function startReactionGameReceiver() {
@@ -7176,6 +7357,86 @@ function handleChatInput(input, e) {
   if (e && e.key === 'Enter') {
     sendChatMessage();
   }
+}
+
+// ==================== RECEIVER CHAT (two-way) ====================
+function recvSendChat() {
+  const input = document.getElementById('recv-chat-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  if (!conn || conn.open !== true) return;
+
+  conn.send({ type: 'chat', text, ts: Date.now() });
+  addChatMessage('receiver', text);
+  input.value = '';
+}
+
+function recvQuickMsg(text) {
+  const input = document.getElementById('recv-chat-input');
+  if (input) input.value = text;
+  recvSendChat();
+}
+
+// ==================== FULLSCREEN RECEIVER DISPLAY ====================
+let fsOpen = false;
+
+function openFullscreen() {
+  const overlay = document.getElementById('fs-overlay');
+  if (!overlay) return;
+  overlay.classList.add('visible');
+  fsOpen = true;
+  // Sync existing chat messages to fullscreen
+  syncChatToFullscreen();
+  // Try real fullscreen API
+  try { document.documentElement.requestFullscreen(); } catch(e) {}
+}
+
+function closeFullscreen() {
+  const overlay = document.getElementById('fs-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('visible');
+  fsOpen = false;
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+}
+
+function syncChatToFullscreen() {
+  const src = document.getElementById('recv-chat-messages');
+  const dst = document.getElementById('fs-chat-log');
+  if (!src || !dst) return;
+  dst.innerHTML = src.innerHTML;
+  dst.scrollTop = dst.scrollHeight;
+}
+
+function fsUpdateMain(text, cssClass) {
+  const el = document.getElementById('fs-main-text');
+  if (!el) return;
+  el.className = 'fs-main-text ' + (cssClass || 'waiting');
+  el.textContent = text;
+}
+
+function fsSendChat() {
+  const input = document.getElementById('fs-chat-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  if (!conn || conn.open !== true) return;
+
+  conn.send({ type: 'chat', text, ts: Date.now() });
+  addChatMessage('receiver', text);
+  input.value = '';
+}
+
+function fsQuickMsg(text) {
+  const input = document.getElementById('fs-chat-input');
+  if (input) input.value = text;
+  fsSendChat();
+}
+
+// ==================== SENDER TTS FOR RECEIVER MESSAGES ====================
+function shouldReadReceiverChat() {
+  const toggle = document.getElementById('send-tts-toggle');
+  return toggle && toggle.classList.contains('on');
 }
 
 function showNotification(text) {
@@ -12228,6 +12489,12 @@ function showVoiceQuizQuestion(mode) {
 
   document.getElementById(prefix + '-vq-question').textContent = q.v;
 
+  // Fullscreen: show quiz question
+  if (fsOpen && prefix === 'recv') {
+    const optList = q.o.map((opt, i) => (i + 1) + '. ' + opt).join('\n');
+    fsUpdateMain(q.v, 'quiz');
+  }
+
   const optionsEl = document.getElementById(prefix + '-vq-options');
   optionsEl.innerHTML = '';
   const inputMode = (voiceQuizState.config && voiceQuizState.config.inputMode) || 'beide';
@@ -13308,6 +13575,29 @@ document.addEventListener('visibilitychange', function() {
 </div>
 
 <!-- Tease overlay for receiver -->
+<!-- Fullscreen receiver display -->
+<div id="fs-overlay" class="fs-overlay">
+  <button class="fs-close-btn" onclick="closeFullscreen()">✕</button>
+  <div class="fs-top">
+    <div id="fs-main-text" class="fs-main-text waiting">Wacht op actie...</div>
+  </div>
+  <div class="fs-bottom">
+    <div id="fs-chat-log" class="fs-chat-log"></div>
+    <div class="fs-input-row">
+      <input type="text" id="fs-chat-input" placeholder="Antwoord..." onkeydown="if(event.key==='Enter')fsSendChat()">
+      <button onclick="fsSendChat()">Stuur</button>
+    </div>
+    <div class="fs-quick-btns">
+      <button onclick="fsQuickMsg('Ja')">Ja</button>
+      <button onclick="fsQuickMsg('Nee')">Nee</button>
+      <button onclick="fsQuickMsg('Harder!')">Harder!</button>
+      <button onclick="fsQuickMsg('Zachter')">Zachter</button>
+      <button onclick="fsQuickMsg('Stop')">Stop</button>
+      <button onclick="fsQuickMsg('❤️')">❤️</button>
+    </div>
+  </div>
+</div>
+
 <div id="tease-overlay" class="tease-overlay">
   <div id="tease-text" class="tease-text"></div>
 </div>
