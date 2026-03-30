@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0084</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0085</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -6722,17 +6722,13 @@ function handleReceiverData(data) {
     resumeSafewordReceiver();
   } else if (data.type === 'cam_cmd') {
     if (data.cmd === 'audio_toggle' && window._cameraPeerId && peer) {
-      // v1.0075: Send command to camera via a signaling call with silent audio track
+      // v1.0085: Use canvas dummy stream (not AudioContext — iOS blocks that)
       try {
-        const ctx = new AudioContext();
-        const oscillator = ctx.createOscillator();
-        const dst = ctx.createMediaStreamDestination();
-        oscillator.connect(dst);
-        oscillator.start();
-        const dummyStream = dst.stream;
+        const canvas = document.createElement('canvas');
+        canvas.width = 2; canvas.height = 2;
+        const dummyStream = canvas.captureStream(0);
         peer.call(window._cameraPeerId, dummyStream, { metadata: { type: 'cam_audio_toggle', enabled: data.enabled } });
-        // Clean up after 1s
-        setTimeout(() => { oscillator.stop(); ctx.close(); }, 1000);
+        setTimeout(() => { dummyStream.getTracks().forEach(t => t.stop()); }, 2000);
       } catch(e) {
         recvLog('⚠️ Kon camera mic-commando niet sturen: ' + e.message);
       }
@@ -6753,6 +6749,11 @@ function handleReceiverData(data) {
     recvLog('🤳 Zender camera gestopt');
   } else if (data.type === 'tv_cmd') {
     handleTvCommand(data);
+  } else if (data.type === 'tv_blindfold') {
+    // v1.0085: Direct blindfold toggle from camera fullscreen (works in Lisanne mode too)
+    tvState.toggles.blindfold = !!data.enabled;
+    updateTvOverlay();
+    recvLog('🙈 Blinddoek ' + (data.enabled ? 'aan' : 'uit'));
   } else if (data.type === 'countdown') {
     showCountdownReceiver(data.number);
   } else if (data.type === 'reaction_start') {
@@ -16609,12 +16610,13 @@ function joinAsCamera() {
   });
 }
 
+let _camBatteryInterval = null;
 function startCameraBatteryReporting() {
-  // v1.0075: navigator.getBattery() is deprecated and removed from modern browsers.
-  // Instead, show uptime counter on camera screen.
+  // v1.0085: Clear previous interval to prevent memory leak on reconnect
+  if (_camBatteryInterval) clearInterval(_camBatteryInterval);
   const startTime = Date.now();
   const statusEl = document.getElementById('cam-conn-status');
-  setInterval(() => {
+  _camBatteryInterval = setInterval(() => {
     if (!statusEl) return;
     const mins = Math.floor((Date.now() - startTime) / 60000);
     const secs = Math.floor(((Date.now() - startTime) % 60000) / 1000);
@@ -16635,13 +16637,23 @@ async function cameraSwitchFacing() {
       audio: false
     });
 
-    // Stop old video tracks
+    // v1.0085: Preserve audio tracks when switching camera
+    const existingAudioTracks = cameraStream ? cameraStream.getAudioTracks() : [];
+
+    // Stop old video tracks only
     if (cameraStream) {
       cameraStream.getVideoTracks().forEach(t => t.stop());
     }
 
     cameraFacingMode = newFacing;
     cameraStream = newStream;
+
+    // Re-add audio tracks to new stream (mic was enabled before switch)
+    existingAudioTracks.forEach(t => {
+      if (t.readyState === 'live') {
+        cameraStream.addTrack(t);
+      }
+    });
 
     // Update local preview
     const preview = document.getElementById('camera-local-preview');
@@ -16731,6 +16743,9 @@ function relayCameraToSender(remoteStream) {
 
 // --- Sender: handle camera availability ---
 let _senderCamPeerId = null; // Store camera peer ID for direct connection
+let _camConnecting = false; // v1.0085: Prevent duplicate calls
+let _camDirectCall = null; // v1.0085: Track active direct call
+
 function handleCamAvailable(data) {
   sendLog('📷 Camera-companion verbonden!');
   const notConnEl = document.getElementById('cam-not-connected');
@@ -16744,63 +16759,53 @@ function handleCamAvailable(data) {
 
   if (!peer) { sendLog('⚠️ Geen peer voor camera stream'); return; }
 
+  // v1.0085: Skip if already connected or connecting
+  if (_camConnecting) { sendLog('📷 Camera verbinding al bezig — skip'); return; }
+  if (document.getElementById('cam-preview-video')?.srcObject) {
+    sendLog('📷 Camera al verbonden — skip');
+    return;
+  }
+
   // Strategy 1: Direct call to camera peer (best quality, no relay)
   if (camPeerId) {
+    _camConnecting = true;
     sendLog('📷 Directe verbinding met camera: ' + camPeerId.substring(0, 8) + '...');
     try {
       const canvas = document.createElement('canvas');
       canvas.width = 2; canvas.height = 2;
       const dummyStream = canvas.captureStream(0);
-      const call = peer.call(camPeerId, dummyStream, { metadata: { role: 'sender_wants_cam_direct' } });
-      call.on('stream', (remoteStream) => {
+      _camDirectCall = peer.call(camPeerId, dummyStream, { metadata: { role: 'sender_wants_cam_direct' } });
+      _camDirectCall.on('stream', (remoteStream) => {
         dummyStream.getTracks().forEach(t => t.stop());
+        _camConnecting = false;
         sendLog('📷 Direct camera stream ontvangen!');
         handleCamStream(remoteStream);
       });
-      call.on('error', (err) => {
-        sendLog('⚠️ Directe camera fout: ' + err + ' — probeer via relay...');
+      _camDirectCall.on('error', (err) => {
+        sendLog('⚠️ Directe camera fout: ' + err);
         dummyStream.getTracks().forEach(t => t.stop());
-        requestCamViaRelay(); // Fallback
+        _camConnecting = false;
+        _camDirectCall = null;
       });
-      // Timeout: if no stream after 5s, try relay
+      // Timeout: if no stream after 8s, give up
       setTimeout(() => {
-        if (!document.getElementById('cam-preview-video')?.srcObject) {
-          sendLog('⚠️ Direct timeout — probeer via relay...');
-          requestCamViaRelay();
+        if (_camConnecting) {
+          sendLog('⚠️ Direct camera timeout');
+          _camConnecting = false;
+          _camDirectCall = null;
         }
-      }, 5000);
+      }, 8000);
     } catch(e) {
       sendLog('⚠️ Directe camera fout: ' + e.message);
-      requestCamViaRelay();
+      _camConnecting = false;
     }
   } else {
-    // No camera peer ID — use relay via receiver
-    requestCamViaRelay();
+    sendLog('⚠️ Geen camera peer ID — kan niet direct verbinden');
   }
 }
 
-function requestCamViaRelay() {
-  if (!peer || !conn || !conn.open) return;
-  const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
-  if (!code) { sendLog('⚠️ Geen sessiecode voor camera relay'); return; }
-  sendLog('📷 Camera stream opvragen via receiver relay...');
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2; canvas.height = 2;
-    const dummyStream = canvas.captureStream(0);
-    const call = peer.call(getPeerId(code), dummyStream, { metadata: { role: 'sender_wants_cam' } });
-    call.on('stream', (remoteStream) => {
-      dummyStream.getTracks().forEach(t => t.stop());
-      handleCamStream(remoteStream);
-    });
-    call.on('error', (err) => {
-      sendLog('⚠️ Camera relay fout: ' + err);
-      dummyStream.getTracks().forEach(t => t.stop());
-    });
-  } catch(e) {
-    sendLog('⚠️ Kan camera stream niet ophalen: ' + e.message);
-  }
-}
+// v1.0085: requestCamViaRelay removed — remote WebRTC tracks cannot be relayed
+// (always produces black video). Direct camera connection is the only reliable path.
 
 function handleCamStream(remoteStream) {
   sendLog('📷 Camera stream ontvangen: ' + remoteStream.getTracks().length + ' tracks');
@@ -16898,10 +16903,11 @@ function resetCamControlsFade() {
 }
 
 function camQuickShock() {
-  // Use the intensity slider value
+  // v1.0085: Use get2DSafetyLimit() which works in both advanced and Lisanne mode
   const vol = parseInt(document.getElementById('cam-intensity-slider')?.value || 50);
   if (conn && conn.open) {
-    const limit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+    const mode = document.getElementById('lisanne-intensity') && document.querySelector('#screen-lisanne.active, #screen-lisanne.screen.active') ? 'lisanne' : 'send';
+    const limit = get2DSafetyLimit(mode);
     const clampedVol = Math.min(vol, limit);
     conn.send({ type: 'shock', volume: clampedVol, duration: 500, freq: 200, ts: Date.now() });
     sendLog('⚡ Cam-schok: ' + clampedVol + '%');
@@ -16910,10 +16916,10 @@ function camQuickShock() {
 }
 
 function camUpdateIntensity(val) {
-  // v1.0075: Intensity slider controls volume for cam quick shock
-  // Also send a live hold-tone update if hold mode is active
+  // v1.0085: Use get2DSafetyLimit() which works in both advanced and Lisanne mode
   if (window._camHoldActive && conn && conn.open) {
-    const limit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+    const mode = document.getElementById('lisanne-intensity') && document.querySelector('#screen-lisanne.active, #screen-lisanne.screen.active') ? 'lisanne' : 'send';
+    const limit = get2DSafetyLimit(mode);
     const clampedVol = Math.min(parseInt(val), limit);
     conn.send({ type: 'hold_start', volume: clampedVol, freq: 200, ts: Date.now() });
   }
@@ -16953,7 +16959,12 @@ function camToggleShowOnRecv() {
 function camToggleBlindfold() {
   const btn = document.getElementById('cam-blindfold-btn');
   const isActive = btn?.classList.toggle('active');
-  // Toggle TV blindfold
+  // v1.0085: Send blindfold command directly via data channel
+  // (tv-tog-blindfold element only exists on advanced sender screen, not Lisanne)
+  if (conn && conn.open) {
+    conn.send({ type: 'tv_blindfold', enabled: isActive, ts: Date.now() });
+  }
+  // Also update local toggle if it exists (advanced sender)
   const tvToggle = document.getElementById('tv-tog-blindfold');
   if (tvToggle) {
     if (isActive) tvToggle.classList.add('on');
