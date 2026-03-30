@@ -2175,7 +2175,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0078</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0079</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -16088,6 +16088,7 @@ let cameraPeer = null;
 // v1.0075: cameraConn removed (no data channel since v1.0072)
 let cameraCall = null;   // media call camera -> sender
 let cameraStream = null;
+let cameraFacingMode = 'environment'; // 'environment' (back) or 'user' (front)
 let senderCamStream = null; // sender's own camera stream
 let senderCamCall = null;   // media call sender -> receiver for PiP
 let camControlsFadeTimer = null;
@@ -16229,6 +16230,69 @@ function startCameraBatteryReporting() {
 }
 
 // --- Receiver: handle incoming camera connection ---
+// v1.0079: Switch between front and back camera
+async function cameraSwitchFacing() {
+  const newFacing = cameraFacingMode === 'environment' ? 'user' : 'environment';
+  const btn = document.getElementById('cam-switch-btn');
+  if (btn) btn.textContent = '⏳ Wisselen...';
+
+  try {
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: newFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+
+    // Stop old video tracks
+    if (cameraStream) {
+      cameraStream.getVideoTracks().forEach(t => t.stop());
+    }
+
+    cameraFacingMode = newFacing;
+    cameraStream = newStream;
+
+    // Update local preview
+    const preview = document.getElementById('camera-local-preview');
+    if (preview) preview.srcObject = newStream;
+
+    // Replace track in existing peer connections (camera→receiver call)
+    const newVideoTrack = newStream.getVideoTracks()[0];
+    if (newVideoTrack && cameraCall && cameraCall.peerConnection) {
+      const senders = cameraCall.peerConnection.getSenders();
+      const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+      if (videoSender) {
+        await videoSender.replaceTrack(newVideoTrack);
+        console.log('[Camera] Track replaced in receiver call');
+      }
+    }
+
+    // Also replace in any direct sender connections
+    if (cameraPeer && cameraPeer._connections) {
+      for (const [peerId, conns] of Object.entries(cameraPeer._connections)) {
+        if (Array.isArray(conns)) {
+          for (const c of conns) {
+            if (c && c.peerConnection) {
+              const senders = c.peerConnection.getSenders();
+              const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+              if (videoSender) {
+                await videoSender.replaceTrack(newVideoTrack);
+                console.log('[Camera] Track replaced in direct connection to ' + peerId);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (btn) btn.textContent = newFacing === 'user' ? '🔄 Naar achtercamera' : '🔄 Naar frontcamera';
+  } catch(e) {
+    console.error('[Camera] Switch failed:', e);
+    if (btn) btn.textContent = '❌ Wissel mislukt';
+    setTimeout(() => {
+      if (btn) btn.textContent = cameraFacingMode === 'environment' ? '🔄 Naar frontcamera' : '🔄 Naar achtercamera';
+    }, 2000);
+  }
+}
+
 function handleCameraConnection(call) {
   cameraMediaConn = call;
   // v1.0075: Don't call.answer() here — already answered in peer.on('call')
@@ -16719,8 +16783,11 @@ function makeDraggable(el) {
     <div style="margin-bottom:24px;">
       <div class="camera-indicator" id="cam-status-indicator">📷 Camera actief</div>
     </div>
-    <video id="camera-local-preview" autoplay playsinline muted style="width:120px;height:90px;border-radius:8px;object-fit:cover;opacity:0.4;"></video>
-    <div style="margin-top:16px;font-size:0.8em;color:#555;" id="cam-conn-status">Verbinden...</div>
+    <video id="camera-local-preview" autoplay playsinline muted style="width:100%;max-width:100vw;height:auto;max-height:60vh;border-radius:8px;object-fit:cover;"></video>
+    <div style="margin-top:16px;display:flex;gap:12px;align-items:center;justify-content:center;">
+      <button id="cam-switch-btn" onclick="cameraSwitchFacing()" style="background:#333;color:#fff;border:1px solid #555;border-radius:20px;padding:8px 18px;font-size:1em;cursor:pointer;">🔄 Naar frontcamera</button>
+    </div>
+    <div style="margin-top:12px;font-size:0.8em;color:#555;" id="cam-conn-status">Verbinden...</div>
   </div>
 </div>
 
