@@ -9043,12 +9043,16 @@ function holdBallPlayLocal(freq, vol) {
   const safeVol = Math.min(vol / 100, safetyLimit);
 
   if (holdBallLocalNodes) {
-    // Update existing oscillator
+    // Update existing oscillator — verify it's still alive
     try {
+      // Test if osc is still running (playbackState is deprecated but context.state works)
       holdBallLocalNodes.osc.frequency.linearRampToValueAtTime(freq, now + 0.05);
       holdBallLocalNodes.gain.gain.linearRampToValueAtTime(safeVol, now + 0.05);
-    } catch(e) {}
-    return;
+      return;
+    } catch(e) {
+      // Oscillator was stopped/invalid — clean up and create fresh
+      holdBallLocalNodes = null;
+    }
   }
 
   duckBaseline(30000);
@@ -9093,6 +9097,7 @@ function holdBallStart(e, mode) {
   e.preventDefault();
   const hb = getHBState(mode);
   hb.touching = true;
+  hb.activeMode = mode;
   const pad = document.getElementById(mode + '-holdball-pad');
   if (pad) pad.classList.add('active');
 
@@ -9110,6 +9115,15 @@ function holdBallStart(e, mode) {
       holdBallSend(mode, hb.lastFreq, hb.lastVol);
     }
   }, 50);
+
+  // Document-level mouseup listener for reliable release detection
+  if (!e.touches) {
+    const docUp = () => {
+      holdBallEnd(e, mode);
+      document.removeEventListener('mouseup', docUp);
+    };
+    document.addEventListener('mouseup', docUp);
+  }
 }
 
 function holdBallMove(e, mode) {
@@ -9196,8 +9210,12 @@ function patternDrawRender(mode) {
   const canvas = document.getElementById(mode + '-patterndraw-canvas');
   if (!canvas || pd.points.length < 2) return;
   const ctx = canvas.getContext('2d');
-  const w = canvas.width = canvas.offsetWidth;
-  const h = canvas.height = canvas.offsetHeight;
+  // Guard: skip render if canvas is hidden (0x0 dimensions)
+  const ow = canvas.offsetWidth;
+  const oh = canvas.offsetHeight;
+  if (ow <= 0 || oh <= 0) return;
+  const w = canvas.width = ow;
+  const h = canvas.height = oh;
   ctx.clearRect(0, 0, w, h);
 
   ctx.beginPath();
@@ -9240,6 +9258,15 @@ function patternDrawStart(e, mode) {
   const pos = patternDrawGetPos(e, mode);
   if (pos) pd.points.push(pos);
   patternDrawRender(mode);
+
+  // Document-level mouseup for reliable end detection
+  if (!e.touches) {
+    const docUp = () => {
+      patternDrawEnd(e, mode);
+      document.removeEventListener('mouseup', docUp);
+    };
+    document.addEventListener('mouseup', docUp);
+  }
 }
 
 function patternDrawMove(e, mode) {
@@ -9273,7 +9300,9 @@ function patternDrawEnd(e, mode) {
   const startTime = pd.points[0].time;
   pd.points.forEach(p => { p.time = p.time - startTime; });
 
-  // Auto-play the pattern
+  // Ensure any previous playback is fully stopped before auto-playing
+  pd.playing = false;
+  if (pd.playTimer) { clearTimeout(pd.playTimer); pd.playTimer = null; }
   patternDrawPlay(mode);
 }
 
