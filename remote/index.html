@@ -2176,7 +2176,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0081</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0082</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3275,8 +3275,8 @@
   <!-- Panic button -->
   <button id="panic-btn" class="panic-btn" onclick="panicStop()">🛑 STOP / Paniekknop</button>
 
-  <!-- v1.0080: Fullscreen button for receiver -->
-  <button onclick="toggleReceiverFullscreen()" style="width:100%;padding:12px;margin-bottom:12px;font-size:1em;background:linear-gradient(135deg,#1a1a3e,#2a2a4e);border:1px solid #555;color:#e0e0e0;border-radius:10px;cursor:pointer;">⛶ Fullscreen</button>
+  <!-- v1.0082: Receiver can open TV/fullscreen themselves -->
+  <button id="recv-tv-toggle-btn" onclick="receiverToggleTv()" style="width:100%;padding:14px;margin-bottom:12px;font-size:1.1em;background:linear-gradient(135deg,#0a0a1a,#1a1a3e);border:2px solid #4caf50;color:#e0e0e0;border-radius:12px;cursor:pointer;">📺 Fullscreen modus</button>
 
   <div id="recv-status" class="status-bar">
     <div id="recv-dot" class="status-dot waiting"></div>
@@ -4275,7 +4275,7 @@
     </div>
 
     <div id="lisanne-focus-buttons" style="display:none;" class="lisanne-focus-section">
-      <div style="font-size:0.8em;color:#888;margin:12px 0 8px;">Focus:</div>
+      <div style="font-size:0.8em;color:#888;margin:4px 0 6px;">Focus:</div>
       <div style="display:flex;gap:8px;">
         <button class="action-btn" onclick="lisanneFocus('loops')" id="lisanne-focus-loops">🔗 Penis</button>
         <button class="action-btn" onclick="lisanneFocus('plug')" id="lisanne-focus-plug">🔌 Prostaat</button>
@@ -4298,9 +4298,17 @@
       </button>
     </div>
 
-    <div class="card" style="margin-top:12px;">
+    <!-- v1.0082: Mic button for sender -->
+    <button class="sender-mic-btn" onclick="toggleSenderMic()" style="width:100%;padding:14px;margin-top:12px;font-size:1em;background:#1a1a3e;border:2px solid #26c6da;color:#e0e0e0;border-radius:10px;cursor:pointer;">🎤 Praat</button>
+
+    <!-- v1.0082: Extra tools collapsed by default -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="color:#888;font-size:0.9em;">🔧 Extra tools ▶</div>
+      <div style="display:none;">
+
+    <div class="card" style="margin-top:8px;">
       <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">⏱️ Timer Schok</div>
-      <div style="display:block;">
+      <div style="display:none;">
         <p style="font-size:0.82em;color:#aaa;margin:0 0 10px;">Stel een aftelling in. Tim ziet de timer en krijgt een schok als hij op 0 staat.</p>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
           <label style="font-size:0.85em;color:#bbb;min-width:60px;">Seconden:</label>
@@ -4414,6 +4422,10 @@
         </div>
       </div>
     </div>
+
+      </div>
+    </div>
+    <!-- end Extra tools -->
 
     <!-- v1.0076: TV controls for Lisanne mode -->
     <div style="display:flex;gap:8px;margin-top:12px;">
@@ -6569,6 +6581,20 @@ function handleReceiverData(data) {
     } else if (data.cmd === 'show_sender_pip') {
       const pip = document.getElementById('sender-pip');
       if (pip) pip.classList.toggle('visible', !!data.enabled);
+      // v1.0082: Also show camera feed on TV overlay (large)
+      const tvCamFeed = document.getElementById('tv-camera-feed');
+      if (tvCamFeed) {
+        if (data.enabled && window._cameraRelayStream && window._cameraRelayStream.active) {
+          tvCamFeed.srcObject = window._cameraRelayStream;
+          tvCamFeed.style.display = 'block';
+          tvCamFeed.play().catch(() => {});
+          // Auto-open TV if not open
+          if (!tvState.open) openTvDisplay();
+        } else {
+          tvCamFeed.style.display = 'none';
+          tvCamFeed.srcObject = null;
+        }
+      }
     }
   } else if (data.type === 'cam_request_stream') {
     // Handled via peer.on('call') sender_wants_cam
@@ -6746,6 +6772,17 @@ function startReceiver() {
       });
       call.on('close', () => {
         hideSenderPip();
+      });
+    } else if (meta.role === 'sender_mic') {
+      // v1.0082: Sender sharing microphone audio
+      call.answer();
+      call.on('stream', (remoteStream) => {
+        recvLog('🎤 Zender microfoon ontvangen');
+        handleSenderMicStream(remoteStream);
+      });
+      call.on('close', () => {
+        recvLog('🎤 Zender microfoon gestopt');
+        stopSenderMicPlayback();
       });
     } else if (meta.role === 'sender_wants_cam') {
       // Sender requesting camera stream
@@ -8638,15 +8675,29 @@ function generateRecvQR(code) {
   } catch(e) { console.log('QR generation failed:', e); }
 }
 
-// v1.0080: Receiver fullscreen toggle
-function toggleReceiverFullscreen() {
-  try {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      document.documentElement.requestFullscreen();
-    }
-  } catch(e) {}
+// v1.0082: Show/hide close bar on TV overlay tap
+let _tvCloseBarTimer = null;
+function tvOverlayTap(event) {
+  // Don't trigger on button clicks
+  if (event.target.tagName === 'BUTTON' || event.target.closest('button')) return;
+  const bar = document.getElementById('tv-close-bar');
+  if (!bar) return;
+  bar.style.opacity = '1';
+  clearTimeout(_tvCloseBarTimer);
+  _tvCloseBarTimer = setTimeout(() => { bar.style.opacity = '0'; }, 3000);
+}
+
+// v1.0082: Receiver can toggle TV/fullscreen mode themselves
+function receiverToggleTv() {
+  if (tvState.open) {
+    closeTvDisplay();
+    const btn = document.getElementById('recv-tv-toggle-btn');
+    if (btn) btn.textContent = '📺 Fullscreen modus';
+  } else {
+    openTvDisplay();
+    const btn = document.getElementById('recv-tv-toggle-btn');
+    if (btn) btn.textContent = '📺 Fullscreen uit';
+  }
 }
 
 function syncChatToFullscreen() {
@@ -15905,6 +15956,10 @@ function autoReconnectReceiver(code) {
       call.answer();
       call.on('stream', (remoteStream) => { handleSenderCamStream(remoteStream); });
       call.on('close', () => { hideSenderPip(); });
+    } else if (meta.role === 'sender_mic') {
+      call.answer();
+      call.on('stream', (remoteStream) => { handleSenderMicStream(remoteStream); });
+      call.on('close', () => { stopSenderMicPlayback(); });
     } else if (meta.role === 'sender_wants_cam') {
       if (window._cameraRelayStream && window._cameraRelayStream.active) {
         call.answer(window._cameraRelayStream);
@@ -16710,6 +16765,76 @@ function camToggleAudio() {
   }
 }
 
+// --- v1.0082: Sender microphone to receiver ---
+let senderMicStream = null;
+let senderMicCall = null;
+let senderMicActive = false;
+
+function toggleSenderMic() {
+  senderMicActive = !senderMicActive;
+  // Update all mic buttons
+  document.querySelectorAll('.sender-mic-btn').forEach(btn => {
+    btn.classList.toggle('active', senderMicActive);
+    btn.textContent = senderMicActive ? '🎤 Mic uit' : '🎤 Praat';
+    btn.style.background = senderMicActive ? '#e94560' : '';
+  });
+
+  if (senderMicActive) {
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+      senderMicStream = stream;
+      if (peer && conn && conn.open) {
+        const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
+        if (code) {
+          senderMicCall = peer.call(getPeerId(code), stream, { metadata: { role: 'sender_mic' } });
+          sendLog('🎤 Microfoon aan — ontvanger hoort je');
+        }
+      }
+    }).catch(err => {
+      sendLog('⚠️ Mic niet beschikbaar: ' + err.message);
+      senderMicActive = false;
+      document.querySelectorAll('.sender-mic-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.textContent = '🎤 Praat';
+        btn.style.background = '';
+      });
+    });
+  } else {
+    if (senderMicStream) {
+      senderMicStream.getTracks().forEach(t => t.stop());
+      senderMicStream = null;
+    }
+    if (senderMicCall) {
+      try { senderMicCall.close(); } catch(e) {}
+      senderMicCall = null;
+    }
+    sendLog('🎤 Microfoon uit');
+  }
+}
+
+// --- Receiver: play sender mic audio ---
+let _senderMicAudio = null;
+function handleSenderMicStream(remoteStream) {
+  // Play through UI audio output (not stim output!)
+  _senderMicAudio = new Audio();
+  _senderMicAudio.srcObject = remoteStream;
+  _senderMicAudio.autoplay = true;
+  // Route to UI output device if available
+  const uiDevice = document.getElementById('ui-output-device')?.value;
+  if (uiDevice && uiDevice !== 'default' && _senderMicAudio.setSinkId) {
+    _senderMicAudio.setSinkId(uiDevice).catch(() => {});
+  }
+  _senderMicAudio.play().catch(e => recvLog('⚠️ Mic audio play fout: ' + e.message));
+  recvLog('🎤 Zender praat — audio afspelen');
+}
+
+function stopSenderMicPlayback() {
+  if (_senderMicAudio) {
+    _senderMicAudio.pause();
+    _senderMicAudio.srcObject = null;
+    _senderMicAudio = null;
+  }
+}
+
 // --- Sender: share own camera (front camera) ---
 function toggleSenderCamShare() {
   const toggle = document.getElementById('sender-cam-share-toggle');
@@ -16802,7 +16927,12 @@ function makeDraggable(el) {
 </div>
 
 <!-- TV Display — fullscreen receiver controlled by sender -->
-<div id="tv-overlay" class="tv-overlay">
+<div id="tv-overlay" class="tv-overlay" onclick="tvOverlayTap(event)">
+  <!-- v1.0082: Close button + camera feed on TV -->
+  <div id="tv-close-bar" style="position:absolute;top:0;left:0;right:0;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:10;opacity:0;transition:opacity 0.3s;">
+    <button onclick="receiverToggleTv()" style="background:rgba(0,0,0,0.6);border:1px solid #555;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.9em;cursor:pointer;">← Terug</button>
+  </div>
+  <video id="tv-camera-feed" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none;"></video>
   <div id="tv-chat-layer" class="tv-layer hidden"></div>
   <div id="tv-countdown-layer" class="tv-layer hidden">
     <div>
