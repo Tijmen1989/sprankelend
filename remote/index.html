@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>E-Stim Remote Control</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -1853,13 +1853,13 @@
     display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
   }
   .sensatie-preset-btn {
-    padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc;
-    background: #f9f9f9; font-size: 0.78em; cursor: pointer; transition: all 0.15s;
+    padding: 6px 12px; border-radius: 8px; border: 1px solid #555;
+    background: #1a1a2e; color: #e0e0e0; font-size: 0.78em; cursor: pointer; transition: all 0.15s;
   }
-  .sensatie-preset-btn:hover { background: #eee; border-color: #b040e0; }
+  .sensatie-preset-btn:hover { background: #2a2a4e; border-color: #b040e0; }
   .sensatie-preset-btn.active { background: #b040e0; color: white; border-color: #b040e0; }
   .sensatie-advies {
-    background: rgba(255,255,255,0.7); border-radius: 10px; padding: 10px 12px;
+    background: rgba(30,30,60,0.8); border-radius: 10px; padding: 10px 12px; color: #e0e0e0;
     font-size: 0.8em; line-height: 1.45; color: #555; border: 1px solid rgba(0,0,0,0.06);
     min-height: 44px;
   }
@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0085</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0086</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -2510,8 +2510,8 @@
   </div>
 </div>
 
-<!-- ELECTRODE SETUP WIZARD (OLD - HIDDEN, functionality moved to wizard step 4) -->
-<div id="electrode-setup" class="screen">
+<!-- M22 fix: Removed dead electrode-setup HTML (functionality is in wizard step 4) -->
+<div id="electrode-setup" class="screen" style="display:none !important">
   <div class="header">
     <h2>⚡ Electrode Setup</h2>
     <div class="subtitle">Configureer je electrodes voor optimale en veilige stimulatie</div>
@@ -4461,11 +4461,11 @@
 
     <!-- v1.0082: Extra tools collapsed by default -->
     <div class="card" style="margin-top:16px;">
-      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="color:#888;font-size:0.9em;">🔧 Extra tools ▶</div>
+      <div class="card-header" onclick="var s=this.nextElementSibling;if(s)s.style.display=s.style.display==='none'?'block':'none'" style="color:#888;font-size:0.9em;">🔧 Extra tools ▶</div>
       <div style="display:none;">
 
     <div class="card" style="margin-top:8px;">
-      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">⏱️ Timer Schok</div>
+      <div class="card-header" onclick="var s=this.nextElementSibling;if(s)s.style.display=s.style.display==='none'?'block':'none'">⏱️ Timer Schok</div>
       <div style="display:none;">
         <p style="font-size:0.82em;color:#aaa;margin:0 0 10px;">Stel een aftelling in. Tim ziet de timer en krijgt een schok als hij op 0 staat.</p>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
@@ -4524,7 +4524,7 @@
 
     <!-- 2D Hold Ball Lisanne -->
     <div class="card" style="margin-top:12px;">
-      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🎯 Hold Ball (2D)</div>
+      <div class="card-header" onclick="var s=this.nextElementSibling;if(s)s.style.display=s.style.display==='none'?'block':'none'">🎯 Hold Ball (2D)</div>
       <div style="display:none;">
         <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Houd je vinger op het vlak. Y = sterkte, X = gevoel. Laat los = stop.</p>
         <div class="toggle-row" style="margin-bottom:8px;">
@@ -4552,7 +4552,7 @@
 
     <!-- 2D Pattern Draw Lisanne -->
     <div class="card" style="margin-top:12px;">
-      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">✏️ Patroon Tekenen (2D)</div>
+      <div class="card-header" onclick="var s=this.nextElementSibling;if(s)s.style.display=s.style.display==='none'?'block':'none'">✏️ Patroon Tekenen (2D)</div>
       <div style="display:none;">
         <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Teken een patroon. Het loopt door als lus.</p>
         <div class="pattern-draw-container" id="lisanne-patterndraw-pad"
@@ -4676,9 +4676,11 @@ let reconnectCooldown = false;
 let deadManTimer = null;
 let deadManLastActivity = Date.now();
 
-// Lisanne mood transition
-let lisanneTransitionActive = false;
-let lisanneTransitionScale = 1.0;
+// Lisanne mood transition (M1: dead code removed - lisanneTransitionActive/Scale were unused)
+
+// K6 fix: global refs for Lisanne heartbeat intervals so they can be cleaned up
+let lisanneHeartbeatCheckInterval = null;
+let lisanneHeartbeatSendInterval = null;
 
 // Session timer
 let sessionStartTime = null;
@@ -4842,7 +4844,12 @@ function stopDeadManSwitch() {
 }
 
 // ==================== SESSION TIMER ====================
+function stopSessionWarnings() {
+  if (sessionTimerInterval) { clearInterval(sessionTimerInterval); sessionTimerInterval = null; }
+}
+
 function startSessionWarnings() {
+  stopSessionWarnings(); // K4 fix: clear any existing interval before starting new one
   sessionStartTime = Date.now();
   sessionWarningsShown.clear();
   sessionTimerInterval = setInterval(() => {
@@ -5132,6 +5139,11 @@ function initTabDetection() {
   }
 }
 
+// ==================== WAKE-FROM-SLEEP DETECTION ====================
+// H1 fix: declare before beforeunload handler to avoid TDZ issues
+let lastTickTime = Date.now();
+let wakeDetectorInterval = null;
+
 // Announce departure when tab closes
 window.addEventListener('beforeunload', () => {
   if (tabChannel) {
@@ -5143,9 +5155,7 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// ==================== WAKE-FROM-SLEEP DETECTION ====================
-let lastTickTime = Date.now();
-let wakeDetectorInterval = setInterval(() => {
+wakeDetectorInterval = setInterval(() => {
   const now = Date.now();
   const gap = now - lastTickTime;
   lastTickTime = now;
@@ -5813,7 +5823,8 @@ function startAudioPlayback() {
     document.getElementById('audio-play-btn').textContent = '▶ Play';
   };
 
-  // Update progress
+  // Update progress (H9 fix: clear existing interval first to prevent accumulation)
+  if (audioPlayerState.progressInterval) clearInterval(audioPlayerState.progressInterval);
   audioPlayerState.progressInterval = setInterval(updateAudioProgress, 250);
 }
 
@@ -6173,7 +6184,13 @@ function getPeerId(code) {
 // ---- Mode Select ----
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  // M23 fix: stop audio progress interval on screen switch
+  if (audioPlayerState && audioPlayerState.progressInterval) {
+    clearInterval(audioPlayerState.progressInterval);
+    audioPlayerState.progressInterval = null;
+  }
   // Auto-detect audio apparaten als we naar receiver of solo scherm gaan
   if (id === 'receiver-screen' || id === 'receiver') {
     detectAudioDevices();
@@ -7653,8 +7670,8 @@ function doReceiverPattern(pattern, freq, volume) {
     // NEW: L sweeps up while R sweeps down (8s, 40 steps)
     for (let i = 0; i < 40; i++) {
       const progress = i / 39;
-      const freqL = freq + progress * 300;
-      const freqR = freq - progress * 200;
+      const freqL = Math.max(20, freq + progress * 300);
+      const freqR = Math.max(20, freq - progress * 200);
       trackTimeout(() => {
         playToneStereoAdvanced({
           freqL: freqL,
@@ -7678,8 +7695,8 @@ function doReceiverPattern(pattern, freq, volume) {
       const divergence = Math.sin(t * Math.PI) * 100; // Bell curve
       trackTimeout(() => {
         playToneStereoAdvanced({
-          freqL: freq - divergence,
-          freqR: freq + divergence,
+          freqL: Math.max(20, freq - divergence),
+          freqR: Math.max(20, freq + divergence),
           volume: v,
           duration: 350,
           waveL: 'square',
@@ -7917,7 +7934,8 @@ function startReactionGameReceiver() {
 function reactToGame() {
   if (!reactionGameActive) return;
   reactionGameActive = false;
-  document.getElementById('recv-reaction-container').style.display = 'none';
+  const rcContainer = document.getElementById('recv-reaction-container');
+  if (rcContainer) rcContainer.style.display = 'none';
   if (conn && conn.open) {
     conn.send({ type: 'reaction_result', hit: true, ts: Date.now() });
   }
@@ -8274,8 +8292,9 @@ function updateRecvQS() {
 
 function setSendStatus(state, text) {
   const dot = document.getElementById('send-dot');
-  dot.className = 'status-dot ' + state;
-  document.getElementById('send-status-text').textContent = text;
+  if (dot) dot.className = 'status-dot ' + state;
+  const txt = document.getElementById('send-status-text');
+  if (txt) txt.textContent = text;
 }
 
 function sendLog(msg, isShock) {
@@ -8341,7 +8360,8 @@ function sendPattern(pattern) {
   };
 
   // Check doorlopend
-  const isLoop = document.getElementById('sender-loop-toggle').classList.contains('on');
+  const _loopEl = document.getElementById('sender-loop-toggle');
+  const isLoop = _loopEl ? _loopEl.classList.contains('on') : false;
   if (isLoop) {
     startLoopingPattern('sender', pattern);
     sendLog('Doorlopend patroon: ' + (patternNames[pattern] || pattern), true);
@@ -8498,21 +8518,23 @@ function scheduleRandom() {
   randomTimer = setTimeout(() => {
     if (!randomActive || !conn || conn.open !== true) return;
 
-    const useRandomVol = document.getElementById('rand-vol-toggle').classList.contains('on');
-    const useEscalation = document.getElementById('escalation-toggle').classList.contains('on');
+    const _rvt = document.getElementById('rand-vol-toggle');
+    const useRandomVol = _rvt ? _rvt.classList.contains('on') : false;
+    const _et = document.getElementById('escalation-toggle');
+    const useEscalation = _et ? _et.classList.contains('on') : false;
 
     let volume;
     if (useEscalation) {
-      const minVol = parseInt(document.getElementById('rand-vol-min').value);
-      const maxVol = parseInt(document.getElementById('rand-vol-max').value);
+      const minVol = parseInt(document.getElementById('rand-vol-min')?.value) || 10; // M17 fix: NaN-safe
+      const maxVol = parseInt(document.getElementById('rand-vol-max')?.value) || 50;
       const actualMaxVol = Math.max(minVol, maxVol);
       const range = actualMaxVol - minVol;
       escalationLevel = Math.min(100, escalationLevel + 10);
       volume = Math.round(minVol + (range * escalationLevel / 100));
       updateEscalationDisplay();
     } else if (useRandomVol) {
-      const vMin = parseInt(document.getElementById('rand-vol-min').value);
-      const vMax = parseInt(document.getElementById('rand-vol-max').value);
+      const vMin = parseInt(document.getElementById('rand-vol-min')?.value) || 10; // M17 fix
+      const vMax = parseInt(document.getElementById('rand-vol-max')?.value) || 50;
       const actualVMax = Math.max(vMin, vMax);
       volume = Math.round(vMin + Math.random() * (actualVMax - vMin));
     } else {
@@ -9225,8 +9247,11 @@ function toggleSoloHoldMode() {
   soloLog('Vasthouden modus ' + (soloHoldActive ? 'aan' : 'uit'));
 }
 
+let _soloShockActive = false; // M25 fix: prevent double-trigger from touch+mouse
 function soloShockStart(e) {
   e.preventDefault();
+  if (_soloShockActive) return;
+  _soloShockActive = true;
   ensureAudio();
   if (soloHoldActive) {
     startSoloHoldLocal();
@@ -9238,6 +9263,7 @@ function soloShockStart(e) {
 
 function soloShockEnd(e) {
   e.preventDefault();
+  _soloShockActive = false;
   if (soloHoldActive && soloHoldOscNodes) {
     stopSoloHoldLocal();
   }
@@ -9740,7 +9766,7 @@ function patternDrawPlay(mode) {
     // Send stimulation
     const freq = Math.round(20 + x * 980);
     const vol = Math.round(y * 100);
-    const clampedVol = Math.min(vol, get2DSafetyLimit(mode));
+    const clampedVol = Math.max(0, Math.min(vol, get2DSafetyLimit(mode))); // M21 fix: lower bound
 
     if (mode === 'solo') {
       holdBallPlayLocal(freq, clampedVol);
@@ -9751,7 +9777,10 @@ function patternDrawPlay(mode) {
     }
 
     pd.playIdx++;
-    pd.playTimer = setTimeout(playStep, stepMs);
+    // K5 fix: check playing flag before scheduling next step, use single tracked timer
+    if (pd.playing) {
+      pd.playTimer = setTimeout(playStep, stepMs);
+    }
   }
 
   playStep();
@@ -9795,16 +9824,18 @@ let wizardCurrentStep = 1;
 let selectedElectrodeConfig = null;
 
 function wizardNext(step) {
-  // Hide current step
-  document.getElementById('wiz-step-' + wizardCurrentStep).style.display = 'none';
-  document.getElementById('wiz-dot-' + wizardCurrentStep).classList.remove('active');
-  document.getElementById('wiz-dot-' + wizardCurrentStep).classList.add('done');
+  // Hide current step (H14 fix: null checks)
+  const curStep = document.getElementById('wiz-step-' + wizardCurrentStep);
+  const curDot = document.getElementById('wiz-dot-' + wizardCurrentStep);
+  if (curStep) curStep.style.display = 'none';
+  if (curDot) { curDot.classList.remove('active'); curDot.classList.add('done'); }
 
   // Show new step
   wizardCurrentStep = step;
-  document.getElementById('wiz-step-' + step).style.display = 'block';
-  document.getElementById('wiz-dot-' + step).classList.remove('done');
-  document.getElementById('wiz-dot-' + step).classList.add('active');
+  const newStep = document.getElementById('wiz-step-' + step);
+  const newDot = document.getElementById('wiz-dot-' + step);
+  if (newStep) newStep.style.display = 'block';
+  if (newDot) { newDot.classList.remove('done'); newDot.classList.add('active'); }
 
   // Mark all steps before current as done
   for (let i = 1; i < step; i++) {
@@ -11284,6 +11315,7 @@ function drawContViz(prefix, state) {
   const canvas = document.getElementById(prefix + '-cont-canvas');
   if (!canvas) return;
   const c = canvas.getContext('2d');
+  if (!c) return; // H13 fix: getContext can return null
   const w = canvas.width = canvas.offsetWidth;
   const h = canvas.height = 40;
   c.clearRect(0, 0, w, h);
@@ -11361,7 +11393,7 @@ function stopContinuousMode(prefix) {
   const canvas = document.getElementById(prefix + '-cont-canvas');
   if (canvas) {
     const c = canvas.getContext('2d');
-    c.clearRect(0, 0, canvas.width, canvas.height);
+    if (c) c.clearRect(0, 0, canvas.width, canvas.height);
   }
 }
 
@@ -11376,6 +11408,7 @@ function renderIntensityGraph(canvasId) {
 
   const W = canvas.width, H = canvas.height;
   const ctx2d = canvas.getContext('2d');
+  if (!ctx2d) return; // H13 fix
   ctx2d.clearRect(0, 0, W, H);
 
   // Achtergrond
@@ -11445,6 +11478,14 @@ function renderAllGraphs() {
 // Periodiek grafiek updaten (voor het verschuiven van oude data)
 let graphRenderInterval = setInterval(renderAllGraphs, 5000);
 
+function stopGraphRenderInterval() {
+  if (graphRenderInterval) { clearInterval(graphRenderInterval); graphRenderInterval = null; }
+}
+function startGraphRenderInterval() {
+  stopGraphRenderInterval();
+  graphRenderInterval = setInterval(renderAllGraphs, 5000);
+}
+
 // ---- DOORLOPENDE PATRONEN + DRAGER-TOON ----
 // Patroonduur in ms (hoe lang 1 cyclus duurt)
 const patternDurations = {
@@ -11503,7 +11544,8 @@ function startLoopingPattern(mode, pattern) {
   stopLoopingPattern(mode);
 
   const prefix = mode === 'solo' ? 'solo' : 'sender';
-  const isLoop = document.getElementById(prefix + '-loop-toggle').classList.contains('on');
+  const _loopToggle = document.getElementById(prefix + '-loop-toggle');
+  const isLoop = _loopToggle ? _loopToggle.classList.contains('on') : false;
   if (!isLoop) return false; // Niet doorlopend, gewoon eenmalig
 
   loopState = { active: true, mode, pattern, timer: null };
@@ -12024,7 +12066,7 @@ function fireDurfResult(mode, value) {
     sendShock(shockVol, Math.round(dur * (0.5 + value / 200)), freq);
   }
 
-  setTimeout(() => { display.style.display = 'none'; }, 2000);
+  setTimeout(() => { if (display) display.style.display = 'none'; }, 2000);
 }
 
 // ---- TRIVIA GAME ----
@@ -12767,11 +12809,15 @@ function lisanneConnect() {
 
       // SAFETY: Lisanne-side heartbeat monitor — detect when Tim goes offline
       let lisanneLastHeartbeat = Date.now();
-      let lisanneHeartbeatCheck = setInterval(() => {
+      // K6 fix: use global refs so intervals can be cleaned up on reconnect
+      if (lisanneHeartbeatCheckInterval) clearInterval(lisanneHeartbeatCheckInterval);
+      if (lisanneHeartbeatSendInterval) clearInterval(lisanneHeartbeatSendInterval);
+      lisanneHeartbeatCheckInterval = setInterval(() => {
         const elapsed = Date.now() - lisanneLastHeartbeat;
         if (elapsed > 15000) {
           // Tim is offline for 15+ seconds — stop everything for safety
-          clearInterval(lisanneHeartbeatCheck);
+          clearInterval(lisanneHeartbeatCheckInterval);
+          lisanneHeartbeatCheckInterval = null;
           lisanneStopAll();
           dot.className = 'status-dot error';
           document.getElementById('lisanne-status-text').textContent = '⚠️ Tim reageert niet — alles gestopt';
@@ -12782,7 +12828,7 @@ function lisanneConnect() {
       }, 3000);
 
       // Send heartbeat to receiver
-      const lisanneHeartbeat = setInterval(() => {
+      lisanneHeartbeatSendInterval = setInterval(() => {
         if (conn && conn.open) conn.send({ type: 'heartbeat', ts: Date.now() });
       }, 3000);
 
@@ -12828,8 +12874,8 @@ function lisanneConnect() {
       });
 
       conn.on('close', () => {
-        clearInterval(lisanneHeartbeatCheck);
-        clearInterval(lisanneHeartbeat);
+        if (lisanneHeartbeatCheckInterval) { clearInterval(lisanneHeartbeatCheckInterval); lisanneHeartbeatCheckInterval = null; }
+        if (lisanneHeartbeatSendInterval) { clearInterval(lisanneHeartbeatSendInterval); lisanneHeartbeatSendInterval = null; }
         dot.className = 'status-dot error';
         document.getElementById('lisanne-status-text').textContent = 'Verbinding verbroken';
         lisanneStopAll();
@@ -13036,6 +13082,8 @@ function lisanneRandomTease() {
   const text = teases[Math.floor(Math.random() * teases.length)];
   conn.send({ type: 'tease', text: text, ts: Date.now() });
   setLisanneActivity('😈', 'Tease: "' + text + '"');
+  // M4 fix: reset activity after 2s like quickShock and fakeout
+  trackTimeout(() => { setLisanneActivity('', ''); }, 2000);
 }
 
 function lisanneStopAll() {
@@ -13072,6 +13120,11 @@ function lisanneToggleTv() {
 }
 
 function lisanneToggleBlindfold() {
+  // H18 fix: check connection before toggling to prevent state desync
+  if (!conn || !conn.open) {
+    showNotification('Geen verbinding — blinddoek niet gewijzigd');
+    return;
+  }
   lisanneBlindfoldOn = !lisanneBlindfoldOn;
   const btn = document.getElementById('lisanne-blindfold-btn');
   if (btn) {
@@ -13080,12 +13133,10 @@ function lisanneToggleBlindfold() {
   }
   // Ensure TV is open for blindfold
   if (lisanneBlindfoldOn && !lisanneTvOpen) lisanneToggleTv();
-  if (conn && conn.open) {
-    conn.send({ type: 'tv_cmd', cmd: 'toggles', data: {
-      chat: true, countdown: true, quiz: true, shock: true, pattern: true, clock: false,
-      blindfold: lisanneBlindfoldOn
-    }, ts: Date.now() });
-  }
+  conn.send({ type: 'tv_cmd', cmd: 'toggles', data: {
+    chat: true, countdown: true, quiz: true, shock: true, pattern: true, clock: false,
+    blindfold: lisanneBlindfoldOn
+  }, ts: Date.now() });
 }
 
 // --- Lisanne Timer Feature ---
@@ -13123,7 +13174,7 @@ function startLisanneTimer() {
       clearInterval(lisanneTimerInterval);
       statusEl.textContent = '⚡ SCHOK!';
       statusEl.style.color = '#e94560';
-      setTimeout(() => {
+      trackTimeout(() => { // M5 fix: use trackTimeout instead of bare setTimeout
         statusEl.style.display = 'none';
       }, 2000);
     } else {
@@ -16569,7 +16620,8 @@ function joinAsCamera() {
                 cameraStream.addTrack(newTrack);
               }
               // Add audio track to ALL active peer connections (receiver + sender direct)
-              if (cameraPeer && cameraPeer._connections) {
+              // H7 fix: wrap _connections access in try/catch (private PeerJS API)
+              try { if (cameraPeer && cameraPeer._connections) {
                 for (const [peerId, conns] of Object.entries(cameraPeer._connections)) {
                   if (Array.isArray(conns)) {
                     for (const c of conns) {
@@ -16582,7 +16634,7 @@ function joinAsCamera() {
                     }
                   }
                 }
-              }
+              } } catch(e) { console.log('[Camera] _connections iteration failed:', e.message); }
               console.log('[Camera] Mic enabled and added to all connections');
             }
             incomingCall.answer();
@@ -16677,7 +16729,8 @@ async function cameraSwitchFacing() {
     }
 
     // Also replace in any direct sender connections
-    if (cameraPeer && cameraPeer._connections) {
+    // H7 fix: wrap _connections access in try/catch (private PeerJS API)
+    try { if (cameraPeer && cameraPeer._connections) {
       for (const [peerId, conns] of Object.entries(cameraPeer._connections)) {
         if (Array.isArray(conns)) {
           for (const c of conns) {
@@ -16696,7 +16749,7 @@ async function cameraSwitchFacing() {
           }
         }
       }
-    }
+    } } catch(e) { console.log('[Camera] _connections iteration failed:', e.message); }
 
     if (btn) btn.textContent = newFacing === 'user' ? '🔄 Naar achtercamera' : '🔄 Naar frontcamera';
   } catch(e) {
@@ -16981,8 +17034,8 @@ function camToggleChat() {
   const input = document.getElementById('cam-chat-input');
   if (camChatOpen && input) input.focus();
   // Close other popups
-  document.getElementById('cam-extra-bar').style.display = 'none';
-  document.getElementById('cam-emoji-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
+  { const _emb = document.getElementById('cam-emoji-bar'); if (_emb) _emb.style.display = 'none'; }
   resetCamControlsFade();
 }
 
@@ -17017,7 +17070,7 @@ function camSendEmoji(emoji) {
 }
 
 function camStartTimer() {
-  document.getElementById('cam-extra-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
   // Use existing timer with default settings
   if (typeof startLisanneTimer === 'function') {
     startLisanneTimer();
@@ -17033,7 +17086,7 @@ function camStartTimer() {
 }
 
 function camStartQuiz() {
-  document.getElementById('cam-extra-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
   if (typeof lisanneStartVoiceQuiz === 'function') {
     lisanneStartVoiceQuiz(false); // Start trivia
     showNotification('🎤 Quiz gestart');
@@ -17041,7 +17094,7 @@ function camStartQuiz() {
 }
 
 function camToggleTv() {
-  document.getElementById('cam-extra-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
   if (conn && conn.open) {
     conn.send({ type: 'tv_cmd', cmd: 'open', ts: Date.now() });
     sendLog('📺 TV geopend bij ontvanger');
@@ -17049,14 +17102,14 @@ function camToggleTv() {
 }
 
 function camFakeout() {
-  document.getElementById('cam-extra-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
   if (typeof lisanneFakeout === 'function') {
     lisanneFakeout();
   }
 }
 
 function camRandomTease() {
-  document.getElementById('cam-extra-bar').style.display = 'none';
+  { const _eb = document.getElementById('cam-extra-bar'); if (_eb) _eb.style.display = 'none'; }
   if (typeof lisanneRandomTease === 'function') {
     lisanneRandomTease();
   }
