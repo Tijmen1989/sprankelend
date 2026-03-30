@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0083</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0084</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -16969,7 +16969,86 @@ function camToggleChat() {
   if (drawer) drawer.classList.toggle('open', camChatOpen);
   const input = document.getElementById('cam-chat-input');
   if (camChatOpen && input) input.focus();
+  // Close other popups
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  document.getElementById('cam-emoji-bar').style.display = 'none';
   resetCamControlsFade();
+}
+
+// v1.0084: Camera fullscreen extra controls
+function camToggleExtra() {
+  const bar = document.getElementById('cam-extra-bar');
+  const emoji = document.getElementById('cam-emoji-bar');
+  if (!bar) return;
+  bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+  if (emoji) emoji.style.display = 'none';
+  resetCamControlsFade();
+}
+
+function camToggleEmoji() {
+  const bar = document.getElementById('cam-emoji-bar');
+  const extra = document.getElementById('cam-extra-bar');
+  if (!bar) return;
+  bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+  if (extra) extra.style.display = 'none';
+  resetCamControlsFade();
+}
+
+function camSendEmoji(emoji) {
+  if (conn && conn.open) {
+    conn.send({ type: 'chat', text: emoji, ts: Date.now() });
+    addChatMessage('sender', emoji);
+  }
+  // Brief visual feedback
+  const bar = document.getElementById('cam-emoji-bar');
+  if (bar) bar.style.display = 'none';
+  showNotification('Verstuurd: ' + emoji);
+}
+
+function camStartTimer() {
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  // Use existing timer with default settings
+  if (typeof startLisanneTimer === 'function') {
+    startLisanneTimer();
+    showNotification('⏱️ Timer gestart');
+  } else {
+    // Send timer countdown to receiver
+    const seconds = 15;
+    if (conn && conn.open) {
+      conn.send({ type: 'timer_start', seconds: seconds, ts: Date.now() });
+      sendLog('⏱️ Timer: ' + seconds + 's');
+    }
+  }
+}
+
+function camStartQuiz() {
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  if (typeof lisanneStartVoiceQuiz === 'function') {
+    lisanneStartVoiceQuiz(false); // Start trivia
+    showNotification('🎤 Quiz gestart');
+  }
+}
+
+function camToggleTv() {
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  if (conn && conn.open) {
+    conn.send({ type: 'tv_cmd', cmd: 'open', ts: Date.now() });
+    sendLog('📺 TV geopend bij ontvanger');
+  }
+}
+
+function camFakeout() {
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  if (typeof lisanneFakeout === 'function') {
+    lisanneFakeout();
+  }
+}
+
+function camRandomTease() {
+  document.getElementById('cam-extra-bar').style.display = 'none';
+  if (typeof lisanneRandomTease === 'function') {
+    lisanneRandomTease();
+  }
 }
 
 function camSendChat() {
@@ -17383,12 +17462,38 @@ function makeDraggable(el) {
       <span class="cam-battery" id="cam-fs-battery"></span>
     </div>
     <input type="range" id="cam-intensity-slider" class="cam-intensity-slider" min="0" max="100" value="50" oninput="camUpdateIntensity(this.value)">
+    <!-- v1.0084: Extended bottom bar with games + emoji -->
+    <div id="cam-extra-bar" style="display:none;padding:8px 16px;background:rgba(0,0,0,0.85);border-bottom:1px solid #333;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <button class="cam-game-btn" onclick="camStartTimer()" style="padding:8px 14px;background:rgba(255,152,0,0.2);border:1px solid #ff9800;color:#ff9800;border-radius:8px;font-size:0.85em;cursor:pointer;">⏱️ Timer</button>
+        <button class="cam-game-btn" onclick="camStartQuiz()" style="padding:8px 14px;background:rgba(68,136,255,0.2);border:1px solid #4488ff;color:#4488ff;border-radius:8px;font-size:0.85em;cursor:pointer;">🎤 Quiz</button>
+        <button class="cam-game-btn" onclick="camToggleTv()" style="padding:8px 14px;background:rgba(76,175,80,0.2);border:1px solid #4caf50;color:#4caf50;border-radius:8px;font-size:0.85em;cursor:pointer;">📺 TV</button>
+        <button class="cam-game-btn" onclick="camFakeout()" style="padding:8px 14px;background:rgba(156,39,176,0.2);border:1px solid #9c27b0;color:#9c27b0;border-radius:8px;font-size:0.85em;cursor:pointer;">😏 Fake</button>
+        <button class="cam-game-btn" onclick="camRandomTease()" style="padding:8px 14px;background:rgba(233,69,96,0.2);border:1px solid #e94560;color:#e94560;border-radius:8px;font-size:0.85em;cursor:pointer;">😈 Tease</button>
+      </div>
+    </div>
+    <div id="cam-emoji-bar" style="display:none;padding:8px 16px;background:rgba(0,0,0,0.85);border-bottom:1px solid #333;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;font-size:1.5em;">
+        <span onclick="camSendEmoji('❤️')" style="cursor:pointer;padding:4px;">❤️</span>
+        <span onclick="camSendEmoji('😈')" style="cursor:pointer;padding:4px;">😈</span>
+        <span onclick="camSendEmoji('🔥')" style="cursor:pointer;padding:4px;">🔥</span>
+        <span onclick="camSendEmoji('😏')" style="cursor:pointer;padding:4px;">😏</span>
+        <span onclick="camSendEmoji('💀')" style="cursor:pointer;padding:4px;">💀</span>
+        <span onclick="camSendEmoji('🥵')" style="cursor:pointer;padding:4px;">🥵</span>
+        <span onclick="camSendEmoji('😘')" style="cursor:pointer;padding:4px;">😘</span>
+        <span onclick="camSendEmoji('🫣')" style="cursor:pointer;padding:4px;">🫣</span>
+        <span onclick="camSendEmoji('💜')" style="cursor:pointer;padding:4px;">💜</span>
+        <span onclick="camSendEmoji('⚡')" style="cursor:pointer;padding:4px;">⚡</span>
+      </div>
+    </div>
     <div class="cam-bottom-bar">
       <button class="cam-action-btn danger" onclick="camQuickShock()" title="Schok">⚡</button>
       <button class="cam-action-btn" id="cam-mic-btn" onclick="camToggleMic()" title="Mic">🎤</button>
       <button class="cam-action-btn" id="cam-show-recv-btn" onclick="camToggleShowOnRecv()" title="Toon bij ontvanger">👁️</button>
       <button class="cam-action-btn" id="cam-blindfold-btn" onclick="camToggleBlindfold()" title="Blinddoek">🙈</button>
       <button class="cam-action-btn" id="cam-chat-btn" onclick="camToggleChat()" title="Chat">💬</button>
+      <button class="cam-action-btn" id="cam-emoji-btn" onclick="camToggleEmoji()" title="Emoji" style="font-size:1.1em;">😊</button>
+      <button class="cam-action-btn" id="cam-more-btn" onclick="camToggleExtra()" title="Meer" style="font-size:0.9em;">•••</button>
     </div>
   </div>
   <div id="cam-chat-drawer" class="cam-chat-drawer">
