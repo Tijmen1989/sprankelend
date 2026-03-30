@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>E-Stim Remote Control</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -2175,7 +2176,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0079</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0080</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -3274,6 +3275,9 @@
   <!-- Panic button -->
   <button id="panic-btn" class="panic-btn" onclick="panicStop()">🛑 STOP / Paniekknop</button>
 
+  <!-- v1.0080: Fullscreen button for receiver -->
+  <button onclick="toggleReceiverFullscreen()" style="width:100%;padding:12px;margin-bottom:12px;font-size:1em;background:linear-gradient(135deg,#1a1a3e,#2a2a4e);border:1px solid #555;color:#e0e0e0;border-radius:10px;cursor:pointer;">⛶ Fullscreen</button>
+
   <div id="recv-status" class="status-bar">
     <div id="recv-dot" class="status-dot waiting"></div>
     <span id="recv-status-text" class="status-text">Wacht op verbinding...</span>
@@ -3283,7 +3287,8 @@
   <div class="code-display">
     <label>Jouw verbindingscode</label>
     <div id="recv-code" class="code-value">---</div>
-    <div class="code-copy-hint">Stuur deze code naar Lisanne</div>
+    <div id="recv-qr" style="margin:12px auto;display:inline-block;background:#fff;padding:8px;border-radius:8px;"></div>
+    <div class="code-copy-hint">Scan de QR-code of typ de code in</div>
   </div>
 
   <!-- Safety limit -->
@@ -6671,6 +6676,8 @@ function startReceiver() {
   const code = generateCode();
   const recvCodeEl = document.getElementById('recv-code');
   if (recvCodeEl) recvCodeEl.textContent = code;
+  // v1.0080: Generate QR code for easy connection
+  generateRecvQR(code);
 
   peer = new Peer(getPeerId(code), { debug: 0 });
 
@@ -8584,6 +8591,35 @@ function closeFullscreen() {
   overlay.classList.remove('visible');
   fsOpen = false;
   try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+}
+
+// v1.0080: Generate QR code on receiver screen
+function generateRecvQR(code) {
+  const container = document.getElementById('recv-qr');
+  if (!container || typeof QRCode === 'undefined') return;
+  container.innerHTML = '';
+  const url = window.location.origin + window.location.pathname + '?code=' + encodeURIComponent(code);
+  try {
+    new QRCode(container, {
+      text: url,
+      width: 180,
+      height: 180,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) { console.log('QR generation failed:', e); }
+}
+
+// v1.0080: Receiver fullscreen toggle
+function toggleReceiverFullscreen() {
+  try {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  } catch(e) {}
 }
 
 function syncChatToFullscreen() {
@@ -15250,6 +15286,21 @@ function handleVoiceQuizSenderMessage(data) {
 
 // Safe defaults on page load
 document.addEventListener('DOMContentLoaded', () => {
+  // v1.0080: Check URL for ?code= parameter (from QR scan)
+  const urlParams = new URLSearchParams(window.location.search);
+  const qrCode = urlParams.get('code');
+  if (qrCode) {
+    // Pre-fill code in sender and camera input fields
+    const sendInput = document.getElementById('send-code-input');
+    const lisanneInput = document.getElementById('lisanne-code-input');
+    const cameraInput = document.getElementById('camera-code-input');
+    if (sendInput) sendInput.value = qrCode.toUpperCase();
+    if (lisanneInput) lisanneInput.value = qrCode.toUpperCase();
+    if (cameraInput) cameraInput.value = qrCode.toUpperCase();
+    // Clean URL without reloading
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   // Ensure safety limit starts at 50%
   const safetySlider = document.getElementById('safety-limit');
   if (safetySlider && parseInt(safetySlider.value) > 50) {
@@ -15769,6 +15820,7 @@ function autoReconnectReceiver(code) {
 
   const recvCodeEl = document.getElementById('recv-code');
   if (recvCodeEl) recvCodeEl.textContent = code;
+  generateRecvQR(code);
 
   peer = new Peer(getPeerId(code), { debug: 0 });
 
@@ -16185,13 +16237,32 @@ function joinAsCamera() {
             incomingCall.answer(); // answer without stream
           }
         } else if (meta.type === 'cam_audio_toggle' && meta.enabled) {
-          // Receiver asks camera to enable mic
+          // v1.0080: Enable mic and add audio to ALL active connections
           navigator.mediaDevices.getUserMedia({ audio: true }).then(audioStream => {
             const newTrack = audioStream.getAudioTracks()[0];
-            if (newTrack && cameraStream) {
-              cameraStream.addTrack(newTrack);
-              // Re-call receiver to include audio
-              cameraCall = cameraPeer.call(getPeerId(code), cameraStream, { metadata: { role: 'camera' } });
+            if (newTrack) {
+              // Add to cameraStream for future connections
+              if (cameraStream) {
+                // Remove old audio tracks first
+                cameraStream.getAudioTracks().forEach(t => { t.stop(); cameraStream.removeTrack(t); });
+                cameraStream.addTrack(newTrack);
+              }
+              // Add audio track to ALL active peer connections (receiver + sender direct)
+              if (cameraPeer && cameraPeer._connections) {
+                for (const [peerId, conns] of Object.entries(cameraPeer._connections)) {
+                  if (Array.isArray(conns)) {
+                    for (const c of conns) {
+                      if (c && c.peerConnection) {
+                        try {
+                          c.peerConnection.addTrack(newTrack, cameraStream);
+                          console.log('[Camera] Audio track added to connection: ' + peerId);
+                        } catch(e) { console.log('[Camera] addTrack failed for ' + peerId + ':', e.message); }
+                      }
+                    }
+                  }
+                }
+              }
+              console.log('[Camera] Mic enabled and added to all connections');
             }
             incomingCall.answer();
           }).catch(err => {
@@ -16199,8 +16270,10 @@ function joinAsCamera() {
             incomingCall.answer();
           });
         } else if (meta.type === 'cam_audio_toggle' && !meta.enabled) {
-          const audioTrack = cameraStream?.getAudioTracks()[0];
-          if (audioTrack) audioTrack.enabled = false;
+          // v1.0080: Disable mic audio on all connections
+          if (cameraStream) {
+            cameraStream.getAudioTracks().forEach(t => { t.enabled = false; t.stop(); });
+          }
           incomingCall.answer();
         }
       });
@@ -16257,11 +16330,17 @@ async function cameraSwitchFacing() {
     // Replace track in existing peer connections (camera→receiver call)
     const newVideoTrack = newStream.getVideoTracks()[0];
     if (newVideoTrack && cameraCall && cameraCall.peerConnection) {
-      const senders = cameraCall.peerConnection.getSenders();
-      const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-      if (videoSender) {
-        await videoSender.replaceTrack(newVideoTrack);
-        console.log('[Camera] Track replaced in receiver call');
+      try {
+        if (cameraCall.peerConnection.signalingState !== 'closed') {
+          const senders = cameraCall.peerConnection.getSenders();
+          const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+          if (videoSender) {
+            await videoSender.replaceTrack(newVideoTrack);
+            console.log('[Camera] Track replaced in receiver call');
+          }
+        }
+      } catch(e2) {
+        console.log('[Camera] replaceTrack in receiver call failed:', e2.message);
       }
     }
 
@@ -16270,13 +16349,17 @@ async function cameraSwitchFacing() {
       for (const [peerId, conns] of Object.entries(cameraPeer._connections)) {
         if (Array.isArray(conns)) {
           for (const c of conns) {
-            if (c && c.peerConnection) {
-              const senders = c.peerConnection.getSenders();
-              const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-              if (videoSender) {
-                await videoSender.replaceTrack(newVideoTrack);
-                console.log('[Camera] Track replaced in direct connection to ' + peerId);
+            try {
+              if (c && c.peerConnection && c.peerConnection.signalingState !== 'closed') {
+                const senders = c.peerConnection.getSenders();
+                const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                if (videoSender) {
+                  await videoSender.replaceTrack(newVideoTrack);
+                  console.log('[Camera] Track replaced in direct connection to ' + peerId);
+                }
               }
+            } catch(e2) {
+              console.log('[Camera] replaceTrack failed for ' + peerId + ':', e2.message);
             }
           }
         }
@@ -16518,6 +16601,16 @@ function camToggleMic() {
   // Send to receiver to relay to camera
   if (conn && conn.open) {
     conn.send({ type: 'cam_cmd', cmd: 'audio_toggle', enabled: isActive, ts: Date.now() });
+  }
+  // v1.0080: Unmute video elements so we can hear camera audio
+  const preview = document.getElementById('cam-preview-video');
+  const fsVideo = document.getElementById('cam-remote-video-fs');
+  if (isActive) {
+    if (preview) preview.muted = false;
+    if (fsVideo) fsVideo.muted = false;
+  } else {
+    if (preview) preview.muted = true;
+    if (fsVideo) fsVideo.muted = true;
   }
   resetCamControlsFade();
 }
