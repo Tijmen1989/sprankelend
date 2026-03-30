@@ -6705,6 +6705,9 @@ function startReceiver() {
     startHeartbeatMonitor();
     startIntensityReporting();
 
+    // v1.0078: Send session state (incl camera) to sender on first connect
+    setTimeout(() => sendSessionStateToSender(), 500);
+
     conn.on('data', handleReceiverData);
 
     conn.on('close', () => {
@@ -15600,7 +15603,7 @@ function sendSessionStateToSender() {
       channelMode: typeof currentChannelMode !== 'undefined' ? currentChannelMode : 'stereo',
       electrodeConfig: typeof electrodeConfig !== 'undefined' ? electrodeConfig.type : null,
       baselineActive: typeof baselineState !== 'undefined' && baselineState ? baselineState.active : false,
-      cameraConnected: !!window._cameraRelayStream,
+      cameraConnected: !!(window._cameraRelayStream && window._cameraRelayStream.active),
       ts: Date.now()
     };
     conn.send(state);
@@ -16237,6 +16240,11 @@ function relayCameraToSender(remoteStream) {
   tracks.forEach(t => recvLog('📷 Relay track: ' + t.kind + ' ' + t.readyState));
   if (conn && conn.open) {
     conn.send({ type: 'cam_available', ts: Date.now() });
+    recvLog('📷 cam_available verstuurd naar sender');
+  } else {
+    // v1.0078: Sender not connected yet — retry when conn opens
+    recvLog('⚠️ Sender niet verbonden — cam_available wordt verstuurd bij verbinding');
+    // The sendSessionStateToSender() call on first connect will handle this
   }
 }
 
