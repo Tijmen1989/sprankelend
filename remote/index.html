@@ -4182,7 +4182,7 @@
       </div>
 
       <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:10px;background:#000;aspect-ratio:16/9;cursor:pointer;" onclick="openCamFullscreen()">
-        <video id="cam-preview-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+        <video id="cam-preview-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);pointer-events:none;">
           <span style="font-size:1.5em;opacity:0.7;">⛶ Tik voor fullscreen</span>
         </div>
@@ -7896,7 +7896,7 @@ function connectToReceiver() {
       } else if (data.type === 'safeword_triggered') {
         handleSafewordTriggered();
       } else if (data.type === 'cam_available') {
-        handleCamAvailable();
+        handleCamAvailable(data);
       } else if (data.type === 'cam_disconnected') {
         handleCamDisconnected();
       } else if (data.type === 'cam_battery') {
@@ -15604,6 +15604,7 @@ function sendSessionStateToSender() {
       electrodeConfig: typeof electrodeConfig !== 'undefined' ? electrodeConfig.type : null,
       baselineActive: typeof baselineState !== 'undefined' && baselineState ? baselineState.active : false,
       cameraConnected: !!(window._cameraRelayStream && window._cameraRelayStream.active),
+      cameraPeerId: window._cameraPeerId || null,
       ts: Date.now()
     };
     conn.send(state);
@@ -15667,7 +15668,7 @@ function handleSessionStateRestore(data) {
 
   // Camera awareness
   if (data.cameraConnected) {
-    handleCamAvailable();
+    handleCamAvailable({ cameraPeerId: data.cameraPeerId });
   }
 
   // Show reconnect info banner
@@ -16169,10 +16170,20 @@ function joinAsCamera() {
         startCameraBatteryReporting();
       }
 
-      // Listen for incoming calls from receiver (for commands like audio toggle)
+      // Listen for incoming calls from receiver or sender
       cameraPeer.on('call', (incomingCall) => {
         const meta = incomingCall.metadata || {};
-        if (meta.type === 'cam_audio_toggle' && meta.enabled) {
+        if (meta.role === 'sender_wants_cam_direct') {
+          // v1.0078: Sender calling camera directly for video stream
+          if (cameraStream && cameraStream.active) {
+            console.log('[Camera] Sender requesting direct stream — answering with video');
+            incomingCall.answer(cameraStream);
+            if (statusEl) statusEl.textContent = 'Verbonden — streamt naar zender';
+          } else {
+            console.log('[Camera] Sender wants stream but no active camera');
+            incomingCall.answer(); // answer without stream
+          }
+        } else if (meta.type === 'cam_audio_toggle' && meta.enabled) {
           // Receiver asks camera to enable mic
           navigator.mediaDevices.getUserMedia({ audio: true }).then(audioStream => {
             const newTrack = audioStream.getAudioTracks()[0];
@@ -16233,53 +16244,89 @@ function handleCameraConnection(call) {
 }
 
 function relayCameraToSender(remoteStream) {
-  // Receiver tells sender about camera, sender then calls receiver to get the stream
   window._cameraRelayStream = remoteStream;
   const tracks = remoteStream ? remoteStream.getTracks() : [];
   recvLog('📷 Camera relay: ' + tracks.length + ' tracks, active=' + (remoteStream ? remoteStream.active : false));
   tracks.forEach(t => recvLog('📷 Relay track: ' + t.kind + ' ' + t.readyState));
   if (conn && conn.open) {
-    conn.send({ type: 'cam_available', ts: Date.now() });
-    recvLog('📷 cam_available verstuurd naar sender');
+    // v1.0078: Send camera peer ID so sender can connect directly
+    conn.send({ type: 'cam_available', cameraPeerId: window._cameraPeerId || null, ts: Date.now() });
+    recvLog('📷 cam_available verstuurd (cameraPeerId=' + (window._cameraPeerId || 'null') + ')');
   } else {
-    // v1.0078: Sender not connected yet — retry when conn opens
     recvLog('⚠️ Sender niet verbonden — cam_available wordt verstuurd bij verbinding');
-    // The sendSessionStateToSender() call on first connect will handle this
   }
 }
 
 // --- Sender: handle camera availability ---
-function handleCamAvailable() {
+let _senderCamPeerId = null; // Store camera peer ID for direct connection
+function handleCamAvailable(data) {
   sendLog('📷 Camera-companion verbonden!');
   const notConnEl = document.getElementById('cam-not-connected');
   const connEl = document.getElementById('cam-connected-controls');
   if (notConnEl) notConnEl.style.display = 'none';
   if (connEl) connEl.style.display = 'block';
 
-  // Request camera stream from receiver via PeerJS call
-  if (peer && conn && conn.open) {
-    // v1.0077: Support both sender and Lisanne mode code inputs
-    const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
-    if (!code) { sendLog('⚠️ Geen sessiecode voor camera stream'); return; }
-    // Create a dummy silent stream to initiate a call, receiver answers with camera stream
+  // v1.0078: Get camera peer ID for direct connection
+  const camPeerId = (data && data.cameraPeerId) || _senderCamPeerId;
+  if (camPeerId) _senderCamPeerId = camPeerId;
+
+  if (!peer) { sendLog('⚠️ Geen peer voor camera stream'); return; }
+
+  // Strategy 1: Direct call to camera peer (best quality, no relay)
+  if (camPeerId) {
+    sendLog('📷 Directe verbinding met camera: ' + camPeerId.substring(0, 8) + '...');
     try {
-      // Use canvas stream instead of AudioContext (more reliable, avoids iOS autoplay issues)
       const canvas = document.createElement('canvas');
       canvas.width = 2; canvas.height = 2;
       const dummyStream = canvas.captureStream(0);
-      const call = peer.call(getPeerId(code), dummyStream, { metadata: { role: 'sender_wants_cam' } });
+      const call = peer.call(camPeerId, dummyStream, { metadata: { role: 'sender_wants_cam_direct' } });
       call.on('stream', (remoteStream) => {
-        // Stop dummy tracks
         dummyStream.getTracks().forEach(t => t.stop());
+        sendLog('📷 Direct camera stream ontvangen!');
         handleCamStream(remoteStream);
       });
       call.on('error', (err) => {
-        sendLog('⚠️ Camera stream fout: ' + err);
+        sendLog('⚠️ Directe camera fout: ' + err + ' — probeer via relay...');
         dummyStream.getTracks().forEach(t => t.stop());
+        requestCamViaRelay(); // Fallback
       });
+      // Timeout: if no stream after 5s, try relay
+      setTimeout(() => {
+        if (!document.getElementById('cam-preview-video')?.srcObject) {
+          sendLog('⚠️ Direct timeout — probeer via relay...');
+          requestCamViaRelay();
+        }
+      }, 5000);
     } catch(e) {
-      sendLog('⚠️ Kan camera stream niet ophalen: ' + e.message);
+      sendLog('⚠️ Directe camera fout: ' + e.message);
+      requestCamViaRelay();
     }
+  } else {
+    // No camera peer ID — use relay via receiver
+    requestCamViaRelay();
+  }
+}
+
+function requestCamViaRelay() {
+  if (!peer || !conn || !conn.open) return;
+  const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
+  if (!code) { sendLog('⚠️ Geen sessiecode voor camera relay'); return; }
+  sendLog('📷 Camera stream opvragen via receiver relay...');
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2; canvas.height = 2;
+    const dummyStream = canvas.captureStream(0);
+    const call = peer.call(getPeerId(code), dummyStream, { metadata: { role: 'sender_wants_cam' } });
+    call.on('stream', (remoteStream) => {
+      dummyStream.getTracks().forEach(t => t.stop());
+      handleCamStream(remoteStream);
+    });
+    call.on('error', (err) => {
+      sendLog('⚠️ Camera relay fout: ' + err);
+      dummyStream.getTracks().forEach(t => t.stop());
+    });
+  } catch(e) {
+    sendLog('⚠️ Kan camera stream niet ophalen: ' + e.message);
   }
 }
 
@@ -16679,7 +16726,7 @@ function makeDraggable(el) {
 
 <!-- Sender camera fullscreen view -->
 <div id="cam-fullscreen" class="cam-fullscreen">
-  <video id="cam-remote-video-fs" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+  <video id="cam-remote-video-fs" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
   <div id="cam-controls" class="cam-controls-overlay">
     <div class="cam-top-bar">
       <button class="cam-back-btn" onclick="closeCamFullscreen()">← Terug</button>
