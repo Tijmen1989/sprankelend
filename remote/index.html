@@ -9009,15 +9009,15 @@ function holdBallUpdateVisuals(mode, x, y) {
   return { freq, vol };
 }
 
+function get2DSafetyLimit(mode) {
+  if (mode === 'solo') return parseInt(document.getElementById('solo-safety-limit')?.value || 50);
+  if (mode === 'lisanne') return parseInt(document.getElementById('lisanne-intensity')?.value || 40);
+  return parseInt(document.getElementById('send-safety-limit')?.value || 80);
+}
+
 function holdBallSend(mode, freq, vol) {
   const hb = getHBState(mode);
-  // Clamp by safety limit
-  let safetyLimit;
-  if (mode === 'solo') {
-    safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
-  } else {
-    safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
-  }
+  const safetyLimit = get2DSafetyLimit(mode);
   const clampedVol = Math.min(vol, safetyLimit);
   hb.lastFreq = freq;
   hb.lastVol = clampedVol;
@@ -9056,24 +9056,23 @@ function holdBallPlayLocal(freq, vol) {
   const gain = ctx.createGain();
   osc.type = 'sine';
   osc.frequency.value = freq;
-  gain.gain.value = 0;
+  gain.gain.setValueAtTime(0, now);
   gain.gain.linearRampToValueAtTime(safeVol, now + 0.05);
 
   // Channel routing
   const chMode = getChannelMode('solo');
+  osc.connect(gain);
   if (chMode === 'monoA') {
     const merger = ctx.createChannelMerger(2);
     gain.connect(merger, 0, 0);
     const silentGain = ctx.createGain();
     silentGain.gain.value = 0;
-    osc.connect(silentGain);
+    gain.connect(silentGain); // silent copy for channel B
     silentGain.connect(merger, 0, 1);
     merger.connect(ctx.destination);
   } else {
     gain.connect(ctx.destination);
   }
-
-  osc.connect(gain);
   osc.start(now);
   holdBallLocalNodes = { osc, gain };
 }
@@ -9121,14 +9120,9 @@ function holdBallMove(e, mode) {
   if (!pos) return;
   const { freq, vol } = holdBallUpdateVisuals(mode, pos.x, pos.y);
   hb.lastFreq = freq;
-  // Clamp
-  let safetyLimit;
-  if (mode === 'solo') {
-    safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
-  } else {
-    safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
-  }
-  hb.lastVol = Math.min(vol, safetyLimit);
+  hb.lastVol = Math.min(vol, get2DSafetyLimit(mode));
+  // Immediately update for responsive feel (interval also sends)
+  holdBallSend(mode, hb.lastFreq, hb.lastVol);
 }
 
 function holdBallEnd(e, mode) {
@@ -9299,12 +9293,15 @@ function patternDrawPlay(mode) {
   const speed = speedInput ? parseFloat(speedInput.value) || 1 : 1;
 
   const totalDuration = pd.points[pd.points.length - 1].time;
+  if (totalDuration <= 0) { pd.playing = false; return; }
   const stepMs = Math.max(30, 50 / speed); // Update interval
 
   function playStep() {
     if (!pd.playing) return;
 
-    const elapsed = pd.playIdx * stepMs * speed;
+    // Re-read speed for live adjustment
+    const curSpeed = speedInput ? parseFloat(speedInput.value) || 1 : 1;
+    const elapsed = pd.playIdx * stepMs * curSpeed;
     const t = elapsed % totalDuration;
 
     // Find current point by time interpolation
@@ -9331,13 +9328,7 @@ function patternDrawPlay(mode) {
     // Send stimulation
     const freq = Math.round(20 + x * 980);
     const vol = Math.round(y * 100);
-    let safetyLimit;
-    if (mode === 'solo') {
-      safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
-    } else {
-      safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
-    }
-    const clampedVol = Math.min(vol, safetyLimit);
+    const clampedVol = Math.min(vol, get2DSafetyLimit(mode));
 
     if (mode === 'solo') {
       holdBallPlayLocal(freq, clampedVol);
@@ -12642,6 +12633,10 @@ function lisanneStopAll() {
   const timerStatus = document.getElementById('lisanne-timer-status');
   if (timerStatus) timerStatus.style.display = 'none';
   clearAllPatternTimeouts();
+  // v1.0077: Stop 2D controls
+  const hb = holdBallState['lisanne'];
+  if (hb) { hb.touching = false; if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; } }
+  patternDrawStop('lisanne');
   if (conn && conn.open) {
     conn.send({ type: 'panic', ts: Date.now() });
   }
