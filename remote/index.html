@@ -4455,16 +4455,8 @@ const stateManager = {
     trivia_game: () => { if (typeof stopTriviaGame === 'function') stopTriviaGame(); },
     solo_random: () => { if (typeof stopSoloRandom === 'function') stopSoloRandom(); },
     solo_countdown: () => { /* countdown is one-shot, no persistent stop needed */ },
-    holdball_2d: () => {
-      ['sender','solo','lisanne'].forEach(m => {
-        const hb = holdBallState[m];
-        if (hb) { hb.touching = false; if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; } }
-      });
-      holdBallStopLocal();
-    },
-    patterndraw_2d: () => {
-      ['sender','solo','lisanne'].forEach(m => patternDrawStop(m));
-    }
+    holdball_2d: () => { if (typeof stopAll2DControls === 'function') stopAll2DControls(); },
+    patterndraw_2d: () => { /* covered by holdball_2d via stopAll2DControls */ }
   },
   requestContinuous(source, startFn) {
     if (this.continuousSource && this.continuousSource !== source) {
@@ -6016,9 +6008,19 @@ function showScreen(id) {
   }
 }
 
+function stopAll2DControls() {
+  ['sender','solo','lisanne'].forEach(m => {
+    const hb = holdBallState[m];
+    if (hb) { hb.touching = false; if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; } }
+    patternDrawStop(m);
+  });
+  holdBallStopLocal();
+}
+
 function goBack() {
   if (peer) { peer.destroy(); peer = null; }
   if (conn) { conn.close(); conn = null; }
+  stopAll2DControls();
   stopStandalone();
   stopRandom();
   stopSessionTimer();
@@ -6042,6 +6044,14 @@ function toggleCollapsible(header) {
     const icon = header.querySelector('.toggle-icon');
     if (icon) {
       icon.textContent = content.classList.contains('open') ? '▼' : '▶';
+    }
+    // v1.0077: Re-render pattern draw canvases when section opens
+    if (content.classList.contains('open')) {
+      const canvas = content.querySelector('.pattern-draw-canvas');
+      if (canvas) {
+        const mode = canvas.id.replace('-patterndraw-canvas', '');
+        setTimeout(() => patternDrawRender(mode), 50); // delay for layout calc
+      }
     }
   }
 }
@@ -6843,7 +6853,30 @@ let holdInterval_recv = null;
 let holdOscNodes = null;
 let recvHoldAutoStop = null;
 function startReceiverHoldLocal(freq, volume) {
-  stopReceiverHoldLocal();
+  const ctx = ensureAudio();
+  const now = ctx.currentTime;
+  const safetyLimit = getEffectiveSafetyLimit();
+  const vol = Math.min(volume / 100, safetyLimit);
+
+  // v1.0077: If hold is already active, just UPDATE freq/volume (no rebuild)
+  if (holdOscNodes) {
+    try {
+      holdOscNodes.osc1.frequency.linearRampToValueAtTime(freq, now + 0.05);
+      holdOscNodes.osc2.frequency.linearRampToValueAtTime(freq * 0.5, now + 0.05);
+      holdOscNodes.master.gain.linearRampToValueAtTime(vol * 0.7, now + 0.05);
+      // Update viz
+      const bar = document.getElementById('recv-viz-bar');
+      const text = document.getElementById('recv-viz-text');
+      if (bar) bar.style.width = volume + '%';
+      if (text) { text.textContent = 'CONTINU ' + volume + '%'; text.style.color = '#ff9800'; }
+    } catch(e) {
+      // Oscillator is dead — clean up and rebuild below
+      holdOscNodes = null;
+    }
+    if (holdOscNodes) return; // Successfully updated, skip rebuild
+  }
+
+  // Full build: first time or after failed update
   duckBaseline(30000); // Hold can last up to 30s, duck for that
 
   // Register with state manager
@@ -6852,10 +6885,6 @@ function startReceiverHoldLocal(freq, volume) {
   // Hold en continuous mogen niet tegelijk draaien
   stopContinuousMode('solo');
   stopContinuousMode('send');
-  const ctx = ensureAudio();
-  const now = ctx.currentTime;
-  const safetyLimit = getEffectiveSafetyLimit();
-  const vol = Math.min(volume / 100, safetyLimit);
 
   // Hard limiter voor hold modus
   const holdLimiter = ctx.createDynamicsCompressor();
@@ -7888,6 +7917,7 @@ function connectToReceiver() {
       stopContinuousMode('send');
       stopDurfGame('sender');
       if (sessionEngine.active) stopSession('sender');
+      stopAll2DControls();
       sendLog('Verbinding verbroken — alles gestopt');
       conn = null; // Clean up reference
     });
@@ -12663,9 +12693,7 @@ function lisanneStopAll() {
   if (timerStatus) timerStatus.style.display = 'none';
   clearAllPatternTimeouts();
   // v1.0077: Stop 2D controls
-  const hb = holdBallState['lisanne'];
-  if (hb) { hb.touching = false; if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; } }
-  patternDrawStop('lisanne');
+  if (typeof stopAll2DControls === 'function') stopAll2DControls();
   if (conn && conn.open) {
     conn.send({ type: 'panic', ts: Date.now() });
   }
