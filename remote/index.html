@@ -307,6 +307,102 @@
   .pattern-btn:active { background: #e94560; color: #fff; }
   .pattern-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  /* 2D Touch Controls */
+  .xy-pad-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(180deg, rgba(233,69,96,0.15) 0%, rgba(26,26,46,0.9) 100%);
+    border-radius: 12px;
+    border: 2px solid #333;
+    touch-action: none;
+    user-select: none;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .xy-pad-container.active {
+    border-color: #e94560;
+    box-shadow: 0 0 20px rgba(233,69,96,0.3);
+  }
+  .xy-pad-labels {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 1;
+  }
+  .xy-pad-labels .label-top { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #e94560; opacity: 0.7; }
+  .xy-pad-labels .label-bottom { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #666; opacity: 0.7; }
+  .xy-pad-labels .label-left { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #9c27b0; opacity: 0.7; }
+  .xy-pad-labels .label-right { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #ff9800; opacity: 0.7; }
+  .xy-pad-ball {
+    position: absolute; width: 44px; height: 44px;
+    background: radial-gradient(circle at 35% 35%, #ff6b6b, #e94560);
+    border-radius: 50%; border: 2px solid #fff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(233,69,96,0.6);
+    z-index: 5; transition: none; pointer-events: none;
+  }
+  .xy-pad-ball.returning {
+    transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .xy-pad-values {
+    display: flex; justify-content: space-between; margin-top: 6px;
+    font-size: 11px; color: #888; font-family: monospace;
+  }
+  .xy-pad-gridlines {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20% 20%;
+  }
+  .pattern-draw-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(180deg, rgba(156,39,176,0.15) 0%, rgba(26,26,46,0.9) 100%);
+    border-radius: 12px;
+    border: 2px solid #333;
+    touch-action: none;
+    user-select: none;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .pattern-draw-container.active {
+    border-color: #9c27b0;
+    box-shadow: 0 0 20px rgba(156,39,176,0.3);
+  }
+  .pattern-draw-canvas {
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .pattern-draw-controls {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+  .pattern-draw-controls button {
+    flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444;
+    background: #1a1a2e; color: #e0e0e0; font-size: 0.85em; cursor: pointer;
+  }
+  .pattern-draw-controls button.pd-playing {
+    background: #9c27b0; color: #fff; border-color: #9c27b0;
+    animation: pd-pulse 1.5s infinite;
+  }
+  @keyframes pd-pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(156,39,176,0.3); }
+    50% { box-shadow: 0 0 15px rgba(156,39,176,0.6); }
+  }
+  .pattern-draw-playhead {
+    position: absolute; width: 10px; height: 10px;
+    background: #fff; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    z-index: 10; pointer-events: none; display: none;
+  }
+  .pattern-draw-speed {
+    display: flex; align-items: center; gap: 8px; margin-top: 6px;
+    font-size: 11px; color: #888;
+  }
+  .pattern-draw-speed input { flex: 1; }
+
   /* Game buttons */
   .game-btn {
     padding: 14px;
@@ -2079,7 +2175,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0076</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0077</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -2800,6 +2896,69 @@
       <button class="pattern-stop-btn" id="solo-pattern-stop" style="display: none;" onclick="stopLoopingPattern('solo')">⏹ Stop patroon</button>
       <div id="solo-loop-indicator" class="loop-indicator" style="display: none;">
         <span class="loop-pulse"></span> <span id="solo-loop-name">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2D Hold Ball Solo -->
+  <div class="control-card">
+    <h3 onclick="toggleCollapsible(this)">
+      <span class="toggle-icon">▶</span> 🎯 Hold Ball (2D)
+    </h3>
+    <div class="collapsible-content">
+      <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Houd je vinger op het vlak. Y = sterkte, X = gevoel. Laat los = stop.</p>
+      <div class="toggle-row" style="margin-bottom:8px;">
+        <label>🔒 Vergrendel positie (valt niet terug)</label>
+        <div id="solo-holdball-lock" class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="xy-pad-container" id="solo-holdball-pad"
+        ontouchstart="holdBallStart(event,'solo')" ontouchmove="holdBallMove(event,'solo')" ontouchend="holdBallEnd(event,'solo')" ontouchcancel="holdBallEnd(event,'solo')"
+        onmousedown="holdBallStart(event,'solo')" onmousemove="holdBallMove(event,'solo')" onmouseup="holdBallEnd(event,'solo')" onmouseleave="holdBallEnd(event,'solo')">
+        <div class="xy-pad-gridlines"></div>
+        <div class="xy-pad-labels">
+          <span class="label-top">💯 Sterk</span>
+          <span class="label-bottom">0% Uit</span>
+          <span class="label-left">🫀 Diep</span>
+          <span class="label-right">⚡ Scherp</span>
+        </div>
+        <div class="xy-pad-ball" id="solo-holdball-ball" style="left:50%;top:100%;"></div>
+      </div>
+      <div class="xy-pad-values">
+        <span id="solo-holdball-freq">Freq: —</span>
+        <span id="solo-holdball-vol">Vol: —</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2D Pattern Draw Solo -->
+  <div class="control-card">
+    <h3 onclick="toggleCollapsible(this)">
+      <span class="toggle-icon">▶</span> ✏️ Patroon Tekenen (2D)
+    </h3>
+    <div class="collapsible-content">
+      <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Teken een patroon met je vinger. Het loopt automatisch door als lus.</p>
+      <div class="pattern-draw-container" id="solo-patterndraw-pad"
+        ontouchstart="patternDrawStart(event,'solo')" ontouchmove="patternDrawMove(event,'solo')" ontouchend="patternDrawEnd(event,'solo')" ontouchcancel="patternDrawEnd(event,'solo')"
+        onmousedown="patternDrawStart(event,'solo')" onmousemove="patternDrawMove(event,'solo')" onmouseup="patternDrawEnd(event,'solo')" onmouseleave="patternDrawEnd(event,'solo')">
+        <div class="xy-pad-gridlines"></div>
+        <div class="xy-pad-labels">
+          <span class="label-top">💯 Sterk</span>
+          <span class="label-bottom">0% Uit</span>
+          <span class="label-left">🫀 Diep</span>
+          <span class="label-right">⚡ Scherp</span>
+        </div>
+        <canvas class="pattern-draw-canvas" id="solo-patterndraw-canvas"></canvas>
+        <div class="pattern-draw-playhead" id="solo-patterndraw-playhead"></div>
+      </div>
+      <div class="pattern-draw-controls">
+        <button onclick="patternDrawPlay('solo')" id="solo-patterndraw-play">▶ Afspelen</button>
+        <button onclick="patternDrawStop('solo')" id="solo-patterndraw-stop">⏹ Stop</button>
+        <button onclick="patternDrawClear('solo')">🗑️ Wissen</button>
+      </div>
+      <div class="pattern-draw-speed">
+        <label>Snelheid:</label>
+        <input type="range" id="solo-patterndraw-speed" min="0.5" max="4" value="1" step="0.1" oninput="document.getElementById('solo-patterndraw-speed-val').textContent=parseFloat(this.value).toFixed(1)+'x'">
+        <span id="solo-patterndraw-speed-val">1.0x</span>
       </div>
     </div>
   </div>
@@ -3685,6 +3844,69 @@
     </div>
   </div>
 
+  <!-- 2D Hold Ball -->
+  <div class="control-card">
+    <h3 onclick="toggleCollapsible(this)">
+      <span class="toggle-icon">▶</span> 🎯 Hold Ball (2D)
+    </h3>
+    <div class="collapsible-content">
+      <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Houd je vinger op het vlak. Y = sterkte, X = gevoel (diep→scherp). Laat los = stop.</p>
+      <div class="toggle-row" style="margin-bottom:8px;">
+        <label>🔒 Vergrendel positie (valt niet terug)</label>
+        <div id="sender-holdball-lock" class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="xy-pad-container" id="sender-holdball-pad"
+        ontouchstart="holdBallStart(event,'sender')" ontouchmove="holdBallMove(event,'sender')" ontouchend="holdBallEnd(event,'sender')" ontouchcancel="holdBallEnd(event,'sender')"
+        onmousedown="holdBallStart(event,'sender')" onmousemove="holdBallMove(event,'sender')" onmouseup="holdBallEnd(event,'sender')" onmouseleave="holdBallEnd(event,'sender')">
+        <div class="xy-pad-gridlines"></div>
+        <div class="xy-pad-labels">
+          <span class="label-top">💯 Sterk</span>
+          <span class="label-bottom">0% Uit</span>
+          <span class="label-left">🫀 Diep</span>
+          <span class="label-right">⚡ Scherp</span>
+        </div>
+        <div class="xy-pad-ball" id="sender-holdball-ball" style="left:50%;top:100%;"></div>
+      </div>
+      <div class="xy-pad-values">
+        <span id="sender-holdball-freq">Freq: —</span>
+        <span id="sender-holdball-vol">Vol: —</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2D Pattern Draw -->
+  <div class="control-card">
+    <h3 onclick="toggleCollapsible(this)">
+      <span class="toggle-icon">▶</span> ✏️ Patroon Tekenen (2D)
+    </h3>
+    <div class="collapsible-content">
+      <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Teken een patroon met je vinger. Het loopt automatisch door als lus.</p>
+      <div class="pattern-draw-container" id="sender-patterndraw-pad"
+        ontouchstart="patternDrawStart(event,'sender')" ontouchmove="patternDrawMove(event,'sender')" ontouchend="patternDrawEnd(event,'sender')" ontouchcancel="patternDrawEnd(event,'sender')"
+        onmousedown="patternDrawStart(event,'sender')" onmousemove="patternDrawMove(event,'sender')" onmouseup="patternDrawEnd(event,'sender')" onmouseleave="patternDrawEnd(event,'sender')">
+        <div class="xy-pad-gridlines"></div>
+        <div class="xy-pad-labels">
+          <span class="label-top">💯 Sterk</span>
+          <span class="label-bottom">0% Uit</span>
+          <span class="label-left">🫀 Diep</span>
+          <span class="label-right">⚡ Scherp</span>
+        </div>
+        <canvas class="pattern-draw-canvas" id="sender-patterndraw-canvas"></canvas>
+        <div class="pattern-draw-playhead" id="sender-patterndraw-playhead"></div>
+      </div>
+      <div class="pattern-draw-controls">
+        <button onclick="patternDrawPlay('sender')" id="sender-patterndraw-play">▶ Afspelen</button>
+        <button onclick="patternDrawStop('sender')" id="sender-patterndraw-stop">⏹ Stop</button>
+        <button onclick="patternDrawClear('sender')">🗑️ Wissen</button>
+      </div>
+      <div class="pattern-draw-speed">
+        <label>Snelheid:</label>
+        <input type="range" id="sender-patterndraw-speed" min="0.5" max="4" value="1" step="0.1" oninput="document.getElementById('sender-patterndraw-speed-val').textContent=parseFloat(this.value).toFixed(1)+'x'">
+        <span id="sender-patterndraw-speed-val">1.0x</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Games -->
   <div class="control-card">
     <h3 onclick="toggleCollapsible(this)">
@@ -4129,6 +4351,65 @@
       </div>
     </div>
 
+    <!-- 2D Hold Ball Lisanne -->
+    <div class="card" style="margin-top:12px;">
+      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🎯 Hold Ball (2D)</div>
+      <div style="display:none;">
+        <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Houd je vinger op het vlak. Y = sterkte, X = gevoel. Laat los = stop.</p>
+        <div class="toggle-row" style="margin-bottom:8px;">
+          <label>🔒 Vergrendel</label>
+          <div id="lisanne-holdball-lock" class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="xy-pad-container" id="lisanne-holdball-pad"
+          ontouchstart="holdBallStart(event,'lisanne')" ontouchmove="holdBallMove(event,'lisanne')" ontouchend="holdBallEnd(event,'lisanne')" ontouchcancel="holdBallEnd(event,'lisanne')"
+          onmousedown="holdBallStart(event,'lisanne')" onmousemove="holdBallMove(event,'lisanne')" onmouseup="holdBallEnd(event,'lisanne')" onmouseleave="holdBallEnd(event,'lisanne')">
+          <div class="xy-pad-gridlines"></div>
+          <div class="xy-pad-labels">
+            <span class="label-top">💯 Sterk</span>
+            <span class="label-bottom">0% Uit</span>
+            <span class="label-left">🫀 Diep</span>
+            <span class="label-right">⚡ Scherp</span>
+          </div>
+          <div class="xy-pad-ball" id="lisanne-holdball-ball" style="left:50%;top:100%;"></div>
+        </div>
+        <div class="xy-pad-values">
+          <span id="lisanne-holdball-freq">Freq: —</span>
+          <span id="lisanne-holdball-vol">Vol: —</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2D Pattern Draw Lisanne -->
+    <div class="card" style="margin-top:12px;">
+      <div class="card-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">✏️ Patroon Tekenen (2D)</div>
+      <div style="display:none;">
+        <p style="font-size:0.8em;color:#888;margin:0 0 10px;">Teken een patroon. Het loopt door als lus.</p>
+        <div class="pattern-draw-container" id="lisanne-patterndraw-pad"
+          ontouchstart="patternDrawStart(event,'lisanne')" ontouchmove="patternDrawMove(event,'lisanne')" ontouchend="patternDrawEnd(event,'lisanne')" ontouchcancel="patternDrawEnd(event,'lisanne')"
+          onmousedown="patternDrawStart(event,'lisanne')" onmousemove="patternDrawMove(event,'lisanne')" onmouseup="patternDrawEnd(event,'lisanne')" onmouseleave="patternDrawEnd(event,'lisanne')">
+          <div class="xy-pad-gridlines"></div>
+          <div class="xy-pad-labels">
+            <span class="label-top">💯 Sterk</span>
+            <span class="label-bottom">0% Uit</span>
+            <span class="label-left">🫀 Diep</span>
+            <span class="label-right">⚡ Scherp</span>
+          </div>
+          <canvas class="pattern-draw-canvas" id="lisanne-patterndraw-canvas"></canvas>
+          <div class="pattern-draw-playhead" id="lisanne-patterndraw-playhead"></div>
+        </div>
+        <div class="pattern-draw-controls">
+          <button onclick="patternDrawPlay('lisanne')" id="lisanne-patterndraw-play">▶ Afspelen</button>
+          <button onclick="patternDrawStop('lisanne')" id="lisanne-patterndraw-stop">⏹ Stop</button>
+          <button onclick="patternDrawClear('lisanne')">🗑️ Wissen</button>
+        </div>
+        <div class="pattern-draw-speed">
+          <label>Snelheid:</label>
+          <input type="range" id="lisanne-patterndraw-speed" min="0.5" max="4" value="1" step="0.1" oninput="document.getElementById('lisanne-patterndraw-speed-val').textContent=parseFloat(this.value).toFixed(1)+'x'">
+          <span id="lisanne-patterndraw-speed-val">1.0x</span>
+        </div>
+      </div>
+    </div>
+
     <!-- v1.0076: TV controls for Lisanne mode -->
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button id="lisanne-tv-btn" class="action-btn" onclick="lisanneToggleTv()" style="flex:1;font-size:0.85em;">📺 TV aan</button>
@@ -4173,7 +4454,17 @@ const stateManager = {
     durf_game: () => { if (typeof stopDurfGame === 'function') { stopDurfGame('solo', true); stopDurfGame('sender', true); } },
     trivia_game: () => { if (typeof stopTriviaGame === 'function') stopTriviaGame(); },
     solo_random: () => { if (typeof stopSoloRandom === 'function') stopSoloRandom(); },
-    solo_countdown: () => { /* countdown is one-shot, no persistent stop needed */ }
+    solo_countdown: () => { /* countdown is one-shot, no persistent stop needed */ },
+    holdball_2d: () => {
+      ['sender','solo','lisanne'].forEach(m => {
+        const hb = holdBallState[m];
+        if (hb) { hb.touching = false; if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; } }
+      });
+      holdBallStopLocal();
+    },
+    patterndraw_2d: () => {
+      ['sender','solo','lisanne'].forEach(m => patternDrawStop(m));
+    }
   },
   requestContinuous(source, startFn) {
     if (this.continuousSource && this.continuousSource !== source) {
@@ -8676,6 +8967,424 @@ function stopSoloHoldLocal() {
   const text = document.getElementById('solo-viz-text');
   if (bar) bar.style.width = '0%';
   if (text) { text.textContent = 'Wacht op schok...'; text.style.color = '#888'; }
+}
+
+// ==================== 2D HOLD BALL ====================
+const holdBallState = {};
+function getHBState(mode) {
+  if (!holdBallState[mode]) holdBallState[mode] = { touching: false, sendInterval: null, lastFreq: 0, lastVol: 0 };
+  return holdBallState[mode];
+}
+
+function holdBallGetPos(e, mode) {
+  const pad = document.getElementById(mode + '-holdball-pad');
+  if (!pad) return null;
+  const rect = pad.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  const y = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height)); // flip: top=1
+  return { x, y };
+}
+
+function holdBallUpdateVisuals(mode, x, y) {
+  const ball = document.getElementById(mode + '-holdball-ball');
+  const freqLabel = document.getElementById(mode + '-holdball-freq');
+  const volLabel = document.getElementById(mode + '-holdball-vol');
+  if (ball) {
+    ball.style.left = (x * 100) + '%';
+    ball.style.top = ((1 - y) * 100) + '%';
+    ball.classList.remove('returning');
+  }
+  const freq = Math.round(20 + x * 980); // 20-1000Hz
+  const vol = Math.round(y * 100);
+  if (freqLabel) freqLabel.textContent = 'Freq: ' + freq + ' Hz';
+  if (volLabel) volLabel.textContent = 'Vol: ' + vol + '%';
+  return { freq, vol };
+}
+
+function holdBallSend(mode, freq, vol) {
+  const hb = getHBState(mode);
+  // Clamp by safety limit
+  let safetyLimit;
+  if (mode === 'solo') {
+    safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
+  } else {
+    safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+  }
+  const clampedVol = Math.min(vol, safetyLimit);
+  hb.lastFreq = freq;
+  hb.lastVol = clampedVol;
+
+  if (mode === 'solo') {
+    // Solo: play locally
+    holdBallPlayLocal(freq, clampedVol);
+  } else {
+    // Sender/Lisanne: send over connection
+    if (conn && conn.open) {
+      conn.send({ type: 'hold_start', freq: freq, volume: clampedVol, ts: Date.now() });
+    }
+  }
+}
+
+// Solo local playback for hold ball
+let holdBallLocalNodes = null;
+function holdBallPlayLocal(freq, vol) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const safetyLimit = getEffectiveSafetyLimit();
+  const safeVol = Math.min(vol / 100, safetyLimit);
+
+  if (holdBallLocalNodes) {
+    // Update existing oscillator
+    try {
+      holdBallLocalNodes.osc.frequency.linearRampToValueAtTime(freq, now + 0.05);
+      holdBallLocalNodes.gain.gain.linearRampToValueAtTime(safeVol, now + 0.05);
+    } catch(e) {}
+    return;
+  }
+
+  duckBaseline(30000);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.value = 0;
+  gain.gain.linearRampToValueAtTime(safeVol, now + 0.05);
+
+  // Channel routing
+  const chMode = getChannelMode('solo');
+  if (chMode === 'monoA') {
+    const merger = ctx.createChannelMerger(2);
+    gain.connect(merger, 0, 0);
+    const silentGain = ctx.createGain();
+    silentGain.gain.value = 0;
+    osc.connect(silentGain);
+    silentGain.connect(merger, 0, 1);
+    merger.connect(ctx.destination);
+  } else {
+    gain.connect(ctx.destination);
+  }
+
+  osc.connect(gain);
+  osc.start(now);
+  holdBallLocalNodes = { osc, gain };
+}
+
+function holdBallStopLocal() {
+  if (holdBallLocalNodes) {
+    try {
+      const ctx = audioCtx || ensureAudio();
+      const now = ctx.currentTime;
+      holdBallLocalNodes.gain.gain.linearRampToValueAtTime(0, now + 0.08);
+      holdBallLocalNodes.osc.stop(now + 0.15);
+    } catch(e) {}
+    holdBallLocalNodes = null;
+  }
+}
+
+function holdBallStart(e, mode) {
+  e.preventDefault();
+  const hb = getHBState(mode);
+  hb.touching = true;
+  const pad = document.getElementById(mode + '-holdball-pad');
+  if (pad) pad.classList.add('active');
+
+  const pos = holdBallGetPos(e, mode);
+  if (!pos) return;
+  const { freq, vol } = holdBallUpdateVisuals(mode, pos.x, pos.y);
+
+  if (mode === 'solo') ensureAudio();
+  holdBallSend(mode, freq, vol);
+
+  // Send updates at ~20fps
+  if (hb.sendInterval) clearInterval(hb.sendInterval);
+  hb.sendInterval = setInterval(() => {
+    if (hb.touching && hb.lastFreq > 0) {
+      holdBallSend(mode, hb.lastFreq, hb.lastVol);
+    }
+  }, 50);
+}
+
+function holdBallMove(e, mode) {
+  const hb = getHBState(mode);
+  if (!hb.touching) return;
+  e.preventDefault();
+  const pos = holdBallGetPos(e, mode);
+  if (!pos) return;
+  const { freq, vol } = holdBallUpdateVisuals(mode, pos.x, pos.y);
+  hb.lastFreq = freq;
+  // Clamp
+  let safetyLimit;
+  if (mode === 'solo') {
+    safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
+  } else {
+    safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+  }
+  hb.lastVol = Math.min(vol, safetyLimit);
+}
+
+function holdBallEnd(e, mode) {
+  const hb = getHBState(mode);
+  if (!hb.touching) return;
+  hb.touching = false;
+  const pad = document.getElementById(mode + '-holdball-pad');
+  if (pad) pad.classList.remove('active');
+  if (hb.sendInterval) { clearInterval(hb.sendInterval); hb.sendInterval = null; }
+
+  // Check lock toggle
+  const lockToggle = document.getElementById(mode + '-holdball-lock');
+  const locked = lockToggle && lockToggle.classList.contains('on');
+
+  if (locked) {
+    // Keep position & keep sending — just stop the interval but keep last values active
+    // For solo, keep the oscillator running; for remote, it stays on receiver
+    return;
+  }
+
+  // Animate ball back to bottom center
+  const ball = document.getElementById(mode + '-holdball-ball');
+  if (ball) {
+    ball.classList.add('returning');
+    ball.style.left = '50%';
+    ball.style.top = '100%';
+  }
+  const freqLabel = document.getElementById(mode + '-holdball-freq');
+  const volLabel = document.getElementById(mode + '-holdball-vol');
+  if (freqLabel) freqLabel.textContent = 'Freq: —';
+  if (volLabel) volLabel.textContent = 'Vol: —';
+
+  // Stop stimulation
+  if (mode === 'solo') {
+    holdBallStopLocal();
+  } else {
+    if (conn && conn.open) {
+      conn.send({ type: 'hold_stop', ts: Date.now() });
+    }
+  }
+}
+
+// ==================== 2D PATTERN DRAW ====================
+const patternDrawState = {};
+function getPDState(mode) {
+  if (!patternDrawState[mode]) patternDrawState[mode] = {
+    drawing: false, points: [], playing: false, playTimer: null, playIdx: 0
+  };
+  return patternDrawState[mode];
+}
+
+function patternDrawGetPos(e, mode) {
+  const pad = document.getElementById(mode + '-patterndraw-pad');
+  if (!pad) return null;
+  const rect = pad.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  const y = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
+  return { x, y, time: Date.now() };
+}
+
+function patternDrawRender(mode) {
+  const pd = getPDState(mode);
+  const canvas = document.getElementById(mode + '-patterndraw-canvas');
+  if (!canvas || pd.points.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0, 0, w, h);
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#9c27b0';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  for (let i = 0; i < pd.points.length; i++) {
+    const px = pd.points[i].x * w;
+    const py = (1 - pd.points[i].y) * h;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Draw intensity gradient overlay
+  for (let i = 1; i < pd.points.length; i++) {
+    const p = pd.points[i];
+    const px = p.x * w;
+    const py = (1 - p.y) * h;
+    const alpha = 0.2 + p.y * 0.6;
+    ctx.beginPath();
+    ctx.arc(px, py, 3, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(156, 39, 176, ${alpha})`;
+    ctx.fill();
+  }
+}
+
+function patternDrawStart(e, mode) {
+  e.preventDefault();
+  const pd = getPDState(mode);
+  // Stop playback if active
+  patternDrawStop(mode);
+  pd.drawing = true;
+  pd.points = [];
+  const pad = document.getElementById(mode + '-patterndraw-pad');
+  if (pad) pad.classList.add('active');
+
+  const pos = patternDrawGetPos(e, mode);
+  if (pos) pd.points.push(pos);
+  patternDrawRender(mode);
+}
+
+function patternDrawMove(e, mode) {
+  const pd = getPDState(mode);
+  if (!pd.drawing) return;
+  e.preventDefault();
+  const pos = patternDrawGetPos(e, mode);
+  if (!pos) return;
+  // Subsample to ~50 points per second max
+  const last = pd.points[pd.points.length - 1];
+  if (last && (pos.time - last.time) < 20) return;
+  pd.points.push(pos);
+  patternDrawRender(mode);
+}
+
+function patternDrawEnd(e, mode) {
+  const pd = getPDState(mode);
+  if (!pd.drawing) return;
+  pd.drawing = false;
+  const pad = document.getElementById(mode + '-patterndraw-pad');
+  if (pad) pad.classList.remove('active');
+
+  // Need at least 3 points for a pattern
+  if (pd.points.length < 3) {
+    pd.points = [];
+    patternDrawRender(mode);
+    return;
+  }
+
+  // Normalize time: make it relative
+  const startTime = pd.points[0].time;
+  pd.points.forEach(p => { p.time = p.time - startTime; });
+
+  // Auto-play the pattern
+  patternDrawPlay(mode);
+}
+
+function patternDrawPlay(mode) {
+  const pd = getPDState(mode);
+  if (pd.points.length < 3 || pd.playing) return;
+  pd.playing = true;
+  pd.playIdx = 0;
+
+  const playBtn = document.getElementById(mode + '-patterndraw-play');
+  if (playBtn) playBtn.classList.add('pd-playing');
+
+  const playhead = document.getElementById(mode + '-patterndraw-playhead');
+  if (playhead) playhead.style.display = 'block';
+
+  const speedInput = document.getElementById(mode + '-patterndraw-speed');
+  const speed = speedInput ? parseFloat(speedInput.value) || 1 : 1;
+
+  const totalDuration = pd.points[pd.points.length - 1].time;
+  const stepMs = Math.max(30, 50 / speed); // Update interval
+
+  function playStep() {
+    if (!pd.playing) return;
+
+    const elapsed = pd.playIdx * stepMs * speed;
+    const t = elapsed % totalDuration;
+
+    // Find current point by time interpolation
+    let i = 0;
+    for (i = 0; i < pd.points.length - 1; i++) {
+      if (pd.points[i + 1].time >= t) break;
+    }
+    const p1 = pd.points[i];
+    const p2 = pd.points[Math.min(i + 1, pd.points.length - 1)];
+    const segDur = p2.time - p1.time;
+    const frac = segDur > 0 ? (t - p1.time) / segDur : 0;
+    const x = p1.x + (p2.x - p1.x) * frac;
+    const y = p1.y + (p2.y - p1.y) * frac;
+
+    // Update playhead position
+    if (playhead) {
+      const pad = document.getElementById(mode + '-patterndraw-pad');
+      if (pad) {
+        playhead.style.left = (x * 100) + '%';
+        playhead.style.top = ((1 - y) * 100) + '%';
+      }
+    }
+
+    // Send stimulation
+    const freq = Math.round(20 + x * 980);
+    const vol = Math.round(y * 100);
+    let safetyLimit;
+    if (mode === 'solo') {
+      safetyLimit = parseInt(document.getElementById('solo-safety-limit')?.value || 50);
+    } else {
+      safetyLimit = parseInt(document.getElementById('send-safety-limit')?.value || 80);
+    }
+    const clampedVol = Math.min(vol, safetyLimit);
+
+    if (mode === 'solo') {
+      holdBallPlayLocal(freq, clampedVol);
+    } else {
+      if (conn && conn.open) {
+        conn.send({ type: 'hold_start', freq: freq, volume: clampedVol, ts: Date.now() });
+      }
+    }
+
+    pd.playIdx++;
+    pd.playTimer = setTimeout(playStep, stepMs);
+  }
+
+  playStep();
+}
+
+function patternDrawStop(mode) {
+  const pd = getPDState(mode);
+  pd.playing = false;
+  if (pd.playTimer) { clearTimeout(pd.playTimer); pd.playTimer = null; }
+
+  const playBtn = document.getElementById(mode + '-patterndraw-play');
+  if (playBtn) playBtn.classList.remove('pd-playing');
+
+  const playhead = document.getElementById(mode + '-patterndraw-playhead');
+  if (playhead) playhead.style.display = 'none';
+
+  // Stop stimulation
+  if (mode === 'solo') {
+    holdBallStopLocal();
+  } else {
+    if (conn && conn.open) {
+      conn.send({ type: 'hold_stop', ts: Date.now() });
+    }
+  }
+}
+
+function patternDrawClear(mode) {
+  patternDrawStop(mode);
+  const pd = getPDState(mode);
+  pd.points = [];
+  pd.playIdx = 0;
+  const canvas = document.getElementById(mode + '-patterndraw-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 // ==================== SETUP WIZARD ====================
