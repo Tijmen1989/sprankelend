@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0086</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0087</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -5926,7 +5926,8 @@ function formatDeviceLabel(label, isStim) {
 // ==================== CENTRALIZED AUDIO SETUP ====================
 async function detectGlobalAudioDevices() {
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const _permStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _permStream.getTracks().forEach(t => t.stop()); // SK1 fix: stop permission stream immediately
     const devices = await navigator.mediaDevices.enumerateDevices();
     const outputs = devices.filter(d => d.kind === 'audiooutput');
 
@@ -6056,7 +6057,8 @@ function updateGlobalUIVolume(value) {
 // ==================== AUDIO ROUTING ====================
 async function detectAudioDevices() {
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const _permStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _permStream.getTracks().forEach(t => t.stop()); // SK1 fix: stop permission stream immediately
     const devices = await navigator.mediaDevices.enumerateDevices();
     const outputs = deduplicateAudioDevices(devices.filter(d => d.kind === 'audiooutput'));
 
@@ -6118,7 +6120,8 @@ async function updateUIAudioRouting() {
 // ---- Solo Audio Routing (mirrors receiver routing) ----
 async function detectSoloAudioDevices() {
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const _permStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _permStream.getTracks().forEach(t => t.stop()); // SK1 fix: stop permission stream immediately
     const devices = await navigator.mediaDevices.enumerateDevices();
     const outputs = deduplicateAudioDevices(devices.filter(d => d.kind === 'audiooutput'));
 
@@ -6212,13 +6215,46 @@ function stopAll2DControls() {
 function goBack() {
   if (peer) { peer.destroy(); peer = null; }
   if (conn) { conn.close(); conn = null; }
+  // SK2 fix: destroy cameraPeer on role exit
+  if (typeof cameraPeer !== 'undefined' && cameraPeer) { try { cameraPeer.destroy(); } catch(e) {} cameraPeer = null; }
+  if (typeof cameraCall !== 'undefined' && cameraCall) { try { cameraCall.close(); } catch(e) {} cameraCall = null; }
+  // SK2 fix: stop camera stream tracks
+  if (typeof cameraStream !== 'undefined' && cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   stopAll2DControls();
   stopStandalone();
   stopRandom();
   stopSessionTimer();
+  stopSessionWarnings(); // SK7/audit fix: clear session warning interval
   stopSoloRandom();
   stopSafewordListening();
   clearReceiverSessionCode();
+  // Audit fix: stop heartbeats and intensity reporting
+  if (typeof stopHeartbeat === 'function') stopHeartbeat();
+  if (typeof stopHeartbeatMonitor === 'function') stopHeartbeatMonitor();
+  if (typeof stopIntensityReporting === 'function') { try { stopIntensityReporting(); } catch(e) {} }
+  if (typeof stopDeadManSwitch === 'function') stopDeadManSwitch();
+  // Audit fix: clear Lisanne intervals
+  if (lisanneHeartbeatCheckInterval) { clearInterval(lisanneHeartbeatCheckInterval); lisanneHeartbeatCheckInterval = null; }
+  if (lisanneHeartbeatSendInterval) { clearInterval(lisanneHeartbeatSendInterval); lisanneHeartbeatSendInterval = null; }
+  // SK11 fix: clear Lisanne connect timeout
+  if (_lisanneConnTimeout) { clearTimeout(_lisanneConnTimeout); _lisanneConnTimeout = null; }
+  if (typeof lisanneStopAll === 'function') lisanneStopAll();
+  // SH9/SH10 fix: stop sender mic/cam streams on role exit
+  if (typeof senderMicStream !== 'undefined' && senderMicStream) { senderMicStream.getTracks().forEach(t => t.stop()); senderMicStream = null; }
+  if (typeof senderMicCall !== 'undefined' && senderMicCall) { try { senderMicCall.close(); } catch(e) {} senderMicCall = null; }
+  if (typeof senderCamStream !== 'undefined' && senderCamStream) { senderCamStream.getTracks().forEach(t => t.stop()); senderCamStream = null; }
+  if (typeof senderCamCall !== 'undefined' && senderCamCall) { try { senderCamCall.close(); } catch(e) {} senderCamCall = null; }
+  // SH5 fix: clean up direct camera call
+  if (typeof _camDirectCall !== 'undefined' && _camDirectCall) { try { _camDirectCall.close(); } catch(e) {} _camDirectCall = null; }
+  if (typeof _camConnecting !== 'undefined') _camConnecting = false;
+  // SM12 fix: clear relay stream
+  if (window._cameraRelayStream) { window._cameraRelayStream.getTracks().forEach(t => t.stop()); window._cameraRelayStream = null; }
+  // Audit fix: stop continuous mode
+  if (typeof stopContinuousMode === 'function') { try { stopContinuousMode('solo'); stopContinuousMode('send'); } catch(e) {} }
+  if (typeof stopLoopingPattern === 'function') { stopLoopingPattern('solo'); stopLoopingPattern('sender'); }
+  if (typeof stopCarrier === 'function') stopCarrier();
+  // Audit fix: stop graph render interval
+  if (typeof stopGraphRenderInterval === 'function') stopGraphRenderInterval();
   senderConnectionLost = false;
   if (myRole === 'receiver') {
     stopPanicCooldown();
@@ -6226,6 +6262,7 @@ function goBack() {
   // Bug #218 fix: reset cooldowns so next role starts fresh
   shockCooldownUntil = 0;
   soloCooldownUntil = 0;
+  myRole = null;
   showScreen('mode-select');
 }
 
@@ -8116,6 +8153,7 @@ function connectToReceiver() {
     });
 
     conn.on('close', () => {
+      clearTimeout(connectTimeout); // SK7 fix: clear connect timeout on close
       setSendStatus('error', 'Verbinding verbroken');
       document.getElementById('shock-btn').disabled = true;
       document.querySelectorAll('#sender .quick-shock-btn').forEach(b => b.disabled = true);
@@ -8134,6 +8172,19 @@ function connectToReceiver() {
       stopDurfGame('sender');
       if (sessionEngine.active) stopSession('sender');
       stopAll2DControls();
+      stopHeartbeat(); // SK9 fix: stop sender heartbeat on disconnect
+      stopDeadManSwitch();
+      // SH9 fix: stop sender mic stream on disconnect
+      if (senderMicStream) { senderMicStream.getTracks().forEach(t => t.stop()); senderMicStream = null; }
+      if (senderMicCall) { try { senderMicCall.close(); } catch(e) {} senderMicCall = null; }
+      senderMicActive = false;
+      document.querySelectorAll('.sender-mic-btn').forEach(b => { b.classList.remove('active'); b.textContent = '🎤 Praat'; b.style.background = ''; });
+      // SH10 fix: stop sender cam stream on disconnect
+      if (typeof senderCamStream !== 'undefined' && senderCamStream) { senderCamStream.getTracks().forEach(t => t.stop()); senderCamStream = null; }
+      if (typeof senderCamCall !== 'undefined' && senderCamCall) { try { senderCamCall.close(); } catch(e) {} senderCamCall = null; }
+      // Clean up direct camera connection
+      if (_camDirectCall) { try { _camDirectCall.close(); } catch(e) {} _camDirectCall = null; }
+      _camConnecting = false;
       sendLog('Verbinding verbroken — alles gestopt');
       conn = null; // Clean up reference
     });
@@ -8977,8 +9028,8 @@ function openTvDisplay() {
   if (!tvState._statusInterval) {
     tvState._statusInterval = setInterval(tvSyncStatus, 500);
   }
-  // Try real fullscreen
-  try { document.documentElement.requestFullscreen(); } catch(e) {}
+  // SH14 fix: check if not already in fullscreen before requesting
+  try { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); } catch(e) {}
   recvLog('🖥️ TV-weergave geopend');
 }
 
@@ -8991,6 +9042,8 @@ function tvSyncStatus() {
     const text = vizText.textContent || '';
     tvUpdateStatus(text, parseFloat(vizBar?.style.width) || 0);
   }
+  // SM2 fix: sync chat to fullscreen periodically
+  syncChatToFullscreen();
   // Update camera feed if it changed
   const tvCamFeed = document.getElementById('tv-camera-feed');
   if (tvCamFeed && !tvCamFeed.srcObject && window._cameraRelayStream && window._cameraRelayStream.active) {
@@ -9022,6 +9075,7 @@ function applyTvToggles() {
   if (clockCard) clockCard.style.display = t.clock ? 'block' : 'none';
   if (t.clock && !tvState.clockInterval) {
     updateTvClock();
+    if (tvState.clockInterval) clearInterval(tvState.clockInterval); // SK6 fix: prevent accumulation
     tvState.clockInterval = setInterval(updateTvClock, 1000);
   } else if (!t.clock && tvState.clockInterval) {
     clearInterval(tvState.clockInterval);
@@ -12756,6 +12810,7 @@ function loadPreset(prefix) {
 // ==================== LISANNE MODE ====================
 let lisanneCurrentMood = null;
 let lisanneMoodTimer = null;
+let _lisanneConnTimeout = null; // SK11 fix: module-level so it can be cleared on reconnect
 function setMoodTimer(fn, delay) {
   if (lisanneMoodTimer) { clearTimeout(lisanneMoodTimer); lisanneMoodTimer = null; }
   lisanneMoodTimer = trackTimeout(fn, delay);
@@ -12789,7 +12844,10 @@ function lisanneConnect() {
     conn = peer.connect(getPeerId(code), { reliable: true });
 
     // Bug #116 fix: timeout if Lisanne connection doesn't open within 15s
-    const lisConnTimeout = setTimeout(() => {
+    // SK11 fix: use module-level variable so reconnects can cancel old timeout
+    if (_lisanneConnTimeout) { clearTimeout(_lisanneConnTimeout); _lisanneConnTimeout = null; }
+    _lisanneConnTimeout = setTimeout(() => {
+      _lisanneConnTimeout = null;
       if (!conn || conn.open !== true) {
         dot.className = 'status-dot error';
         document.getElementById('lisanne-status-text').textContent = 'Verbinden mislukt';
@@ -12801,7 +12859,7 @@ function lisanneConnect() {
     }, 15000);
 
     conn.on('open', () => {
-      clearTimeout(lisConnTimeout);
+      clearTimeout(_lisanneConnTimeout); _lisanneConnTimeout = null;
       dot.className = 'status-dot connected';
       document.getElementById('lisanne-status-text').textContent = 'Verbonden met Tim!';
       btn.textContent = 'Verbonden ✓';
@@ -12818,6 +12876,8 @@ function lisanneConnect() {
           // Tim is offline for 15+ seconds — stop everything for safety
           clearInterval(lisanneHeartbeatCheckInterval);
           lisanneHeartbeatCheckInterval = null;
+          // SK5 fix: also clear send interval on timeout
+          if (lisanneHeartbeatSendInterval) { clearInterval(lisanneHeartbeatSendInterval); lisanneHeartbeatSendInterval = null; }
           lisanneStopAll();
           dot.className = 'status-dot error';
           document.getElementById('lisanne-status-text').textContent = '⚠️ Tim reageert niet — alles gestopt';
@@ -13371,15 +13431,24 @@ function testMicrophone() {
     log('🎤 Mic device: ' + (tracks[0]?.label || 'onbekend'));
 
     // Stap 2: Check geluidsniveau via AnalyserNode
-    const actx = new (window.AudioContext || window.webkitAudioContext)();
-    const source = actx.createMediaStreamSource(stream);
-    const analyser = actx.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    // SK8 fix: wrap AudioContext creation in try/catch to prevent leak on error
+    let actx, source, analyser, dataArray, levelCheck;
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      source = actx.createMediaStreamSource(stream);
+      analyser = actx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+    } catch(audioErr) {
+      log('⚠️ Audio analyse niet beschikbaar: ' + audioErr.message);
+      stream.getTracks().forEach(t => t.stop());
+      if (actx) actx.close().catch(()=>{});
+      return;
+    }
 
     let peakLevel = 0;
-    const levelCheck = setInterval(() => {
+    levelCheck = setInterval(() => {
       analyser.getByteFrequencyData(dataArray);
       const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
       if (avg > peakLevel) peakLevel = avg;
@@ -13431,8 +13500,9 @@ function testMicrophone() {
           // Herstart als we nog niks gehoord hebben
           setTimeout(() => { try { testRec.start(); } catch(e) {} }, 200);
         } else {
-          // Klaar
+          // Klaar — SK8/SL2 fix: disconnect analyser before closing
           clearInterval(levelCheck);
+          try { source.disconnect(); analyser.disconnect(); } catch(e) {}
           stream.getTracks().forEach(t => t.stop());
           actx.close();
           log('─────────────────');
@@ -13458,7 +13528,8 @@ function testMicrophone() {
 
     // Auto-stop na 8 seconden
     // Bug #253 fix: also close AudioContext and abort recognition on timeout
-    setTimeout(() => { clearInterval(levelCheck); stream.getTracks().forEach(t => t.stop()); actx.close().catch(()=>{}); }, 8500);
+    // SK8/SL2 fix: disconnect audio nodes before closing context
+    setTimeout(() => { clearInterval(levelCheck); try { source.disconnect(); analyser.disconnect(); } catch(e) {} stream.getTracks().forEach(t => t.stop()); actx.close().catch(()=>{}); }, 8500);
 
   }).catch(e => {
     log('❌ Mic niet beschikbaar: ' + e.message);
@@ -15921,6 +15992,7 @@ function handleSenderConnectionLost() {
   if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
   stopDeadManSwitch();
   stopIntensityReporting();
+  stopHeartbeatMonitor(); // SK10 fix: stop heartbeat check on disconnect
 
   // 2. Update status
   setRecvStatus('error', 'Verbinding met zender verloren — e-stim gestopt');
@@ -16190,6 +16262,9 @@ function autoReconnectReceiver(code) {
   if (recvCodeEl) recvCodeEl.textContent = code;
   generateRecvQR(code);
 
+  // SH13 fix: destroy old peer before creating new one to prevent duplicate handlers
+  if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+  if (conn) { try { conn.close(); } catch(e) {} conn = null; }
   peer = new Peer(getPeerId(code), { debug: 0 });
 
   peer.on('open', () => {
@@ -16653,6 +16728,22 @@ function joinAsCamera() {
 
       cameraPeer.on('disconnected', () => {
         if (statusEl) statusEl.textContent = 'Verbinding verbroken';
+        // SK2 fix: full cleanup on disconnect
+        if (cameraCall) { try { cameraCall.close(); } catch(e) {} cameraCall = null; }
+        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+        if (_camBatteryInterval) { clearInterval(_camBatteryInterval); _camBatteryInterval = null; }
+      });
+
+      // SK4 fix: add error and close handlers
+      cameraPeer.on('error', (err) => {
+        console.error('[Camera] Peer error:', err);
+        if (statusEl) statusEl.textContent = 'Camera fout: ' + (err.type || err.message || 'onbekend');
+      });
+      cameraPeer.on('close', () => {
+        if (statusEl) statusEl.textContent = 'Camera verbinding gesloten';
+        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+        if (_camBatteryInterval) { clearInterval(_camBatteryInterval); _camBatteryInterval = null; }
+        cameraPeer = null;
       });
     });
 
@@ -16678,13 +16769,17 @@ function startCameraBatteryReporting() {
 
 // --- Receiver: handle incoming camera connection ---
 // v1.0079: Switch between front and back camera
+let _cameraSwitching = false; // SH1 fix: prevent concurrent camera switches
 async function cameraSwitchFacing() {
+  if (_cameraSwitching) return; // SH1: already switching
+  _cameraSwitching = true;
   const newFacing = cameraFacingMode === 'environment' ? 'user' : 'environment';
   const btn = document.getElementById('cam-switch-btn');
   if (btn) btn.textContent = '⏳ Wisselen...';
 
+  let newStream = null; // SH3 fix: declare outside try so catch can clean up
   try {
-    const newStream = await navigator.mediaDevices.getUserMedia({
+    newStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: newFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
@@ -16754,10 +16849,14 @@ async function cameraSwitchFacing() {
     if (btn) btn.textContent = newFacing === 'user' ? '🔄 Naar achtercamera' : '🔄 Naar frontcamera';
   } catch(e) {
     console.error('[Camera] Switch failed:', e);
+    // SH3 fix: stop new stream tracks on failure to prevent leak
+    if (newStream) { newStream.getTracks().forEach(t => t.stop()); newStream = null; }
     if (btn) btn.textContent = '❌ Wissel mislukt';
     setTimeout(() => {
       if (btn) btn.textContent = cameraFacingMode === 'environment' ? '🔄 Naar frontcamera' : '🔄 Naar achtercamera';
     }, 2000);
+  } finally {
+    _cameraSwitching = false; // SH1 fix: always reset flag
   }
 }
 
@@ -16774,6 +16873,8 @@ function handleCameraConnection(call) {
   call.on('close', () => {
     recvLog('📷 Camera-companion verbroken');
     window._cameraPeerId = null;
+    // SM12 fix: clear relay stream on camera close
+    if (window._cameraRelayStream) { window._cameraRelayStream.getTracks().forEach(t => t.stop()); window._cameraRelayStream = null; }
     if (conn && conn.open) conn.send({ type: 'cam_disconnected', ts: Date.now() });
     // Update TV camera
     if (tvState.open) tvUpdateCameraFeed();
@@ -16840,10 +16941,18 @@ function handleCamAvailable(data) {
         _camConnecting = false;
         _camDirectCall = null;
       });
+      // SH4 fix: add close handler to prevent memory leak
+      _camDirectCall.on('close', () => {
+        sendLog('📷 Directe camera verbinding gesloten');
+        _camConnecting = false;
+        _camDirectCall = null;
+      });
       // Timeout: if no stream after 8s, give up
       setTimeout(() => {
         if (_camConnecting) {
           sendLog('⚠️ Direct camera timeout');
+          // SH5 fix: close the call before nulling
+          if (_camDirectCall) { try { _camDirectCall.close(); } catch(e) {} }
           _camConnecting = false;
           _camDirectCall = null;
         }
@@ -16862,9 +16971,12 @@ function handleCamAvailable(data) {
 
 function handleCamStream(remoteStream) {
   sendLog('📷 Camera stream ontvangen: ' + remoteStream.getTracks().length + ' tracks');
-  // Show preview on sender
+  // SH6/SH12 fix: stop old stream tracks before assigning new ones
   const preview = document.getElementById('cam-preview-video');
   if (preview) {
+    if (preview.srcObject && preview.srcObject !== remoteStream) {
+      preview.srcObject.getTracks().forEach(t => t.stop());
+    }
     preview.srcObject = remoteStream;
     preview.play().catch(e => sendLog('⚠️ Video play fout: ' + e.message));
   } else {
@@ -16886,6 +16998,14 @@ function handleCamStream(remoteStream) {
 function handleCamDisconnected() {
   sendLog('📷 Camera offline!');
   showNotification('📷 Camera offline!');
+  // SH7 fix: clear video srcObject to release stream
+  const preview = document.getElementById('cam-preview-video');
+  if (preview && preview.srcObject) { preview.srcObject.getTracks().forEach(t => t.stop()); preview.srcObject = null; }
+  const fsVideo = document.getElementById('cam-fs-video');
+  if (fsVideo && fsVideo.srcObject) { fsVideo.srcObject = null; }
+  // SH12 fix: clear relay stream
+  if (window._cameraRelayStream) { window._cameraRelayStream.getTracks().forEach(t => t.stop()); window._cameraRelayStream = null; }
+
   const notConnEl = document.getElementById('cam-not-connected');
   const connEl = document.getElementById('cam-connected-controls');
   if (notConnEl) { notConnEl.style.display = 'block'; notConnEl.innerHTML = '<span style="color:#e94560;">📷 Camera offline — verbinding verloren</span>'; }
@@ -17152,16 +17272,21 @@ let senderMicCall = null;
 let senderMicActive = false;
 
 function toggleSenderMic() {
-  senderMicActive = !senderMicActive;
-  // Update all mic buttons
-  document.querySelectorAll('.sender-mic-btn').forEach(btn => {
-    btn.classList.toggle('active', senderMicActive);
-    btn.textContent = senderMicActive ? '🎤 Mic uit' : '🎤 Praat';
-    btn.style.background = senderMicActive ? '#e94560' : '';
-  });
-
-  if (senderMicActive) {
+  // SM11 fix: don't toggle UI until async permission is granted
+  if (!senderMicActive) {
+    // Requesting mic — show loading state, toggle after permission
+    document.querySelectorAll('.sender-mic-btn').forEach(btn => {
+      btn.textContent = '🎤 Bezig...';
+      btn.disabled = true;
+    });
     navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+      senderMicActive = true;
+      document.querySelectorAll('.sender-mic-btn').forEach(btn => {
+        btn.classList.add('active');
+        btn.textContent = '🎤 Mic uit';
+        btn.style.background = '#e94560';
+        btn.disabled = false;
+      });
       senderMicStream = stream;
       if (peer && conn && conn.open) {
         const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
@@ -17177,9 +17302,17 @@ function toggleSenderMic() {
         btn.classList.remove('active');
         btn.textContent = '🎤 Praat';
         btn.style.background = '';
+        btn.disabled = false;
       });
     });
   } else {
+    // Turning off — immediate UI update is fine
+    senderMicActive = false;
+    document.querySelectorAll('.sender-mic-btn').forEach(btn => {
+      btn.classList.remove('active');
+      btn.textContent = '🎤 Praat';
+      btn.style.background = '';
+    });
     if (senderMicStream) {
       senderMicStream.getTracks().forEach(t => t.stop());
       senderMicStream = null;
@@ -17202,7 +17335,7 @@ function handleSenderMicStream(remoteStream) {
   // Route to UI output device if available
   const uiDevice = document.getElementById('ui-output-device')?.value;
   if (uiDevice && uiDevice !== 'default' && _senderMicAudio.setSinkId) {
-    _senderMicAudio.setSinkId(uiDevice).catch(() => {});
+    _senderMicAudio.setSinkId(uiDevice).catch(e => { console.warn('[Audio] setSinkId failed for sender mic:', e.message); });
   }
   _senderMicAudio.play().catch(e => recvLog('⚠️ Mic audio play fout: ' + e.message));
   recvLog('🎤 Zender praat — audio afspelen');
@@ -17276,6 +17409,10 @@ function hideSenderPip() {
 }
 
 function makeDraggable(el) {
+  // SH8 fix: prevent duplicate listener accumulation
+  if (el._draggableInit) return;
+  el._draggableInit = true;
+
   let isDragging = false;
   let startX, startY, origX, origY;
 
@@ -17288,7 +17425,7 @@ function makeDraggable(el) {
     e.preventDefault();
   }, { passive: false });
 
-  document.addEventListener('touchmove', (e) => {
+  const onMove = (e) => {
     if (!isDragging) return;
     const dx = e.touches[0].clientX - startX;
     const dy = e.touches[0].clientY - startY;
@@ -17296,9 +17433,11 @@ function makeDraggable(el) {
     el.style.top = (origY + dy) + 'px';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-  }, { passive: true });
+  };
+  const onEnd = () => { isDragging = false; };
 
-  document.addEventListener('touchend', () => { isDragging = false; });
+  document.addEventListener('touchmove', onMove, { passive: true });
+  document.addEventListener('touchend', onEnd);
 }
 </script>
 
