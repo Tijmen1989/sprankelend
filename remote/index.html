@@ -2175,7 +2175,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0077</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0078</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -6739,10 +6739,12 @@ function startReceiver() {
       });
     } else if (meta.role === 'sender_wants_cam') {
       // Sender requesting camera stream
-      if (window._cameraRelayStream) {
+      if (window._cameraRelayStream && window._cameraRelayStream.active) {
+        const tracks = window._cameraRelayStream.getTracks();
+        recvLog('📷 Camera stream relay: ' + tracks.length + ' tracks, sending to sender');
         call.answer(window._cameraRelayStream);
-        recvLog('📷 Camera stream doorgestuurd naar zender');
       } else {
+        recvLog('⚠️ Sender wil camera maar stream niet beschikbaar (active=' + (window._cameraRelayStream ? window._cameraRelayStream.active : 'null') + ')');
         call.answer(); // answer without stream
       }
     }
@@ -15816,9 +15818,13 @@ function autoReconnectReceiver(code) {
       call.on('stream', (remoteStream) => { handleSenderCamStream(remoteStream); });
       call.on('close', () => { hideSenderPip(); });
     } else if (meta.role === 'sender_wants_cam') {
-      if (window._cameraRelayStream) {
+      if (window._cameraRelayStream && window._cameraRelayStream.active) {
         call.answer(window._cameraRelayStream);
-      } else { call.answer(); }
+        recvLog('📷 Camera relay (reconnect) naar sender');
+      } else {
+        recvLog('⚠️ Camera stream niet beschikbaar bij reconnect');
+        call.answer();
+      }
     }
   });
 
@@ -16225,8 +16231,10 @@ function handleCameraConnection(call) {
 
 function relayCameraToSender(remoteStream) {
   // Receiver tells sender about camera, sender then calls receiver to get the stream
-  // Simpler approach: receiver stores the stream and sender requests it
   window._cameraRelayStream = remoteStream;
+  const tracks = remoteStream ? remoteStream.getTracks() : [];
+  recvLog('📷 Camera relay: ' + tracks.length + ' tracks, active=' + (remoteStream ? remoteStream.active : false));
+  tracks.forEach(t => recvLog('📷 Relay track: ' + t.kind + ' ' + t.readyState));
   if (conn && conn.open) {
     conn.send({ type: 'cam_available', ts: Date.now() });
   }
@@ -16242,19 +16250,24 @@ function handleCamAvailable() {
 
   // Request camera stream from receiver via PeerJS call
   if (peer && conn && conn.open) {
-    const code = document.getElementById('send-code-input')?.value?.trim()?.toUpperCase() || '';
+    // v1.0077: Support both sender and Lisanne mode code inputs
+    const code = (document.getElementById('send-code-input')?.value || document.getElementById('lisanne-code-input')?.value || '').trim().toUpperCase();
+    if (!code) { sendLog('⚠️ Geen sessiecode voor camera stream'); return; }
     // Create a dummy silent stream to initiate a call, receiver answers with camera stream
     try {
-      const dummyCtx = new AudioContext();
-      const dest = dummyCtx.createMediaStreamDestination();
-      const dummyStream = dest.stream;
+      // Use canvas stream instead of AudioContext (more reliable, avoids iOS autoplay issues)
+      const canvas = document.createElement('canvas');
+      canvas.width = 2; canvas.height = 2;
+      const dummyStream = canvas.captureStream(0);
       const call = peer.call(getPeerId(code), dummyStream, { metadata: { role: 'sender_wants_cam' } });
       call.on('stream', (remoteStream) => {
-        dummyCtx.close();
+        // Stop dummy tracks
+        dummyStream.getTracks().forEach(t => t.stop());
         handleCamStream(remoteStream);
       });
-      call.on('close', () => {
-        dummyCtx.close().catch(() => {});
+      call.on('error', (err) => {
+        sendLog('⚠️ Camera stream fout: ' + err);
+        dummyStream.getTracks().forEach(t => t.stop());
       });
     } catch(e) {
       sendLog('⚠️ Kan camera stream niet ophalen: ' + e.message);
@@ -16263,13 +16276,26 @@ function handleCamAvailable() {
 }
 
 function handleCamStream(remoteStream) {
+  sendLog('📷 Camera stream ontvangen: ' + remoteStream.getTracks().length + ' tracks');
   // Show preview on sender
   const preview = document.getElementById('cam-preview-video');
-  if (preview) preview.srcObject = remoteStream;
+  if (preview) {
+    preview.srcObject = remoteStream;
+    preview.play().catch(e => sendLog('⚠️ Video play fout: ' + e.message));
+  } else {
+    sendLog('⚠️ cam-preview-video element niet gevonden');
+  }
 
   // Also set for fullscreen
   const fsVideo = document.getElementById('cam-remote-video-fs');
   if (fsVideo) fsVideo.srcObject = remoteStream;
+
+  // Monitor track state
+  remoteStream.getTracks().forEach(t => {
+    sendLog('📷 Track: ' + t.kind + ' ' + t.readyState + ' enabled=' + t.enabled);
+    t.onended = () => sendLog('📷 Track ended: ' + t.kind);
+    t.onmute = () => sendLog('📷 Track muted: ' + t.kind);
+  });
 }
 
 function handleCamDisconnected() {
