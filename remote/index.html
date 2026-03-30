@@ -2176,7 +2176,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0080</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0081</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -8591,6 +8591,33 @@ function closeFullscreen() {
   overlay.classList.remove('visible');
   fsOpen = false;
   try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+}
+
+// v1.0081: QR Join — auto-connect as chosen role
+function qrJoinAs(role) {
+  const code = window._qrJoinCode;
+  if (!code) { showScreen('mode-select'); return; }
+
+  if (role === 'sender') {
+    // Lisanne/simpel mode → fill code, show screen, auto-connect
+    const input = document.getElementById('lisanne-code-input');
+    if (input) input.value = code;
+    startLisanneMode();
+    // Auto-connect after screen is shown
+    setTimeout(() => lisanneConnect(), 300);
+  } else if (role === 'sender-advanced') {
+    // Geavanceerd mode → fill code, show screen, auto-connect
+    const input = document.getElementById('send-code-input');
+    if (input) input.value = code;
+    startSender();
+    setTimeout(() => connectToReceiver(), 300);
+  } else if (role === 'camera') {
+    // Camera → fill code, start camera setup
+    const input = document.getElementById('camera-code-input');
+    if (input) input.value = code;
+    window._cameraTargetCode = code;
+    startCameraFromSetup();
+  }
 }
 
 // v1.0080: Generate QR code on receiver screen
@@ -15286,17 +15313,22 @@ function handleVoiceQuizSenderMessage(data) {
 
 // Safe defaults on page load
 document.addEventListener('DOMContentLoaded', () => {
-  // v1.0080: Check URL for ?code= parameter (from QR scan)
+  // v1.0081: Check URL for ?code= parameter (from QR scan) → show join screen
   const urlParams = new URLSearchParams(window.location.search);
   const qrCode = urlParams.get('code');
   if (qrCode) {
-    // Pre-fill code in sender and camera input fields
+    window._qrJoinCode = qrCode.toUpperCase();
+    // Pre-fill all code inputs
     const sendInput = document.getElementById('send-code-input');
     const lisanneInput = document.getElementById('lisanne-code-input');
     const cameraInput = document.getElementById('camera-code-input');
-    if (sendInput) sendInput.value = qrCode.toUpperCase();
-    if (lisanneInput) lisanneInput.value = qrCode.toUpperCase();
-    if (cameraInput) cameraInput.value = qrCode.toUpperCase();
+    if (sendInput) sendInput.value = window._qrJoinCode;
+    if (lisanneInput) lisanneInput.value = window._qrJoinCode;
+    if (cameraInput) cameraInput.value = window._qrJoinCode;
+    // Show join screen
+    const codeEl = document.getElementById('qr-join-code');
+    if (codeEl) codeEl.textContent = window._qrJoinCode;
+    showScreen('qr-join');
     // Clean URL without reloading
     window.history.replaceState({}, '', window.location.pathname);
   }
@@ -16849,6 +16881,33 @@ function makeDraggable(el) {
 </div>
 
 <!-- Camera setup screen (enter session code) -->
+<!-- v1.0081: QR Join screen — shown when ?code= is in URL -->
+<div id="qr-join" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:24px;text-align:center;">
+    <h1 style="font-size:2em;margin-bottom:4px;">⚡ Sprankelend</h1>
+    <div style="color:#4caf50;font-size:1.1em;margin-bottom:32px;">Uitgenodigd voor een sessie</div>
+    <div style="color:#888;font-size:0.9em;margin-bottom:24px;">Sessiecode: <strong id="qr-join-code" style="color:#e94560;font-size:1.2em;letter-spacing:2px;"></strong></div>
+    <div style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:320px;">
+      <button onclick="qrJoinAs('sender')" style="padding:20px;font-size:1.1em;background:linear-gradient(135deg,#1a1a3e,#3e2a2a);border:2px solid #e94560;color:#e0e0e0;border-radius:14px;cursor:pointer;text-align:left;">
+        <span style="font-size:1.5em;display:block;margin-bottom:4px;">📱</span>
+        <strong>Zender (simpel)</strong>
+        <span style="display:block;font-size:0.8em;color:#888;margin-top:4px;">Grote knoppen, geen gedoe</span>
+      </button>
+      <button onclick="qrJoinAs('sender-advanced')" style="padding:20px;font-size:1.1em;background:linear-gradient(135deg,#1a1a3e,#2a2a3e);border:2px solid #7c4dff;color:#e0e0e0;border-radius:14px;cursor:pointer;text-align:left;">
+        <span style="font-size:1.5em;display:block;margin-bottom:4px;">⚙️</span>
+        <strong>Zender (geavanceerd)</strong>
+        <span style="display:block;font-size:0.8em;color:#888;margin-top:4px;">Alle sliders, patronen en instellingen</span>
+      </button>
+      <button onclick="qrJoinAs('camera')" style="padding:20px;font-size:1.1em;background:linear-gradient(135deg,#1a1a3e,#2a3a3e);border:2px solid #26c6da;color:#e0e0e0;border-radius:14px;cursor:pointer;text-align:left;">
+        <span style="font-size:1.5em;display:block;margin-bottom:4px;">📷</span>
+        <strong>Camera</strong>
+        <span style="display:block;font-size:0.8em;color:#888;margin-top:4px;">Stream video naar de zender</span>
+      </button>
+    </div>
+    <button onclick="showScreen('mode-select')" style="margin-top:24px;padding:10px 24px;font-size:0.9em;background:transparent;border:1px solid #555;color:#888;border-radius:8px;cursor:pointer;">← Naar hoofdmenu</button>
+  </div>
+</div>
+
 <div id="camera-setup" class="screen">
   <div class="header">
     <h2>📷 Camera Companion</h2>
