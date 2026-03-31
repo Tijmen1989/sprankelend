@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0087</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0088</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -4801,6 +4801,8 @@ function stopHeartbeat() {
 }
 
 function startHeartbeatMonitor() {
+  // R2 fix: clear old interval before creating new one (prevents leak on reconnect)
+  stopHeartbeatMonitor();
   lastHeartbeat = Date.now();
   heartbeatCheckInterval = setInterval(() => {
     const elapsed = Date.now() - lastHeartbeat;
@@ -4962,6 +4964,8 @@ function dismissReconnectBanner() {
 
 // ==================== INTENSITY REPORTING ====================
 function startIntensityReporting() {
+  // R1 fix: clear old interval before creating new one (prevents leak on reconnect)
+  stopIntensityReporting();
   intensityReportInterval = setInterval(() => {
     if (conn && conn.open) {
       let currentLevel = 0;
@@ -6259,6 +6263,12 @@ function goBack() {
   if (myRole === 'receiver') {
     stopPanicCooldown();
   }
+  // R3 fix: close BroadcastChannel on role exit
+  if (tabChannel) { try { tabChannel.close(); } catch(e) {} tabChannel = null; }
+  // R4 fix: release wake lock on role exit
+  if (typeof releaseWakeLock === 'function') releaseWakeLock();
+  // R8 fix: stop intensity reporting
+  if (typeof stopIntensityReporting === 'function') { try { stopIntensityReporting(); } catch(e) {} }
   // Bug #218 fix: reset cooldowns so next role starts fresh
   shockCooldownUntil = 0;
   soloCooldownUntil = 0;
@@ -7847,6 +7857,8 @@ function panicStop() {
   stopBreathingSync('sender');
   stopHeartbeatMonitor();
   stopDeadManSwitch();
+  // R8 fix: stop intensity reporting on panic
+  stopIntensityReporting();
   // Bug #81/#82/#88 fix: reset all game state flags to prevent post-panic callbacks
   rouletteActive = false;
   uncertainCountdownActive = false;
@@ -8069,6 +8081,10 @@ function startSender() {
 function connectToReceiver() {
   const code = document.getElementById('send-code-input').value.trim().toUpperCase();
   if (code.length < 4) { alert('Voer de verbindingscode in'); return; }
+
+  // R6 fix: destroy old peer/conn before creating new one
+  if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+  if (conn) { try { conn.close(); } catch(e) {} conn = null; }
 
   const btn = document.getElementById('send-connect-btn');
   btn.disabled = true;
@@ -9270,6 +9286,10 @@ async function requestWakeLock() {
     }
   } catch(e) {}
 }
+// R4 fix: release wake lock when no longer needed
+async function releaseWakeLock() {
+  if (wakeLock) { try { await wakeLock.release(); } catch(e) {} wakeLock = null; }
+}
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && (myRole === 'receiver' || myRole === 'solo')) {
@@ -9580,11 +9600,15 @@ function holdBallStart(e, mode) {
   }, 50);
 
   // Document-level mouseup listener for reliable release detection
+  // G1 fix: remove old listener before adding new to prevent accumulation
   if (!e.touches) {
+    if (hb._docUpListener) document.removeEventListener('mouseup', hb._docUpListener);
     const docUp = () => {
       holdBallEnd(e, mode);
       document.removeEventListener('mouseup', docUp);
+      hb._docUpListener = null;
     };
+    hb._docUpListener = docUp;
     document.addEventListener('mouseup', docUp);
   }
 }
@@ -9616,6 +9640,9 @@ function holdBallEnd(e, mode) {
 
   if (locked) {
     // Keep position & keep sending — just stop the interval but keep last values active
+    // G6 fix: clamp to current safety limit before locking
+    const safetyLimit = get2DSafetyLimit(mode);
+    hb.lastVol = Math.min(hb.lastVol, safetyLimit);
     // For solo, keep the oscillator running; for remote, it stays on receiver
     return;
   }
@@ -9723,11 +9750,15 @@ function patternDrawStart(e, mode) {
   patternDrawRender(mode);
 
   // Document-level mouseup for reliable end detection
+  // G2 fix: remove old listener before adding new to prevent accumulation
   if (!e.touches) {
+    if (pd._docUpListener) document.removeEventListener('mouseup', pd._docUpListener);
     const docUp = () => {
       patternDrawEnd(e, mode);
       document.removeEventListener('mouseup', docUp);
+      pd._docUpListener = null;
     };
+    pd._docUpListener = docUp;
     document.addEventListener('mouseup', docUp);
   }
 }
@@ -10964,6 +10995,19 @@ function stopBaseline() {
           try { nodes.osc1.stop(); } catch(e) {}
           try { nodes.osc2.stop(); } catch(e) {}
           try { nodes.lfo.stop(); } catch(e) {}
+          // C2 fix: disconnect ALL baseline nodes to prevent audio graph leak
+          try { nodes.osc1.disconnect(); } catch(e) {}
+          try { nodes.osc2.disconnect(); } catch(e) {}
+          try { nodes.lfo.disconnect(); } catch(e) {}
+          try { nodes.lfoGain.disconnect(); } catch(e) {}
+          try { nodes.g1.disconnect(); } catch(e) {}
+          try { nodes.g2.disconnect(); } catch(e) {}
+          try { nodes.gainL.disconnect(); } catch(e) {}
+          try { nodes.gainR.disconnect(); } catch(e) {}
+          try { nodes.splitter.disconnect(); } catch(e) {}
+          try { nodes.merger.disconnect(); } catch(e) {}
+          try { nodes.limiter.disconnect(); } catch(e) {}
+          try { nodes.master.disconnect(); } catch(e) {}
         }, 1200);
       }
     } catch(e) {}
@@ -11078,6 +11122,8 @@ function toggleContinuousMode(prefix) {
 function startContinuousMode(prefix) {
   const state = continuousState[prefix];
   if (state.active) return;
+  // C7 fix: mark active immediately to prevent re-entry race
+  state.active = true;
 
   // Register with state manager
   stateManager.requestContinuous('continuous_mode');
@@ -11406,6 +11452,8 @@ function updateContLabelsOnly(prefix) {
 function stopContinuousMode(prefix) {
   const state = continuousState[prefix];
   if (!state.active) return;
+  // C9 fix: mark inactive FIRST to stop tick recursion before cancelling frame
+  state.active = false;
 
   stateManager.clearContinuous('continuous_mode');
   stopDeadManSwitch();
@@ -11428,6 +11476,24 @@ function stopContinuousMode(prefix) {
         try { n.ampLfoR.stop(); } catch(e) {}
         try { n.freqLfo.stop(); } catch(e) {}
         try { n.noiseSrc.stop(); } catch(e) {}
+        // C1 fix: disconnect ALL nodes to prevent audio graph memory leak
+        try { n.osc1.disconnect(); } catch(e) {}
+        try { n.osc2.disconnect(); } catch(e) {}
+        try { n.osc3.disconnect(); } catch(e) {}
+        try { n.ampLfoL.disconnect(); } catch(e) {}
+        try { n.ampLfoR.disconnect(); } catch(e) {}
+        try { n.freqLfo.disconnect(); } catch(e) {}
+        try { n.noiseSrc.disconnect(); } catch(e) {}
+        try { n.g1.disconnect(); } catch(e) {}
+        try { n.g2.disconnect(); } catch(e) {}
+        try { n.g3.disconnect(); } catch(e) {}
+        try { n.gainL.disconnect(); } catch(e) {}
+        try { n.gainR.disconnect(); } catch(e) {}
+        try { n.splitter.disconnect(); } catch(e) {}
+        try { n.merger.disconnect(); } catch(e) {}
+        try { n.stereoDelay.disconnect(); } catch(e) {}
+        try { n.contLimiter.disconnect(); } catch(e) {}
+        try { n.masterGain.disconnect(); } catch(e) {}
       }, 400);
     } catch(e) {}
   }
@@ -11586,6 +11652,9 @@ function stopCarrier() {
       const ctx = audioCtx || ensureAudio();
       carrierNodes.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
       carrierNodes.osc.stop(ctx.currentTime + 0.15);
+      // C6 fix: disconnect nodes to prevent audio graph leak
+      try { carrierNodes.osc.disconnect(); } catch(e) {}
+      try { carrierNodes.gain.disconnect(); } catch(e) {}
     } catch(e) {}
     carrierNodes = { osc: null, gain: null };
   }
@@ -11909,7 +11978,10 @@ function startSession(mode, type) {
       }
     }
 
-    sessionEngine.tickTimer = setTimeout(tick, profile.tickInterval * (0.7 + Math.random() * 0.6));
+    // C10 fix: only schedule next tick if session is still active
+    if (sessionEngine.active) {
+      sessionEngine.tickTimer = setTimeout(tick, profile.tickInterval * (0.7 + Math.random() * 0.6));
+    }
   };
 
   // Eerste tick na korte delay
@@ -12830,6 +12902,10 @@ function startLisanneMode() {
 function lisanneConnect() {
   const code = document.getElementById('lisanne-code-input').value.trim().toUpperCase();
   if (code.length < 4) { alert('Voer Tim\'s code in'); return; }
+
+  // R6 fix: destroy old peer/conn before creating new one
+  if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+  if (conn) { try { conn.close(); } catch(e) {} conn = null; }
 
   const btn = document.getElementById('lisanne-connect-btn');
   btn.disabled = true;
@@ -16106,6 +16182,8 @@ function sendSessionStateToSender() {
 function handleSenderReconnect(c) {
   // A new sender is connecting while we still have our session
   senderConnectionLost = false;
+  // R5 fix: close old connection before replacing
+  if (conn && conn !== c) { try { conn.close(); } catch(e) {} }
   conn = c;
 
   setRecvStatus('connected', 'Zender herverbonden!');
