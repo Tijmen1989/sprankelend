@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0089</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0090</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -4739,7 +4739,11 @@ function updateUIVolume(prefix, value) {
 }
 
 function ensureAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // A4 SAFETY FIX: also check for 'closed' state (after stopAudioImmediately)
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterLimiterNode = null; // Force limiter recreation on new context
+  }
   if (audioCtx.state === 'suspended') audioCtx.resume().catch(e => console.warn('AudioCtx resume failed:', e));
   return audioCtx;
 }
@@ -5234,6 +5238,8 @@ function getPatternOpts(patternName) {
 // opts: { envelope, timbre, sweepEnd, lfoRate, lfoDepth, lfoType, attack, release }
 function playToneAdvanced(freq, volume, duration, volumeL, volumeR, opts) {
   opts = opts || {};
+  // S1/A3 SAFETY FIX: clamp freq to safe minimum (Web Audio minimum = 20Hz, prevents div-by-zero in sweep calc)
+  freq = Math.max(20, freq || 200);
 
   // Enforce silent channel from electrode config
   if (electrodeConfig.silentChannel === 'a') { volumeL = 0; }
@@ -5578,11 +5584,13 @@ function startFrequencySweep(params) {
   const now = ctx.currentTime;
   const safetyLimit = getEffectiveSafetyLimit();
 
+  // S1/A3 SAFETY FIX: clamp all frequency params to safe range [20, 2000]
+  const clampFreq = (v, def) => Math.max(20, Math.min(2000, v || def));
   const p = {
-    freqStartL: params.freqStartL || 100,
-    freqEndL: params.freqEndL || 300,
-    freqStartR: params.freqStartR || 100,
-    freqEndR: params.freqEndR || 300,
+    freqStartL: clampFreq(params.freqStartL, 100),
+    freqEndL: clampFreq(params.freqEndL, 300),
+    freqStartR: clampFreq(params.freqStartR, 100),
+    freqEndR: clampFreq(params.freqEndR, 300),
     duration: (params.duration || 30000) / 1000, // Convert to seconds
     volume: Math.min((params.volume || 50) / 100, safetyLimit),
     waveL: params.waveL || 'sine',
@@ -6271,6 +6279,7 @@ function goBack() {
   if (typeof stopIntensityReporting === 'function') { try { stopIntensityReporting(); } catch(e) {} }
   // Bug #218 fix: reset cooldowns so next role starts fresh
   shockCooldownUntil = 0;
+  patternCooldownUntil = 0;
   soloCooldownUntil = 0;
   myRole = null;
   showScreen('mode-select');
@@ -6708,8 +6717,8 @@ function getConfigIntensityScale() {
 function handleReceiverData(data) {
   if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
 
-  // Bug #500: Block ALL stimulation commands while safeword is paused
-  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'stereo_tone', 'timer_start', 'sched_shock_start'].includes(data.type)) {
+  // Bug #500 + D8/S5 SAFETY FIX: Block ALL stimulation AND game commands while safeword is paused
+  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'hold_update', 'stereo_tone', 'timer_start', 'sched_shock_start', 'reaction_start', 'countdown', 'vq_start', 'continuous_start', 'tease', 'tease_fakeout'].includes(data.type)) {
     recvLog('🛡️ Geblokkeerd (safeword actief): ' + data.type);
     return;
   }
@@ -6756,6 +6765,9 @@ function handleReceiverData(data) {
       data.volume_r != null ? safeNum(data.volume_r, 0, safetyLimitPct, 0) : null
     );
   } else if (data.type === 'pattern') {
+    // D9 SAFETY FIX: pattern cooldown prevents spam-triggering patterns
+    if (Date.now() < patternCooldownUntil) { recvLog('⏳ Patroon cooldown...'); return; }
+    patternCooldownUntil = Date.now() + 4000;
     const allowedPatterns = ['ratata','golf','hartslag','opbouw','staccato','wave','chaos','random','tease_punish','edging','ademhaling','pingpong','slowramp','stereo_sweep','stereo_drift','stereo_pulse'];
     const safePat = allowedPatterns.includes(data.pattern) ? data.pattern : 'ratata';
     doReceiverPattern(safePat, safeNum(data.freq, 20, 1000, 200), safeNum(data.volume, 0, safetyLimitPct, 0));
@@ -6872,7 +6884,8 @@ function handleReceiverData(data) {
       delayR: safeNum(data.delayR, 0, 2, 0)
     });
     playToneStereoAdvanced(safeData);
-    recordIntensity(data.volume, 'stereo_tone');
+    // D11 SAFETY FIX: use clamped safeData.volume, not raw network data.volume
+    recordIntensity(safeData.volume, 'stereo_tone');
   } else if (data.type === 'sender_returned') {
     recvLog('📱 Zender is terug — klaar voor commando\'s');
     setRecvStatus('connected', 'Verbonden met zender!');
@@ -7033,8 +7046,8 @@ function startReceiver() {
 function doReceiverShock(freq, volume, duration, volumeL, volumeR, opts) {
   if (panicCooldown) return;
 
-  // Duck baseline during shock
-  duckBaseline(duration);
+  // Duck baseline during shock — H5 SAFETY FIX: ensure minimum duck duration
+  duckBaseline(Math.max(duration || 300, 100));
 
   // Audio activation gate check
   if (!audioActivated) {
@@ -7962,7 +7975,11 @@ function showCountdownReceiver(number) {
 }
 
 let _reactionGameTimeout = null; // G7 fix: track timeout for cleanup
+let _reactionGameLastStart = 0; // D6 SAFETY FIX: cooldown to prevent shock spam
 function startReactionGameReceiver() {
+  // D6 SAFETY FIX: 5-second cooldown between reaction games
+  if (Date.now() - _reactionGameLastStart < 5000) { recvLog('⏳ Reactiespel cooldown'); return; }
+  _reactionGameLastStart = Date.now();
   reactionGameActive = true;
   const container = document.getElementById('recv-reaction-container');
   if (container) container.style.display = 'block';
@@ -8247,6 +8264,7 @@ function connectToReceiver() {
 
 // Anti-stacking: voorkom dat meerdere schokken tegelijk draaien
 let shockCooldownUntil = 0;
+let patternCooldownUntil = 0;
 function sendShock(volume, duration, freq, _bypassCooldown) {
   if (!conn || conn.open !== true) return;
 
@@ -9550,8 +9568,9 @@ function holdBallPlayLocal(freq, vol) {
   gain.gain.setValueAtTime(0, now);
   gain.gain.linearRampToValueAtTime(safeVol, now + 0.05);
 
-  // Channel routing
+  // Channel routing — A1 SAFETY FIX: route through master limiter, NOT directly to destination
   const chMode = getChannelMode('solo');
+  const limiter = getMasterLimiter();
   osc.connect(gain);
   if (chMode === 'monoA') {
     const merger = ctx.createChannelMerger(2);
@@ -9560,9 +9579,9 @@ function holdBallPlayLocal(freq, vol) {
     silentGain.gain.value = 0;
     gain.connect(silentGain); // silent copy for channel B
     silentGain.connect(merger, 0, 1);
-    merger.connect(ctx.destination);
+    merger.connect(limiter);
   } else {
-    gain.connect(ctx.destination);
+    gain.connect(limiter);
   }
   osc.start(now);
   holdBallLocalNodes = { osc, gain };
@@ -11124,6 +11143,12 @@ function toggleContinuousMode(prefix) {
 }
 
 function startContinuousMode(prefix) {
+  // S5 SAFETY FIX: block continuous mode when safeword is active
+  if (typeof safewordState !== 'undefined' && safewordState.paused) {
+    const logFn = prefix === 'solo' ? (typeof soloLog === 'function' ? soloLog : console.log) : (typeof sendLog === 'function' ? sendLog : console.log);
+    logFn('🛡️ Geblokkeerd: safeword actief');
+    return;
+  }
   const state = continuousState[prefix];
   if (state.active) return;
   // C7 fix: mark active immediately to prevent re-entry race
