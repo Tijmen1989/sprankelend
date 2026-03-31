@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0088</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0089</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -7961,6 +7961,7 @@ function showCountdownReceiver(number) {
   tvShowCountdown(safeNum);
 }
 
+let _reactionGameTimeout = null; // G7 fix: track timeout for cleanup
 function startReactionGameReceiver() {
   reactionGameActive = true;
   const container = document.getElementById('recv-reaction-container');
@@ -7968,7 +7969,8 @@ function startReactionGameReceiver() {
   const text = document.getElementById('recv-viz-text');
   if (text) { text.textContent = 'DRUK NU!'; text.style.color = '#4caf50'; }
 
-  trackTimeout(() => {
+  _reactionGameTimeout = trackTimeout(() => {
+    _reactionGameTimeout = null;
     if (reactionGameActive) {
       reactionGameActive = false;
       if (container) container.style.display = 'none';
@@ -7983,6 +7985,8 @@ function startReactionGameReceiver() {
 function reactToGame() {
   if (!reactionGameActive) return;
   reactionGameActive = false;
+  // G7 fix: clear the timeout so it doesn't fire after hit
+  if (_reactionGameTimeout) { clearTimeout(_reactionGameTimeout); _reactionGameTimeout = null; }
   const rcContainer = document.getElementById('recv-reaction-container');
   if (rcContainer) rcContainer.style.display = 'none';
   if (conn && conn.open) {
@@ -11869,6 +11873,10 @@ function startSession(mode, type) {
   stateManager.requestAutopilot('session_engine', null, mode === 'solo' ? 'solo' : 'sender');
   stopContinuousMode(mode === 'solo' ? 'solo' : 'send');
   stopLoopingPattern(mode);
+  // C4 fix: stop baseline to prevent interference with session actions
+  stopBaseline();
+  // C5 fix: stop dead man switch — session engine manages its own timing
+  stopDeadManSwitch();
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   const durationMin = parseInt(document.getElementById(prefix + '-session-duration').value) || 5; // SAFETY: default 5 min if NaN
 
@@ -12113,7 +12121,8 @@ function executeRouletteResult(mode, seg) {
 let durfState = { active: false, value: 0, interval: null, mode: null };
 
 function startDurfGame(mode) {
-  if (durfState.active) return;
+  // G8 fix: if already active, clean up old interval before restarting
+  if (durfState.active) { if (durfState.interval) clearInterval(durfState.interval); durfState.active = false; }
   // Bug #500: stop conflicting autopilot activities
   stateManager.requestAutopilot('durf_game');
   durfState = { active: true, value: 0, interval: null, mode: mode };
@@ -12587,6 +12596,8 @@ function mysteryBox(mode) {
 let tensionTimers = { solo: null, sender: null };
 function startTensionMeter(mode) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
+  // G9 fix: clear any existing timer to prevent accumulation
+  if (tensionTimers[prefix]) { clearTimeout(tensionTimers[prefix]); tensionTimers[prefix] = null; }
   const log = mode === 'solo' ? soloLog : sendLog;
   const meter = document.getElementById(prefix + '-tension-meter');
   if (meter) meter.style.display = 'block';
@@ -12650,6 +12661,9 @@ let breathingActive = { solo: false };
 function startBreathingSync(mode) {
   const prefix = mode === 'solo' ? 'solo' : 'sender';
   if (mode !== 'solo') return; // only solo for now
+  // G10 fix: clear existing timer to prevent accumulation on double-start
+  if (breathingTimers[prefix]) { clearTimeout(breathingTimers[prefix]); breathingTimers[prefix] = null; }
+  if (breathingActive[prefix]) { breathingActive[prefix] = false; }
   breathingActive[prefix] = true;
   const container = document.getElementById(prefix + '-breathing-container');
   if (container) container.style.display = 'block';
@@ -16277,8 +16291,8 @@ function checkAutoReconnect() {
     const savedRole = localStorage.getItem('estim-session-role');
     const savedTime = parseInt(localStorage.getItem('estim-session-time') || '0');
 
-    // Only auto-reconnect within 30 minutes
-    if (savedRole === 'receiver' && savedCode && (Date.now() - savedTime) < 1800000) {
+    // R9 fix: reduced TTL from 30 to 15 minutes for security
+    if (savedRole === 'receiver' && savedCode && (Date.now() - savedTime) < 900000) {
       // Show auto-reconnect prompt
       showAutoReconnectPrompt(savedCode);
     } else {
