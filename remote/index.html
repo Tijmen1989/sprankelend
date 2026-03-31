@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0090</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0091</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -2674,6 +2674,23 @@
     <div class="preset-bar">
       <button class="preset-save-btn" onclick="savePreset('solo')">💾 Opslaan</button>
       <button class="preset-load-btn" id="solo-load-preset" onclick="loadPreset('solo')">📂 Laden</button>
+    </div>
+  </div>
+
+  <!-- SW5: Safeword in solo mode -->
+  <div class="control-card" id="solo-safeword-control">
+    <h3>🛡️ Safeword (spraakherkenning)</h3>
+    <div style="font-size:0.78em;color:#888;margin-bottom:8px;">Zeg het safeword hardop om alle stimulatie direct te stoppen</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <input type="text" id="solo-safeword-input" value="rood" placeholder="bijv. rood, stop" style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e94560;font-weight:bold;font-size:1em;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:0.85em;">Aan</label>
+        <div id="solo-safeword-toggle" class="toggle" onclick="toggleSoloSafeword()"></div>
+      </div>
+    </div>
+    <div id="solo-safeword-status" class="safeword-status" style="display:none;">
+      <div id="solo-safeword-dot" class="safeword-dot off"></div>
+      <span id="solo-safeword-text">Inactief</span>
     </div>
   </div>
 
@@ -5077,6 +5094,24 @@ document.addEventListener('visibilitychange', () => {
         audioPlayerState._wasPausedByTab = false;
       }
       recvLog('▶ Tab zichtbaar — audio hervat', false);
+    }
+
+    // SW7 SAFETY FIX: Verify safeword is still alive after tab becomes visible
+    // Background tab throttling can silently kill SpeechRecognition
+    if (safewordState.enabled && !safewordState.paused && safewordState.recognition) {
+      // Force restart to ensure it's actually running
+      try { safewordState.recognition.stop(); } catch(e) {}
+      setTimeout(() => {
+        if (safewordState.enabled && !safewordState.paused && safewordState.recognition) {
+          try { safewordState.recognition.start(); } catch(e) {
+            console.warn('[Safeword] Herstart na tab-focus mislukt:', e.message);
+            // Try full restart
+            const word = safewordState.word;
+            if (word && myRole === 'solo') { startSoloSafewordListening(word); }
+            else if (word) { startSafewordListening(word); }
+          }
+        }
+      }, 200);
     }
   }
 });
@@ -7863,8 +7898,19 @@ function panicStop() {
   if (recvTimerInterval) { clearInterval(recvTimerInterval); recvTimerInterval = null; }
   const recvTimerDisplay = document.getElementById('recv-timer-display');
   if (recvTimerDisplay) recvTimerDisplay.style.display = 'none';
-  // Stop safeword listening on panic
+  // SW2 SAFETY FIX: Don't fully stop safeword on panic — just pause it temporarily.
+  // Old behavior: stopSafewordListening() killed safeword permanently after panic.
+  // New behavior: save the word and auto-restart after panic cooldown.
+  const _savedSafeword = safewordState.enabled ? safewordState.word : null;
   stopSafewordListening();
+  if (_savedSafeword) {
+    setTimeout(() => {
+      if (!safewordState.enabled && _savedSafeword) {
+        recvLog('🛡️ Safeword-detectie automatisch herstart na panic');
+        startSafewordListening(_savedSafeword);
+      }
+    }, 3000); // Restart after 3s panic cooldown
+  }
   // Stop breathing sync (was only in panicStopSolo before)
   stopBreathingSync('solo');
   stopBreathingSync('sender');
@@ -9366,6 +9412,8 @@ function soloShockEnd(e) {
 }
 
 function startSoloHoldLocal() {
+  // SW5 SAFETY FIX: block solo hold when safeword is active
+  if (safewordState.paused) { soloLog('🛡️ Geblokkeerd (safeword actief)'); return; }
   stopSoloHoldLocal(); // stop bestaand
   duckBaseline(30000); // Hold kan 30s duren
   const ctx = ensureAudio();
@@ -10034,6 +10082,8 @@ function soloLog(msg, isShock) {
 
 let soloCooldownUntil = 0;
 function doSoloShock(freq, volume, duration, opts, volumeL, volumeR) {
+  // SW5 SAFETY FIX: block solo stimulation when safeword is active
+  if (safewordState.paused) { soloLog('🛡️ Geblokkeerd (safeword actief)'); return; }
   duckBaseline(duration || 300);
   // Anti-stacking: handmatige klikken mogen niet stapelen
   // Patronen/games bypassen dit via opts._bypassCooldown
@@ -10335,6 +10385,19 @@ function panicStopSolo() {
   rouletteActive = false;
   uncertainCountdownActive = false;
   waitGameActive.solo = false;
+  // SW2 SAFETY FIX: auto-restart solo safeword after panic
+  const _savedSoloSafeword = safewordState.enabled ? safewordState.word : null;
+  if (safewordState.recognition) {
+    try { safewordState.recognition.stop(); } catch(e) {}
+  }
+  if (_savedSoloSafeword) {
+    setTimeout(() => {
+      if (!safewordState.enabled && _savedSoloSafeword) {
+        soloLog('🛡️ Safeword-detectie herstart na panic');
+        startSoloSafewordListening(_savedSoloSafeword);
+      }
+    }, 3000);
+  }
   soloLog('🛑 PANIEKKNOP GEBRUIKT!', true);
 }
 
@@ -14110,6 +14173,13 @@ function speak(text, onEnd) {
   if (speechRecognition && speechRecognitionActive) {
     try { speechRecognition.stop(); } catch(e) {}
   }
+  // SW6 SAFETY FIX: Also pause safeword recognition during TTS
+  // Chrome only supports one SpeechRecognition instance — TTS can interfere
+  if (safewordState.recognition && safewordState.enabled) {
+    if (safewordState.restartTimer) { clearTimeout(safewordState.restartTimer); safewordState.restartTimer = null; }
+    try { safewordState.recognition.stop(); } catch(e) {}
+    safewordState._pausedForTTS = true;
+  }
 
   // Cancel + aggressive reset of speechSynthesis
   clearInterval(ttsResumeInterval);
@@ -14151,6 +14221,13 @@ function speak(text, onEnd) {
       setTimeout(() => {
         if (speechRecognitionActive && micPermissionGranted && !ttsSpeaking && !speechRecRunning) {
           try { speechRecognition.start(); } catch(e) {}
+        }
+        // SW6 SAFETY FIX: Restart safeword recognition after TTS finishes
+        if (safewordState._pausedForTTS && safewordState.enabled && !safewordState.paused) {
+          safewordState._pausedForTTS = false;
+          try { if (safewordState.recognition) safewordState.recognition.start(); } catch(e) {
+            console.warn('[Safeword] Herstart na TTS mislukt:', e.message);
+          }
         }
         if (onEnd) onEnd();
       }, 500);
@@ -14824,6 +14901,14 @@ document.addEventListener('click', function initBtSafety() {
 
 // --- Start Voice Quiz ---
 function startVoiceQuiz(mode, useCustom, config) {
+  // SW1 SAFETY FIX: voice quiz cannot use speech recognition when safeword is active
+  // Safeword always has priority — quiz falls back to button-only input mode
+  if (safewordState.enabled && safewordState.recognition) {
+    if (!config) config = {};
+    config.inputMode = 'knoppen'; // Force button-only mode, no mic
+    const logFn = mode === 'solo' ? soloLog : (mode === 'recv' ? recvLog : sendLog);
+    logFn('⚠️ Safeword actief — quiz gebruikt alleen knoppen (geen mic)');
+  }
   if (voiceQuizState.active) stopVoiceQuiz(voiceQuizState.mode);
   if (triviaState.active) stopTriviaGame(); // Mutual exclusion
 
@@ -16490,8 +16575,180 @@ const safewordState = {
   word: 'rood',
   recognition: null,
   paused: false, // sessie gepauzeerd door safeword
-  restartTimer: null
+  restartTimer: null,
+  _watchdog: null
 };
+
+// ==================== SW5: SOLO MODE SAFEWORD ====================
+function toggleSoloSafeword() {
+  const toggle = document.getElementById('solo-safeword-toggle');
+  const isOn = toggle && toggle.classList.contains('on');
+  const word = (document.getElementById('solo-safeword-input')?.value || 'rood').trim().toLowerCase();
+  const statusEl = document.getElementById('solo-safeword-status');
+  const dotEl = document.getElementById('solo-safeword-dot');
+  const textEl = document.getElementById('solo-safeword-text');
+
+  if (!word) { alert('Vul een safeword in'); if (toggle) toggle.classList.remove('on'); return; }
+  if (statusEl) statusEl.style.display = 'flex';
+
+  if (isOn) {
+    startSoloSafewordListening(word);
+  } else {
+    stopSoloSafewordListening();
+    if (dotEl) dotEl.className = 'safeword-dot off';
+    if (textEl) textEl.textContent = 'Uitgeschakeld';
+  }
+}
+
+function startSoloSafewordListening(word) {
+  stopSoloSafewordListening();
+
+  // SW1 SAFETY FIX: Safeword priority over voice quiz in solo too
+  if (typeof voiceQuizState !== 'undefined' && voiceQuizState.active && voiceQuizState.mode === 'solo') {
+    soloLog('⚠️ Voice quiz gestopt — safeword heeft prioriteit!');
+    stopVoiceQuiz('solo');
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    soloLog('⚠️ Spraakherkenning niet beschikbaar in deze browser');
+    const dotEl = document.getElementById('solo-safeword-dot');
+    const textEl = document.getElementById('solo-safeword-text');
+    if (dotEl) dotEl.className = 'safeword-dot error';
+    if (textEl) textEl.textContent = '⚠️ Niet beschikbaar';
+    return;
+  }
+
+  safewordState.word = word.toLowerCase();
+  safewordState.enabled = true;
+
+  const rec = new SR();
+  rec.lang = 'nl-NL';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 3;
+
+  let _swSoloFailures = 0;
+
+  rec.onstart = () => {
+    soloLog('🛡️ Safeword-detectie actief: "' + word + '"');
+    const dotEl = document.getElementById('solo-safeword-dot');
+    const textEl = document.getElementById('solo-safeword-text');
+    if (dotEl) dotEl.className = 'safeword-dot listening';
+    if (textEl) textEl.textContent = 'Luistert naar "' + word + '"...';
+  };
+
+  rec.onresult = (e) => {
+    if (safewordState.paused) return;
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      for (let j = 0; j < e.results[i].length; j++) {
+        const transcript = e.results[i][j].transcript.toLowerCase().trim();
+        if (transcript.includes(safewordState.word)) {
+          soloLog('🛡️ SAFEWORD GEDETECTEERD: "' + transcript + '"');
+          triggerSoloSafeword();
+          return;
+        }
+      }
+    }
+  };
+
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech') { _swSoloFailures = 0; return; }
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      soloLog('⚠️ Safeword: microfoon geweigerd!', true);
+      safewordState.enabled = false;
+      const dotEl = document.getElementById('solo-safeword-dot');
+      if (dotEl) dotEl.className = 'safeword-dot error';
+    } else if (e.error === 'network') {
+      soloLog('⚠️ Safeword: internet nodig voor spraakherkenning!', true);
+    } else {
+      soloLog('⚠️ Safeword fout: ' + e.error);
+    }
+  };
+
+  rec.onend = () => {
+    if (safewordState.enabled && !safewordState.paused) {
+      safewordState.restartTimer = setTimeout(() => {
+        if (safewordState.enabled && safewordState.recognition) {
+          try { safewordState.recognition.start(); _swSoloFailures = 0; }
+          catch(e) {
+            _swSoloFailures++;
+            if (_swSoloFailures >= 5) {
+              soloLog('⚠️ Safeword herkenning mislukt na 5 pogingen', true);
+              safewordState.enabled = false;
+              const dotEl = document.getElementById('solo-safeword-dot');
+              if (dotEl) dotEl.className = 'safeword-dot error';
+            }
+          }
+        }
+      }, 100);
+    }
+  };
+
+  safewordState.recognition = rec;
+  try { rec.start(); } catch(e) {
+    soloLog('⚠️ Kan safeword niet starten: ' + e.message);
+  }
+
+  // Watchdog
+  if (safewordState._watchdog) clearInterval(safewordState._watchdog);
+  safewordState._watchdog = setInterval(() => {
+    if (!safewordState.enabled) { clearInterval(safewordState._watchdog); safewordState._watchdog = null; return; }
+    if (!safewordState.recognition) {
+      soloLog('⚠️ Safeword watchdog: herstart...', true);
+      clearInterval(safewordState._watchdog); safewordState._watchdog = null;
+      startSoloSafewordListening(safewordState.word);
+    }
+  }, 30000);
+}
+
+function stopSoloSafewordListening() {
+  safewordState.enabled = false;
+  if (safewordState.restartTimer) { clearTimeout(safewordState.restartTimer); safewordState.restartTimer = null; }
+  if (safewordState._watchdog) { clearInterval(safewordState._watchdog); safewordState._watchdog = null; }
+  if (safewordState.recognition) {
+    try { safewordState.recognition.stop(); } catch(e) {}
+    safewordState.recognition = null;
+  }
+}
+
+function triggerSoloSafeword() {
+  safewordState.paused = true;
+  // Stop ALL audio/stimulation
+  stateManager.stopAll();
+  clearAllPatternTimeouts();
+  stopBaseline();
+  stopAudioImmediately();
+  stopSoloHoldLocal();
+  stopSoloRandom();
+  stopLoopingPattern('solo');
+  stopCarrier();
+  stopContinuousMode('solo');
+  if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
+
+  soloLog('⚠️ SAFEWORD — alle stimulatie gestopt', true);
+  speak('Safeword gedetecteerd. Alles gestopt.');
+
+  // Show resume button
+  const statusEl = document.getElementById('solo-safeword-status');
+  const dotEl = document.getElementById('solo-safeword-dot');
+  const textEl = document.getElementById('solo-safeword-text');
+  if (dotEl) dotEl.className = 'safeword-dot error';
+  if (textEl) textEl.innerHTML = '⚠️ GEPAUZEERD — <button onclick="resumeSoloSafeword()" style="background:#4caf50;color:white;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:bold;">▶ Hervat sessie</button>';
+}
+
+function resumeSoloSafeword() {
+  safewordState.paused = false;
+  soloLog('✅ Sessie hervat na safeword');
+  const dotEl = document.getElementById('solo-safeword-dot');
+  const textEl = document.getElementById('solo-safeword-text');
+  if (dotEl) dotEl.className = 'safeword-dot listening';
+  if (textEl) textEl.textContent = 'Luistert naar "' + safewordState.word + '"...';
+  // Restart listening
+  if (safewordState.word) {
+    setTimeout(() => startSoloSafewordListening(safewordState.word), 500);
+  }
+}
 
 // --- Sender-side: send safeword config to receiver ---
 function toggleSafewordSender() {
@@ -16573,12 +16830,21 @@ function resumeAfterSafeword() {
 function startSafewordListening(word) {
   stopSafewordListening();
 
-  // Bug #501: Stop voice quiz speech recognition to prevent conflict
-  // Both use SpeechRecognition API — only one can be active at a time
+  // SW1 SAFETY FIX: Safeword has ABSOLUTE PRIORITY over voice quiz.
+  // Both use SpeechRecognition API — only one can be active at a time.
+  // Old behavior: safeword was deferred during quiz → NO SAFETY during quiz!
+  // New behavior: stop quiz immediately so safeword can start.
   if (typeof voiceQuizState !== 'undefined' && voiceQuizState.active) {
-    recvLog('⚠️ Voice quiz actief — safeword wacht tot quiz stopt');
-    // Defer: retry after quiz ends
+    recvLog('⚠️ Voice quiz gestopt — safeword heeft prioriteit!');
+    stopVoiceQuiz(voiceQuizState.mode);
+    // Small delay to let SpeechRecognition release
     safewordState._pendingWord = word;
+    setTimeout(() => {
+      if (safewordState._pendingWord === word) {
+        safewordState._pendingWord = null;
+        startSafewordListening(word);
+      }
+    }, 600);
     return;
   }
 
@@ -16617,11 +16883,23 @@ function startSafewordListening(word) {
     }
   };
 
+  // SW4 SAFETY FIX: track consecutive restart failures
+  let _swRestartFailures = 0;
+  const SW_MAX_RESTART_FAILURES = 5;
+
   rec.onerror = (e) => {
     if (e.error === 'no-speech') {
       // Normal — gewoon herstarten
-    } else if (e.error === 'aborted' || e.error === 'network') {
-      recvLog('⚠️ Safeword herkenning onderbroken: ' + e.error);
+      _swRestartFailures = 0; // reset on normal operation
+    } else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      recvLog('⚠️ Safeword: microfoon geweigerd!', true);
+      if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: 'Microfoon geweigerd', ts: Date.now() });
+      safewordState.enabled = false; // Don't try to restart
+    } else if (e.error === 'network') {
+      recvLog('⚠️ Safeword: netwerk-fout (internet nodig voor spraakherkenning)', true);
+      if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: 'Geen internet — safeword niet actief!', ts: Date.now() });
+    } else if (e.error === 'aborted') {
+      recvLog('⚠️ Safeword herkenning onderbroken');
     } else {
       recvLog('⚠️ Safeword fout: ' + e.error);
       if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: e.error, ts: Date.now() });
@@ -16631,11 +16909,31 @@ function startSafewordListening(word) {
   rec.onend = () => {
     // Auto-restart als nog actief en niet gepauzeerd
     if (safewordState.enabled && !safewordState.paused) {
+      // SW7 FIX: reduce restart gap from 300ms to 100ms
       safewordState.restartTimer = setTimeout(() => {
         if (safewordState.enabled && safewordState.recognition) {
-          try { safewordState.recognition.start(); } catch(e) {}
+          try {
+            safewordState.recognition.start();
+            _swRestartFailures = 0; // success
+          } catch(e) {
+            // SW4 SAFETY FIX: don't silently swallow restart errors
+            _swRestartFailures++;
+            console.warn('[Safeword] Restart failed (' + _swRestartFailures + '/' + SW_MAX_RESTART_FAILURES + '):', e.message);
+            if (_swRestartFailures >= SW_MAX_RESTART_FAILURES) {
+              recvLog('⚠️ Safeword herkenning herhaaldelijk mislukt — gestopt!', true);
+              if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: 'Herstart mislukt na ' + SW_MAX_RESTART_FAILURES + ' pogingen', ts: Date.now() });
+              safewordState.enabled = false;
+            } else {
+              // Retry with increasing backoff
+              safewordState.restartTimer = setTimeout(() => {
+                if (safewordState.enabled && safewordState.recognition) {
+                  try { safewordState.recognition.start(); _swRestartFailures = 0; } catch(e2) { _swRestartFailures++; }
+                }
+              }, 500 * _swRestartFailures);
+            }
+          }
         }
-      }, 300);
+      }, 100);
     }
   };
 
@@ -16644,11 +16942,35 @@ function startSafewordListening(word) {
     recvLog('⚠️ Kan safeword-detectie niet starten: ' + e.message);
     if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: e.message, ts: Date.now() });
   }
+
+  // SW3 SAFETY FIX: Watchdog timer — periodically verify SpeechRecognition is alive
+  // Sends health status to sender every 30s so sender UI stays accurate
+  if (safewordState._watchdog) clearInterval(safewordState._watchdog);
+  safewordState._watchdog = setInterval(() => {
+    if (!safewordState.enabled) {
+      clearInterval(safewordState._watchdog);
+      safewordState._watchdog = null;
+      return;
+    }
+    // Check if recognition object still exists and is functional
+    if (!safewordState.recognition) {
+      recvLog('⚠️ Safeword watchdog: herkenning verdwenen — herstart...', true);
+      if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'error', reason: 'Watchdog: herstart nodig', ts: Date.now() });
+      clearInterval(safewordState._watchdog);
+      safewordState._watchdog = null;
+      startSafewordListening(safewordState.word);
+    } else {
+      // Send periodic heartbeat so sender knows safeword is still alive
+      if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'active', ts: Date.now() });
+    }
+  }, 30000);
 }
 
 function stopSafewordListening() {
   safewordState.enabled = false;
   if (safewordState.restartTimer) { clearTimeout(safewordState.restartTimer); safewordState.restartTimer = null; }
+  // SW3 FIX: clear watchdog timer
+  if (safewordState._watchdog) { clearInterval(safewordState._watchdog); safewordState._watchdog = null; }
   if (safewordState.recognition) {
     try { safewordState.recognition.stop(); } catch(e) {}
     safewordState.recognition = null;
