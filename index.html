@@ -11983,6 +11983,7 @@ function renderViewSelect(app){
     <div id="viewSelect">
       <h1>Sprankelend</h1>
       <p>Souffleur</p>
+      <p style="font-size:.6rem;color:var(--text3);opacity:.4;margin-top:-.3rem">${APP_BUILD}</p>
       <div class="view-buttons">
         <button class="view-btn" onclick="selectView('lisanne')">
           <span class="btn-name">Lisanne</span>
@@ -12006,8 +12007,10 @@ function selectView(v){
 let onboardingStap = 0;
 let toonOnboarding = false; // in-memory flag — refresh = terug naar home
 
+const APP_BUILD = '2026-04-01 23:45';
+
 const ONBOARDING_LISANNE = [
-  { tekst:'Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
+  { tekst:'<span style="font-size:.65rem;color:var(--text3);opacity:.5;float:right">v' + APP_BUILD + '</span>Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
   { tekst:'De eerste weken zijn rustig.<br><br>Geen grote stappen, geen verwachtingen. Gewoon: kijk wat de app voorstelt, en probeer het als het goed voelt. Of niet. Allebei is prima.', knop:'Verder \u2192' },
   { tekst:'Dit is een programma dat stap voor stap uitlegt wat je kunt doen. Niet wat je moet voelen.<br><br>Misschien vraag je je af: waarom? Tim wil dit graag. En hij merkt dat het moeilijk is om uit te leggen wat hij precies bedoelt. Deze app probeert dat \u2014 door het voor te doen in plaats van erover te praten.<br><br>Het idee: probeer de komende maanden wat er staat. Hou bij wat werkt en wat niet. Ontdek samen wat ok\u00e9 is en wat niet past.<br><br>Misschien wordt het iets van jullie samen. Misschien wordt het iets dat je voor Tim doet omdat je van hem houdt. Allebei is goed. Maar je hebt de basiskennis nodig om het een eerlijke kans te geven.', knop:'Verder \u2192' },
   { tekst:'Nog even dit:<br><br><b>Dit is geen to-do list.</b><br>Er is geen goed of fout. Er is geen schema dat je moet volgen.<br><br>Het enige wat telt is dat je het probeert. En als het vandaag niet uitkomt? Dan is morgen er ook nog.<br><br>Jouw tempo is het goede tempo.', knop:'Verder \u2192' },
