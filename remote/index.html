@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0091</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0092</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -5827,6 +5827,9 @@ function toggleAudioPlayback() {
 }
 
 function startAudioPlayback() {
+  // FIX6 SAFETY: block audio playback when safeword is active
+  // Audio files could contain modulated stimulation signals
+  if (safewordState.paused) { console.log('[AudioPlayer] Blocked by safeword'); return; }
   if (!audioPlayerState.buffer) return;
 
   // Register with state manager
@@ -6274,6 +6277,14 @@ function goBack() {
   stopSessionWarnings(); // SK7/audit fix: clear session warning interval
   stopSoloRandom();
   stopSafewordListening();
+  // FIX3: also clean up solo safeword
+  if (typeof stopSoloSafewordListening === 'function') stopSoloSafewordListening();
+  safewordState.paused = false;
+  safewordState._pendingWord = null;
+  safewordState._pausedForTTS = false;
+  // FIX4: clear panic restart timeouts
+  if (_panicSafewordRestart) { clearTimeout(_panicSafewordRestart); _panicSafewordRestart = null; }
+  if (_soloPanicSafewordRestart) { clearTimeout(_soloPanicSafewordRestart); _soloPanicSafewordRestart = null; }
   clearReceiverSessionCode();
   // Audit fix: stop heartbeats and intensity reporting
   if (typeof stopHeartbeat === 'function') stopHeartbeat();
@@ -6343,6 +6354,8 @@ function toggleCollapsible(header) {
 let standaloneActive = false;
 let standaloneTimer = null;
 let panicCooldown = false;
+let _panicSafewordRestart = null; // FIX4: tracked timeout for safeword restart after panic
+let _soloPanicSafewordRestart = null; // FIX4: tracked timeout for solo safeword restart
 // Globale timeout tracking — alle pattern setTimeout IDs worden hier opgeslagen
 // zodat panicStop ze kan cancelen
 let patternTimeouts = [];
@@ -6830,6 +6843,12 @@ function handleReceiverData(data) {
     if (data.enabled && word) { startSafewordListening(word); }
     else { stopSafewordListening(); if (conn && conn.open) conn.send({ type: 'safeword_status', status: 'off', ts: Date.now() }); }
   } else if (data.type === 'safeword_resume') {
+    // FIX1 SAFETY: Only allow resume if safeword is actually enabled and was paused
+    // Prevents malicious sender from bypassing safeword by sending resume without enable
+    if (!safewordState.enabled || !safewordState.paused) {
+      recvLog('⚠️ Safeword resume genegeerd — safeword niet actief');
+      return;
+    }
     resumeSafewordReceiver();
   } else if (data.type === 'cam_cmd') {
     if (data.cmd === 'audio_toggle' && window._cameraPeerId && peer) {
@@ -7904,12 +7923,15 @@ function panicStop() {
   const _savedSafeword = safewordState.enabled ? safewordState.word : null;
   stopSafewordListening();
   if (_savedSafeword) {
-    setTimeout(() => {
+    // FIX4: use tracked timeout so goBack() can cancel it
+    if (_panicSafewordRestart) clearTimeout(_panicSafewordRestart);
+    _panicSafewordRestart = setTimeout(() => {
+      _panicSafewordRestart = null;
       if (!safewordState.enabled && _savedSafeword) {
         recvLog('🛡️ Safeword-detectie automatisch herstart na panic');
         startSafewordListening(_savedSafeword);
       }
-    }, 3000); // Restart after 3s panic cooldown
+    }, 3000);
   }
   // Stop breathing sync (was only in panicStopSolo before)
   stopBreathingSync('solo');
@@ -9589,6 +9611,8 @@ function holdBallSend(mode, freq, vol) {
 // Solo local playback for hold ball
 let holdBallLocalNodes = null;
 function holdBallPlayLocal(freq, vol) {
+  // FIX2 SAFETY: block 2D touch pad when safeword is active
+  if (safewordState.paused) return;
   const ctx = ensureAudio();
   if (!ctx) return;
   const now = ctx.currentTime;
@@ -10391,7 +10415,10 @@ function panicStopSolo() {
     try { safewordState.recognition.stop(); } catch(e) {}
   }
   if (_savedSoloSafeword) {
-    setTimeout(() => {
+    // FIX4: use tracked timeout so goBack() can cancel it
+    if (_soloPanicSafewordRestart) clearTimeout(_soloPanicSafewordRestart);
+    _soloPanicSafewordRestart = setTimeout(() => {
+      _soloPanicSafewordRestart = null;
       if (!safewordState.enabled && _savedSoloSafeword) {
         soloLog('🛡️ Safeword-detectie herstart na panic');
         startSoloSafewordListening(_savedSoloSafeword);
@@ -10964,6 +10991,8 @@ function toggleBaseline() {
 }
 
 function startBaseline() {
+  // FIX5 SAFETY: block baseline when safeword is active
+  if (safewordState.paused) { console.log('[Baseline] Blocked by safeword'); return; }
   if (baselineState.active) stopBaseline();
 
   const ctx = ensureAudio();
@@ -16968,6 +16997,9 @@ function startSafewordListening(word) {
 
 function stopSafewordListening() {
   safewordState.enabled = false;
+  // FIX7: clear pending word to prevent deferred restart after stop
+  safewordState._pendingWord = null;
+  safewordState._pausedForTTS = false;
   if (safewordState.restartTimer) { clearTimeout(safewordState.restartTimer); safewordState.restartTimer = null; }
   // SW3 FIX: clear watchdog timer
   if (safewordState._watchdog) { clearInterval(safewordState._watchdog); safewordState._watchdog = null; }
@@ -17006,6 +17038,11 @@ function triggerSafewordReceiver() {
 }
 
 function resumeSafewordReceiver() {
+  // FIX1 SAFETY: guard against resume without active safeword
+  if (!safewordState.enabled) {
+    recvLog('⚠️ Resume genegeerd — safeword niet ingeschakeld');
+    return;
+  }
   safewordState.paused = false;
 
   // Hide pause screen
