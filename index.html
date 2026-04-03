@@ -8654,6 +8654,15 @@ function getSuggestieState(){
       laatsteActie: null     // date string of last lesson action delivered
     }
   });
+  // Defensieve initialisatie: zorg dat alle kritieke velden bestaan
+  if(!Array.isArray(state.historie)) state.historie = [];
+  if(!Array.isArray(state.ervaringLog)) state.ervaringLog = [];
+  if(!Array.isArray(state.typeHistorie)) state.typeHistorie = [];
+  if(!Array.isArray(state.lisanneFavorieten)) state.lisanneFavorieten = [];
+  if(!Array.isArray(state.korteRem)) state.korteRem = [];
+  if(!Array.isArray(state.langeRem)) state.langeRem = [];
+  if(typeof state.niveau !== 'number') state.niveau = 1;
+  if(typeof state.weekCounter !== 'number') state.weekCounter = 0;
   // Migrate old state if lesPraktijk doesn't exist
   if(!state.lesPraktijk){
     state.lesPraktijk = {
@@ -8662,6 +8671,7 @@ function getSuggestieState(){
       laatsteActie: null
     };
   }
+  if(!Array.isArray(state.lesPraktijk.afgerond)) state.lesPraktijk.afgerond = [];
   return state;
 }
 
@@ -12583,7 +12593,12 @@ function renderApp(){
   // Smooth crossfade: fade out, swap content, fade in
   app.classList.add('app-fading');
   requestAnimationFrame(() => { setTimeout(() => {
-    _renderAppContent(app);
+    try {
+      _renderAppContent(app);
+    } catch(e) {
+      console.error('[Sprankelend] renderApp fout:', e);
+      app.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text2)"><p>Er ging iets mis bij het laden.</p><button class="btn btn-primary" onclick="location.reload()">Opnieuw proberen</button></div>';
+    }
     app.classList.remove('app-fading');
   }, 120); });
 }
@@ -12772,7 +12787,7 @@ function selectView(v){
 let onboardingStap = 0;
 let toonOnboarding = false; // in-memory flag — refresh = terug naar home
 
-const APP_BUILD = '2026-04-03 14:05';
+const APP_BUILD = '2026-04-03 16:00';
 
 const ONBOARDING_LISANNE = [
   { tekst:'<span style="font-size:.65rem;color:var(--text3);opacity:.5;float:right">v' + APP_BUILD + '</span>Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
