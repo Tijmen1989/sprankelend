@@ -413,6 +413,31 @@ body {
   border-radius:var(--radius); padding:.8rem 1rem; margin-bottom:.6rem;
 }
 
+/* ── Taalbank ── */
+.taalpool-filter {
+  all:unset; padding:.28rem .6rem; border-radius:20px; font-size:.72rem;
+  border:1px solid rgba(126,167,255,.18); color:var(--text3);
+  cursor:pointer; background:transparent; transition:all .15s;
+}
+.taalpool-filter--active {
+  background:rgba(126,167,255,.15); color:var(--accent);
+  border-color:rgba(126,167,255,.35);
+}
+.taalpool-item {
+  padding:.55rem .7rem; border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.05);
+  margin-bottom:.4rem;
+}
+.taalpool-zin {
+  font-size:.92rem; color:var(--text1); line-height:1.55;
+  font-style:italic; margin:0 0 .35rem;
+}
+.taalpool-meta { display:flex; gap:.3rem; flex-wrap:wrap; }
+.taalpool-tag {
+  font-size:.66rem; color:var(--text3); background:rgba(126,167,255,.08);
+  border-radius:10px; padding:.1rem .4rem; letter-spacing:.03em;
+}
+
 /* ── Misc ── */
 .empty-state {
   text-align:center; padding:3rem 1rem;
@@ -1054,84 +1079,84 @@ handen: {
 // Elke setup is een "recept" met items, moeilijkheidsgraad, en stappen
 // ═══════════════════════════════════════════════════════════════
 const BONDAGE_MATRIX = [
-  {id:'setup01', naam:'Basis rustmoment', niveau:1, fase:1,
+  {id:'setup01', naam:'Basis rustmoment', niveau:1, fase:2,
    items:['polsboeien'],
    omschrijving:'Tim met polsboeien op de bank terwijl jullie tv kijken. Simpeler wordt het niet.',
    stappen:['Zeg: "Pak de polsboeien."','Tim doet ze zelf om, slotjes dicht.','Serie aanzetten. Klaar.'],
    duur:'jij bepaalt hoe lang', sfeer:'rustig',
    combineertGoed:['collar','enkelboeien']},
 
-  {id:'setup02', naam:'Halsband-avond', niveau:1, fase:1,
+  {id:'setup02', naam:'Halsband-avond', niveau:1, fase:2,
    items:['collar'],
    omschrijving:'Halsband om als schakelaar. De avond is anders. Verder niks nodig.',
    stappen:['Pak de halsband.','Om Tim\u2019s nek, gesp dicht, twee vingers ruimte.','Slotje erop als je wilt.','Klaar.'],
    duur:'zo lang als jij wilt', sfeer:'rustig',
    combineertGoed:['polsboeien','enkelboeien']},
 
-  {id:'setup03', naam:'Bank-setup compleet', niveau:2, fase:2,
+  {id:'setup03', naam:'Bank-setup compleet', niveau:2, fase:3,
    items:['collar','polsboeien','enkelboeien'],
    omschrijving:'Tim vastzittend op de bank. Alles vast, hij kan niks. Jij kijkt je serie.',
    stappen:['Halsband om, slotje.','Polsboeien om, slotjes.','Enkelboeien om, slotjes.','Serie aanzetten. Klaar.'],
    duur:'30 min - 1 uur', sfeer:'rustig',
    combineertGoed:['blinddoek','oordopjes']},
 
-  {id:'setup04', naam:'Blinddoek-verrassing', niveau:1, fase:2,
+  {id:'setup04', naam:'Blinddoek-verrassing', niveau:1, fase:3,
    items:['blinddoek'],
    omschrijving:'Blinddoek om. Alles wat je daarna doet is intenser. Aanraking, ijs, nagels.',
    stappen:['Zeg: "Ogen dicht."','Blinddoek om.','Wacht 10 seconden.','Doe iets onverwachts.'],
    duur:'10-30 min', sfeer:'speels',
    combineertGoed:['polsboeien','ijsklontjes','veertje','crop']},
 
-  {id:'setup05', naam:'Vastgemaakt op bed', niveau:2, fase:3,
+  {id:'setup05', naam:'Vastgemaakt op bed', niveau:2, fase:4,
    items:['polsboeien','enkelboeien','bedriemen'],
    omschrijving:'Tim spread-eagle op bed. Polsen en enkels vast aan de bedriemen. Hij kan niks.',
    stappen:['Tim op bed, op zijn rug.','Polsboeien om, clip aan bovenste bedriemen.','Enkelboeien om, clip aan onderste bedriemen.','Check: twee vingers ruimte bij elke boei.'],
    duur:'15-45 min', sfeer:'intens',
    combineertGoed:['blinddoek','hood','tepelklemmen','kaarsen','ijsklontjes']},
 
-  {id:'setup06', naam:'Sensorische deprivatie', niveau:3, fase:3,
+  {id:'setup06', naam:'Sensorische deprivatie', niveau:3, fase:4,
    items:['blinddoek','oordopjes','polsboeien'],
    omschrijving:'Tim ziet en hoort niks. Alleen aanraking als communicatie. Heel intens.',
    stappen:['Polsboeien om.','Oordopjes in.','Blinddoek om.','Spreek tiksignaal af: 1x tik = ok?, 2x tik = stop.','Wacht 30 seconden. Dan begin.'],
    duur:'15-30 min', sfeer:'intens',
    combineertGoed:['veertje','ijsklontjes','crop']},
 
-  {id:'setup07', naam:'Riem-setup', niveau:2, fase:3,
+  {id:'setup07', naam:'Riem-setup', niveau:2, fase:4,
    items:['bondageriem','polsboeien'],
    omschrijving:'Polsboeien aan de bondageriem. Tim zit vast aan zichzelf. Kan rondlopen maar niks pakken.',
    stappen:['Bondageriem om middel, slotjes dicht.','Polsboeien om.','Clip polsboeien aan de ringen op de riem.','Handen voor = rustiger. Handen achter = hulpelozer.'],
    duur:'jij bepaalt hoe lang', sfeer:'rustig',
    combineertGoed:['collar','enkelboeien','blinddoek']},
 
-  {id:'setup08', naam:'Wanten-setup', niveau:3, fase:3,
+  {id:'setup08', naam:'Wanten-setup', niveau:3, fase:4,
    items:['bondagewanten','collar'],
    omschrijving:'Wanten over Tim\u2019s handen. Hij kan niks meer vastpakken. Halsband om voor het complete gevoel.',
    stappen:['Halsband om.','Wanten over Tim\u2019s handen, slotjes.','Tim kan niks meer. Niet eens zijn telefoon pakken.'],
    duur:'30 min - 1 uur', sfeer:'intens',
    combineertGoed:['bondageriem','blinddoek']},
 
-  {id:'setup09', naam:'Slaapzak', niveau:3, fase:4,
+  {id:'setup09', naam:'Slaapzak', niveau:3, fase:5,
    items:['slaapzak'],
    omschrijving:'Tim in de bondage slaapzak. Volledige immobilisatie. E\u00e9n van de meest intense setups.',
    stappen:['Tim moet STAAN om erin te stappen.','Rits aan de achterkant dichtritsen.','Help Tim liggen (hij kan niet zelf).','Check temperatuur na 15 min.'],
    duur:'15-30 min', sfeer:'intens',
    combineertGoed:['blinddoek','hood','oordopjes']},
 
-  {id:'setup10', naam:'Contrast-sessie', niveau:2, fase:2,
+  {id:'setup10', naam:'Contrast-sessie', niveau:2, fase:3,
    items:['blinddoek','ijsklontjes','veertje','crop'],
    omschrijving:'Blinddoek + wisselende sensaties. Tim weet niet wat er komt. Kou, zachtheid, een tik.',
    stappen:['Blinddoek om.','Leg items klaar (Tim ziet ze niet).','Wissel af: veertje \u2192 ijs \u2192 nagels \u2192 crop \u2192 handen.','Wacht steeds 5-10 sec tussen wissels.'],
    duur:'15-30 min', sfeer:'speels',
    combineertGoed:['polsboeien','collar','kaarsen']},
 
-  {id:'setup11', naam:'Politieboeien-snel', niveau:1, fase:2,
+  {id:'setup11', naam:'Politieboeien-snel', niveau:1, fase:3,
    items:['politiehandboeien'],
    omschrijving:'Snel en simpel. "Handen achter je rug" \u2014 klik. Klaar. Perfect voor een verrassingsmoment.',
    stappen:['Zeg: "Handen achter je rug."','Klik de boeien vast.','ALTIJD dubbel-lock activeren.'],
    duur:'10-30 min', sfeer:'speels',
    combineertGoed:['blinddoek','collar']},
 
-  {id:'setup12', naam:'Volledige hood-sessie', niveau:3, fase:4,
+  {id:'setup12', naam:'Volledige hood-sessie', niveau:3, fase:5,
    items:['hood','polsboeien','bedriemen'],
    omschrijving:'Hood op, vastgemaakt op bed. Maximale deprivatie. Tim verdwijnt compleet.',
    stappen:['Tim op bed.','Polsboeien om, clip aan bedriemen.','Hood over hoofd, touwtjes dicht.','Check ademhaling via mondopening.','Tiksignaal: 2x tikken op arm = ok?, 3x = stop.'],
@@ -1141,7 +1166,7 @@ const BONDAGE_MATRIX = [
 
 function getSetupVoorFase(){
   const s4 = getSpoor4State();
-  const fase = s4.fase || 0;
+  const fase = s4.fase || 1;
   return BONDAGE_MATRIX.filter(s => s.fase <= fase).sort((a,b) => a.niveau - b.niveau);
 }
 
@@ -2017,42 +2042,42 @@ const SUGGESTIE_POOL = [
 const RITUEEL_POOL = [
   {id:'rit01', titel:'Halsband klaarleggen',
    beschrijving:'Tim legt elke avond als Milou slaapt de halsband op het nachtkastje. Jij beslist of hij omgaat.',
-   freq:'dagelijks', trigger:'milou_slaapt', fase:2, cat:'fysiek',
+   freq:'dagelijks', trigger:'milou_slaapt', fase:3, cat:'fysiek',
    timTaak:'Leg de halsband op het nachtkastje',
    lisanneTaak:'Beslis of de halsband omgaat. Of niet. Allebei goed.'},
   {id:'rit02', titel:'Bank klaarmaken',
    beschrijving:'Tim zet alles klaar voordat jullie op de bank gaan — drinken, deken, afstandsbediening.',
-   freq:'dagelijks', trigger:'avond', fase:1, cat:'service',
+   freq:'dagelijks', trigger:'avond', fase:2, cat:'service',
    timTaak:'Zet alles klaar: drinken, deken, afstandsbediening',
    lisanneTaak:'Leun achterover. Tim regelt het.'},
   {id:'rit03', titel:'Ochtendberichtje',
    beschrijving:'Tim stuurt Lisanne elke ochtend een kort berichtje. Niet lang — één zin.',
-   freq:'dagelijks', trigger:'ochtend', fase:0, cat:'verbinding',
+   freq:'dagelijks', trigger:'ochtend', fase:1, cat:'verbinding',
    timTaak:'Stuur Lisanne een kort berichtje. Één zin is genoeg.',
    lisanneTaak:null},
   {id:'rit04', titel:'Knielen bij thuiskomst',
    beschrijving:'Als Milou slaapt en Lisanne op de bank zit: Tim knielt kort naast haar. Hand op zijn hoofd. Klaar.',
-   freq:'dagelijks', trigger:'milou_slaapt', fase:3, cat:'fysiek',
+   freq:'dagelijks', trigger:'milou_slaapt', fase:4, cat:'fysiek',
    timTaak:'Kniel naast Lisanne als ze op de bank zit',
    lisanneTaak:'Leg je hand op zijn hoofd. Kort. Dan mag hij gaan zitten.'},
   {id:'rit05', titel:'Weekendcheck',
    beschrijving:'Elke vrijdagavond: kort moment samen. Hoe was de week? Eén zin. Geen grote gesprekken.',
-   freq:'wekelijks', trigger:'vrijdag', fase:0, cat:'verbinding',
+   freq:'wekelijks', trigger:'vrijdag', fase:1, cat:'verbinding',
    timTaak:'Vraag: "Hoe was jouw week?" Luister. Geen oplossingen.',
    lisanneTaak:'Vertel kort hoe je week was. Eén of twee zinnen.'},
   {id:'rit06', titel:'Polsboeien-avond',
    beschrijving:'Eén vaste avond per week: polsboeien om tijdens tv kijken. Welke avond bepaal jij.',
-   freq:'wekelijks', trigger:'avond', fase:3, cat:'fysiek',
+   freq:'wekelijks', trigger:'avond', fase:4, cat:'fysiek',
    timTaak:'Pak de polsboeien als Lisanne het aangeeft',
    lisanneTaak:'Kies een avond. Zeg: "Polsboeien." Klaar.'},
   {id:'rit07', titel:'Dagafsluiting',
    beschrijving:'Kort moment voor het slapen: even samen. Hand vasthouden, kort tegen elkaar aan. Dertig seconden.',
-   freq:'dagelijks', trigger:'bedtijd', fase:0, cat:'verbinding',
+   freq:'dagelijks', trigger:'bedtijd', fase:1, cat:'verbinding',
    timTaak:'Ga naar Lisanne toe voor het slapen. Kort contact.',
    lisanneTaak:'Even samen. Dertig seconden is genoeg.'},
   {id:'rit08', titel:'Sleuteltje dragen',
    beschrijving:'Lisanne draagt het sleuteltje van de halsband. Tim ziet het elke dag. Een geheim tussen jullie.',
-   freq:'continu', trigger:null, fase:2, cat:'fysiek',
+   freq:'continu', trigger:null, fase:3, cat:'fysiek',
    timTaak:null,
    lisanneTaak:'Draag het sleuteltje. Tim merkt het. Dat is genoeg.'}
 ];
@@ -2061,37 +2086,37 @@ const RITUEEL_POOL = [
 const REGEL_POOL = [
   {id:'reg01', titel:'Geen telefoon aan tafel',
    beschrijving:'Tijdens het eten: telefoons weg. Dit is al Lisanne\'s regel — nu is het officieel.',
-   fase:0, cat:'controle', bron:'lisanne',
+   fase:1, cat:'controle', bron:'lisanne',
    watTimDoet:'Telefoon in de keuken leggen voor het eten',
    watLisanneDoet:'Herinneren als Tim het vergeet. Kort: "Telefoon."'},
   {id:'reg02', titel:'Tim vraagt toestemming voor gamen',
    beschrijving:'Tim vraagt voordat hij gaat gamen. Niet om permissie te vragen, maar om Lisanne de keuze te geven.',
-   fase:1, cat:'controle', bron:'dynamiek',
+   fase:2, cat:'controle', bron:'dynamiek',
    watTimDoet:'Vraag: "Mag ik gamen?" of "Ik wil gamen, goed?"',
    watLisanneDoet:'Ja of nee. Zonder uitleg. Allebei goed.'},
   {id:'reg03', titel:'Bedtijd bepaald door Lisanne',
    beschrijving:'Lisanne bepaalt wanneer Tim naar bed gaat. Niet elke avond — maar als ze het zegt, dan is het zo.',
-   fase:2, cat:'controle', bron:'dynamiek',
+   fase:3, cat:'controle', bron:'dynamiek',
    watTimDoet:'Ga naar bed als Lisanne het zegt. Zonder protest.',
    watLisanneDoet:'Zeg wanneer je wilt dat Tim naar bed gaat. "Nu." of "Om elf uur."'},
   {id:'reg04', titel:'Geen onderbroek na douchen',
    beschrijving:'Tim trekt na het douchen geen onderbroek aan. Alleen als Milou al slaapt.',
-   fase:1, cat:'controle', bron:'dynamiek',
+   fase:2, cat:'controle', bron:'dynamiek',
    watTimDoet:'Na het douchen: geen onderbroek. Als Milou slaapt.',
    watLisanneDoet:'Niks. Tim doet dit zelf. Jij ziet het. Dat is genoeg.'},
   {id:'reg05', titel:'Halsband \'s avonds',
    beschrijving:'Na 21:00: Tim draagt de halsband. Standaard. Tenzij Lisanne anders zegt.',
-   fase:3, cat:'fysiek', bron:'dynamiek',
+   fase:4, cat:'fysiek', bron:'dynamiek',
    watTimDoet:'Doe de halsband om na 21:00. Elke avond.',
    watLisanneDoet:'Niks, of: "Vanavond niet." Jij beslist.'},
   {id:'reg06', titel:'Tim draagt altijd een onderbroek en zit niet aan zichzelf',
    beschrijving:'Thuis draagt Tim altijd een onderbroek. En hij zit niet aan zichzelf — dat is van jou. Geen uitzonderingen, tenzij Lisanne anders beslist.',
-   fase:0, cat:'controle', bron:'dynamiek',
+   fase:1, cat:'controle', bron:'dynamiek',
    watTimDoet:'Onderbroek aan. Handen thuis. Altijd.',
    watLisanneDoet:'Jij beslist of en wanneer dat anders mag.'},
   {id:'reg07', titel:'Lisanne kiest de serie',
    beschrijving:'\'s Avonds op de bank: Lisanne kiest wat jullie kijken. Tim mag opties geven, maar Lisanne beslist.',
-   fase:1, cat:'controle', bron:'dynamiek',
+   fase:2, cat:'controle', bron:'dynamiek',
    watTimDoet:'Stel twee opties voor als Lisanne dat wil. Verder niks.',
    watLisanneDoet:'Kies. Zonder overleg. "Die."'}
 ];
@@ -2527,6 +2552,164 @@ const TIM_SABOTEURS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
+// SESSIE_ACTIVITEITEN — fase-gegated sessie-ideeën
+// zwaarheid: 1 (licht) → 3 (intensief)
+// alleen: false = Milou mag slapen / true = echt alleen thuis
+// ═══════════════════════════════════════════════════════════════
+const SESSIE_ACTIVITEITEN = [
+  // ── FASE 1 ──
+  {id:'s01', fase:1, titel:'Eén opdracht', duur:'5–10 min', zwaarheid:1, alleen:false,
+   beschrijving:'Jij geeft Tim één taak. Hij doet hem zonder vragen.',
+   stappen:['Kies een kleine taak die je normaal zelf zou doen.','Zeg het als een mededeling, niet als vraag: \u201cJij doet X.\u201d','Wacht. Laat hem het doen. Zeg niks terwijl hij bezig is.','Als hij klaar is: één woord. \u201cGoed.\u201d Of niks.'],
+   noot:'Dit voelt kleiner dan het is. Maar voor Tim telt dit al.'},
+
+  {id:'s02', fase:1, titel:'Wachten', duur:'10 min', zwaarheid:1, alleen:false,
+   beschrijving:'Tim wacht terwijl jij iets doet. Gewoon wachten.',
+   stappen:['Zeg: \u201cIk ben zo klaar. Jij wacht hier.\u201d','Doe iets voor jezelf — boek lezen, scrollen, thee zetten.','Tim wacht. Doet niks. Kijkt of zit stilletjes.','Na een tijdje kom je terug. Je hoeft niks te zeggen.'],
+   noot:'Het wachten op zich is het moment voor hem.'},
+
+  {id:'s03', fase:1, titel:'Handen stil', duur:'15–20 min', zwaarheid:1, alleen:false,
+   beschrijving:'Tim houdt zijn handen stil terwijl jullie op de bank zitten.',
+   stappen:['Zeg: \u201cHanden op je bovenbenen. Zo houden.\u201d','Jullie kijken samen een serie of zitten gewoon stil.','Als hij beweegt, leg je je hand even op zijn arm: stilhouden.','Na het afgesproken tijd: \u201cKlaar.\u201d'],
+   noot:'Geen dramatiek nodig. Gewoon een rustige avond mét dit laagje.'},
+
+  {id:'s04', fase:1, titel:'Het berichtje', duur:'overdag', zwaarheid:1, alleen:false,
+   beschrijving:'Jij stuurt Tim één bericht. Hij beantwoordt het op een bepaalde manier.',
+   stappen:['Stuur Tim een bericht: \u201cVandaag doe jij het eten. Verras me.\u201d Of iets anders kleins.','Hij hoeft alleen maar \u201cOké\u201d te zeggen. Dat is al genoeg.','Als hij thuiskomt: zie hoe hij het aanpakt.'],
+   noot:'Dit werkt ook als je er overdag niet bent. Het geeft hem een taak — en jou een gevoel.'},
+
+  // ── FASE 2 ──
+  {id:'s05', fase:2, titel:'Op de grond', duur:'15–30 min', zwaarheid:2, alleen:false,
+   beschrijving:'Tim zit op de grond naast de bank. Jij zit op de bank.',
+   stappen:['Jij zit op de bank. Tim naast je op de grond.','Zeg niks over het \u201cwaarom\u201d. Gewoon: \u201cJij hier.\u201d','Streel zijn haar af en toe. Of niet. Beide is prima.','Na afloop: normaal verder. Hoeft niet besproken.'],
+   noot:'Positie is krachtig. Dit heeft geen uitleg nodig.'},
+
+  {id:'s06', fase:2, titel:'Inspectie', duur:'10 min', zwaarheid:2, alleen:false,
+   beschrijving:'Jij kijkt naar Tim. Rustig. Met aandacht.',
+   stappen:['Tim staat voor je. Of zit. Jij kijkt.','Niet snel. Rustig. Van hoofd tot voeten.','Zeg eventueel iets kleins: \u201cGoed.\u201d Of: \u201cKom dichterbij.\u201d Of niks.','Klaar als jij vindt dat het klaar is.'],
+   noot:'Het kijken zelf is al het moment. Tim vindt dit intens.'},
+
+  {id:'s07', fase:2, titel:'Masseer hem', duur:'20–30 min', zwaarheid:1, alleen:false,
+   beschrijving:'Tim masseert jou. Jij stuurt wat hij doet.',
+   stappen:['Zeg: \u201cJij masseert me. Rug. Begin maar.\u201d','Als hij stopt, geef je een teken dat hij doorgaat.','Jij bepaalt wanneer het klaar is.','Als hij goed zijn best doet: \u201cGoed zo.\u201d'],
+   noot:'Dit is voor jou én voor hem. Jij geniet. Hij dient. Beiden winnen.'},
+
+  {id:'s08', fase:2, titel:'Het teken', duur:'\'s avonds', zwaarheid:2, alleen:false,
+   beschrijving:'De halsband gaat om. De avond is anders.',
+   stappen:['Pak de halsband. Ga achter Tim staan.','Doe hem om zonder iets te zeggen.','Ga gewoon zitten. Serie, boek, niks. Normaal.','Aan het einde: haal hem af. Dat is het.'],
+   noot:'Het meeste van dit moment zit in het omgaan en het afhalen. De tussenliggende tijd is van jullie.'},
+
+  // ── FASE 3 ──
+  {id:'s09', fase:3, titel:'Vastmaken — enkels', duur:'20–40 min', zwaarheid:2, alleen:true,
+   beschrijving:'Tim\'s enkels vastmaken met de zachte boeien.',
+   stappen:['Leg Tim op bed. Of op de grond.','Maak zijn enkels vast met de zachte boeien.','Hij kan niks doen met zijn benen. Dat is het punt.','Geef hem een taak: liggen en niks doen. Of streel hem.','Als je klaar bent: los hem los. Dat is het signaal.'],
+   noot:'Zacht vastzetten is al intens. Je hoeft er geen sessie van te maken.'},
+
+  {id:'s10', fase:3, titel:'Vastmaken — polsen', duur:'20–40 min', zwaarheid:2, alleen:true,
+   beschrijving:'Polsen vastmaken — voor of achter.',
+   stappen:['Kies positie: voor (makkelijker, meer contact) of achter (intenser gevoel).','Maak vast met de zachte boeien. Niet te strak — twee vingers moeten ertussen.','Tim kan niks doen met zijn handen. Kijk hem aan.','Doe iets voor jezelf. Of voor hem. Of allebei.','Los hem los als je klaar bent.'],
+   noot:'Achter vastmaken verdiept het submissieve gevoel voor Tim aanzienlijk.'},
+
+  {id:'s11', fase:3, titel:'Wacht op toestemming', duur:'een avond', zwaarheid:2, alleen:false,
+   beschrijving:'Tim vraagt toestemming voor kleine dingen.',
+   stappen:['Spreek af: voor de rest van de avond vraagt hij toestemming voor niks-vanzelfsprekende dingen.','Voorbeelden: naar de badkamer, iets drinken pakken, zijn telefoon oppakken.','Jij zegt ja, of: \u201cniet nu\u201d, of: \u201cstraks\u201d.','Geen straf als hij vergeet \u2014 gewoon: \u201cje was iets vergeten.\u201d'],
+   noot:'Dit is een heel andere sfeer dan een echte sessie. Maar voor Tim werkt het net zo.'},
+
+  // ── FASE 4 ──
+  {id:'s12', fase:4, titel:'Edging', duur:'30–60 min', zwaarheid:3, alleen:true,
+   beschrijving:'Jij bepaalt wanneer — en of.',
+   stappen:['Stimuleer Tim totdat hij dichtbij is.','Stop. Volledig. Hand weg.','Wacht tot hij rustig is. Begin opnieuw.','Herhaal 3–5 keer.','Jij besluit of het mag. Of niet.'],
+   noot:'Tim vraagt toestemming. Jij zegt ja of nee. Dat protocol is het krachtigste deel.'},
+
+  {id:'s13', fase:4, titel:'Een hele avond', duur:'2–3 uur', zwaarheid:3, alleen:true,
+   beschrijving:'Van begin tot eind, op jouw manier.',
+   stappen:['Spreek af wanneer de avond begint (bijv. na het eten).','Tim weet: vanavond is van jou. Hij volgt.','Kies activiteiten die jij wilt: vastmaken, massages, opdrachten, stilzitten, edging.','Bepaal zelf het tempo. Geen haast.','Sluit af met iets herkenbars: halsband af, thee, even liggen.'],
+   noot:'Je hoeft het niet te plannen. Begin ergens en kijk waar het heen gaat.'},
+
+  {id:'s14', fase:4, titel:'Publieke stilte', duur:'een uitje', zwaarheid:2, alleen:false,
+   beschrijving:'Buitenshuis: subtiele tekens die alleen Tim begrijpt.',
+   stappen:['Geen voorbereiding nodig. Ga ergens naartoe: markt, restaurant, wandeling.','Gebruik tijdens het uitje \u00e9\u00e9n of twee dingen: voor hem bestellen, kiezen waar jullie lopen, hand op zijn knie.','Geen commentaar erop geven. Gewoon doen.','Later thuis: kijk hoe het voelde.'],
+   noot:'Niemand merkt iets. Maar Tim ervaart de hele tijd: zij heeft dit gekozen.'},
+
+  // ── FASE 5 ──
+  {id:'s15', fase:5, titel:'Zeg het', duur:'5 min', zwaarheid:2, alleen:false,
+   beschrijving:'Tim erkent hardop wat hij voelt.',
+   stappen:['Kies een moment: op bed, op de bank, na afloop van iets.','Zeg: \u201cZeg me hoe je je voelt.\u201d','Wacht. Laat hem praten. Of worstelen met woorden. Dat mag.','Reageer simpel: \u201cDank je.\u201d Of: \u201cIk hoor je.\u201d Of niks.'],
+   noot:'Dit doet Tim goed. Hij hoort zichzelf zeggen wat hij normaal niet zegt.'},
+
+  {id:'s16', fase:5, titel:'Onthouding — \u00e9\u00e9n avond', duur:'24 uur', zwaarheid:3, alleen:false,
+   beschrijving:'Geen klaarkomtoestemming voor 24 uur.',
+   stappen:['Zeg: \u201cVanavond mag je niet klaarkomen.\u201d','De rest van de dag en avond: die uitspraak hangt in de lucht.','Het maakt elk intiem contact die dag anders.','De volgende dag jij beslist wanneer het wel mag.'],
+   noot:'Niet elke week. Maar als het lukt \u2014 is de impact groot.'}
+];
+
+// ═══════════════════════════════════════════════════════════════
+// TAAL_POOL — zinnen die Lisanne kan gebruiken, fase-gegated
+// toon: direct | speels | warm | droog | stilte
+// situatie: dagelijks | sessie | buiten | na-afloop | terugzetten | erkenning
+// doel: positie | opdracht | terugzetten | eigenaarschap | bevestigen | grens
+// ═══════════════════════════════════════════════════════════════
+const TAAL_POOL = [
+  // ── FASE 1: eerste zinnen ──
+  {id:'t01', fase:1, toon:'direct', situatie:'dagelijks', doel:'positie', tekst:'Dat doe jij even.'},
+  {id:'t02', fase:1, toon:'direct', situatie:'dagelijks', doel:'opdracht', tekst:'Zet thee voor me.'},
+  {id:'t03', fase:1, toon:'warm', situatie:'dagelijks', doel:'positie', tekst:'Ik wil dat je dit doet.'},
+  {id:'t04', fase:1, toon:'direct', situatie:'dagelijks', doel:'positie', tekst:'Nee. We doen het zo.'},
+  {id:'t05', fase:1, toon:'speels', situatie:'dagelijks', doel:'opdracht', tekst:'Kom eens hier.'},
+  {id:'t06', fase:1, toon:'warm', situatie:'dagelijks', doel:'positie', tekst:'Laat mij dat beslissen.'},
+  {id:'t07', fase:1, toon:'droog', situatie:'dagelijks', doel:'opdracht', tekst:'Jij ruimt dat op.'},
+  {id:'t08', fase:1, toon:'direct', situatie:'dagelijks', doel:'terugzetten', tekst:'Kijk me aan.'},
+
+  // ── FASE 2: dynamiek wordt bewuster ──
+  {id:'t09', fase:2, toon:'direct', situatie:'sessie', doel:'positie', tekst:'Blijf stil.'},
+  {id:'t10', fase:2, toon:'warm', situatie:'sessie', doel:'positie', tekst:'Hier. Bij mij.'},
+  {id:'t11', fase:2, toon:'direct', situatie:'sessie', doel:'opdracht', tekst:'Op je knie\u00ebn.'},
+  {id:'t12', fase:2, toon:'speels', situatie:'sessie', doel:'grens', tekst:'Nog niet.'},
+  {id:'t13', fase:2, toon:'droog', situatie:'sessie', doel:'eigenaarschap', tekst:'Ik bepaal wanneer.'},
+  {id:'t14', fase:2, toon:'direct', situatie:'dagelijks', doel:'terugzetten', tekst:'Hey. Hier.'},
+  {id:'t15', fase:2, toon:'warm', situatie:'dagelijks', doel:'bevestigen', tekst:'Goed. Precies zo.'},
+  {id:'t16', fase:2, toon:'droog', situatie:'dagelijks', doel:'terugzetten', tekst:'Telefoon neer.'},
+  {id:'t17', fase:2, toon:'direct', situatie:'dagelijks', doel:'positie', tekst:'Dat zeg ik, niet jij.'},
+  {id:'t18', fase:2, toon:'speels', situatie:'dagelijks', doel:'eigenaarschap', tekst:'Hij neemt de pasta.'},
+  {id:'t19', fase:2, toon:'warm', situatie:'erkenning', doel:'bevestigen', tekst:'Je was er echt vanavond.'},
+
+  // ── FASE 3: stem en positie ──
+  {id:'t20', fase:3, toon:'direct', situatie:'sessie', doel:'erkenning', tekst:'Vraag het netjes.'},
+  {id:'t21', fase:3, toon:'direct', situatie:'sessie', doel:'positie', tekst:'Ik wacht even.'},
+  {id:'t22', fase:3, toon:'droog', situatie:'sessie', doel:'grens', tekst:'Niet overtuigend genoeg.'},
+  {id:'t23', fase:3, toon:'warm', situatie:'sessie', doel:'bevestigen', tekst:'Ja. Dat mag.'},
+  {id:'t24', fase:3, toon:'direct', situatie:'sessie', doel:'grens', tekst:'Niet vanavond.'},
+  {id:'t25', fase:3, toon:'speels', situatie:'sessie', doel:'positie', tekst:'Is dat alles?'},
+  {id:'t26', fase:3, toon:'warm', situatie:'na-afloop', doel:'bevestigen', tekst:'Je was echt hier.'},
+  {id:'t27', fase:3, toon:'direct', situatie:'dagelijks', doel:'eigenaarschap', tekst:'Ik bestel voor jou.'},
+  {id:'t28', fase:3, toon:'droog', situatie:'dagelijks', doel:'positie', tekst:'We gaan hiernaartoe.'},
+  {id:'t29', fase:3, toon:'warm', situatie:'terugzetten', doel:'terugzetten', tekst:'Ik zie je. Hier.'},
+  {id:'t30', fase:3, toon:'direct', situatie:'erkenning', doel:'eigenaarschap', tekst:'Jij bent van mij.'},
+
+  // ── FASE 4: vollere dynamiek ──
+  {id:'t31', fase:4, toon:'direct', situatie:'sessie', doel:'positie', tekst:'Handen stil.'},
+  {id:'t32', fase:4, toon:'direct', situatie:'sessie', doel:'opdracht', tekst:'Laat horen wat je voelt.'},
+  {id:'t33', fase:4, toon:'droog', situatie:'sessie', doel:'eigenaarschap', tekst:'Dat beslis ik.'},
+  {id:'t34', fase:4, toon:'speels', situatie:'sessie', doel:'positie', tekst:'Kijk me aan terwijl je het vraagt.'},
+  {id:'t35', fase:4, toon:'warm', situatie:'na-afloop', doel:'bevestigen', tekst:'Ik ben blij dat je er was.'},
+  {id:'t36', fase:4, toon:'direct', situatie:'buiten', doel:'eigenaarschap', tekst:'Handen op je rug.'},
+  {id:'t37', fase:4, toon:'droog', situatie:'buiten', doel:'positie', tekst:'Jij draagt de tassen.'},
+  {id:'t38', fase:4, toon:'warm', situatie:'dagelijks', doel:'eigenaarschap', tekst:'Heb een goede dag. Van mij.'},
+  {id:'t39', fase:4, toon:'direct', situatie:'terugzetten', doel:'terugzetten', tekst:'Stop. Kijk me aan. Goed.'},
+  {id:'t40', fase:4, toon:'warm', situatie:'dagelijks', doel:'positie', tekst:'Ik ben er. En jij bent bij mij.'},
+
+  // ── FASE 5: diep, vanzelfsprekend ──
+  {id:'t41', fase:5, toon:'stilte', situatie:'sessie', doel:'positie', tekst:'\u2014 \u00e9\u00e9n blik. Niks meer.'},
+  {id:'t42', fase:5, toon:'warm', situatie:'na-afloop', doel:'bevestigen', tekst:'Dat was van ons.'},
+  {id:'t43', fase:5, toon:'direct', situatie:'na-afloop', doel:'bevestigen', tekst:'Goed gedaan vandaag.'},
+  {id:'t44', fase:5, toon:'droog', situatie:'dagelijks', doel:'positie', tekst:'Morgen beter.'},
+  {id:'t45', fase:5, toon:'warm', situatie:'dagelijks', doel:'eigenaarschap', tekst:'Je bent van mij. Dat vergeet ik niet.'},
+  {id:'t46', fase:5, toon:'speels', situatie:'sessie', doel:'erkenning', tekst:'Je weet het al. Zeg het toch.'},
+  {id:'t47', fase:5, toon:'direct', situatie:'sessie', doel:'eigenaarschap', tekst:'Dit is van mij.'},
+  {id:'t48', fase:5, toon:'warm', situatie:'na-afloop', doel:'bevestigen', tekst:'Dit leeft in jou. Ik zie het.'}
+];
+
+// ═══════════════════════════════════════════════════════════════
 // TIM'S 3 REGELS — kernhouding, altijd zichtbaar
 // ═══════════════════════════════════════════════════════════════
 const TIM_DRIE_REGELS = [
@@ -2825,19 +3008,40 @@ const MINI_LESJES = [
 // MeerLezen: herhaling + stapeling + letOp + normalisatie + preview
 // ═══════════════════════════════════════════════════════════════
 const LESSEN_INHOUD = [
-  {id:1, titel:'Dit is van jullie', subtitel:'Wat het is, waarom het werkt, en waarom jij dit kan.', domein:'verbinding', fase:0, type:'story',
+  {id:0, titel:'Voordat je begint', subtitel:'Wat dit is, hoe het werkt, en wat je van jezelf nodig hebt.', domein:'verbinding', fase:1, type:'story',
    scroll:[
-     {type:'scene', tekst:'Jullie zijn al meer dan tien jaar samen.\n\nEn dit onderwerp is er al die tijd ook. Niet als iets nieuws, niet als een verrassing \u2014 maar als iets dat Tim al lang meedraagt, en dat tussen jullie al vaker ter sprake is gekomen. Op verschillende momenten. In verschillende woorden.\n\nHet is nooit helemaal weggegaan. Het is als een bal die je onder water probeert te houden. Dat kan \u2014 een tijdje. Maar hij blijft omhoog komen.\n\nEr zijn dingen geprobeerd. Momenten die er waren. Maar het is er nooit echt ingegaan. Meer: ok\u00e9, we doen dit even \u2014 en daarna gewoon weer verder. Niet omdat het fout ging \u2014 maar omdat er nooit echt ruimte voor was.\n\nTim heeft je recent gevraagd om het anders te proberen. Niet meer \u2018even.\u2019 Maar echt. Met aandacht. Met interesse. Omdat hij voelt dat er meer mogelijk is \u2014 voor hem, en voor jullie samen.\n\nEn jij hebt ja gezegd.\n\nDat is niet vanzelfsprekend. Dat is iets.\n\nDit is die keer.'},
-     {type:'inzicht', tekst:'<b>Laten we eerlijk zijn over wat bdsm eigenlijk is.</b>\n\nVergeet de beelden die je er misschien bij hebt. Bdsm is niet wat films en series er van maken.\n\nWat het w\u00e9l is: een manier van verbinden. Van vertrouwen. Van duidelijkheid. Tim voelt zich het best als jij de leiding neemt \u2014 niet als spelletje, niet als rollenspel, maar als iets dat bij hem hoort.\n\nVoor Tim is dit geen \u2018seksding.\u2019 In zijn eigen woorden: het is een intrinsieke behoefte aan verbinding, vertrouwen, nabijheid en geborgenheid.\n\nVerbinding. Vertrouwen. Nabijheid. Geborgenheid.\n\nDie vier woorden zijn het. De rest is uitleg.\n\nJij bent niet nieuw in dit verhaal. Je hebt hem al vastgemaakt. Speeltjes gebruikt. Je leren kleding gedragen terwijl hij op de grond zat. En als je goed hebt opgelet \u2014 al was het maar even \u2014 zag je dat er iets veranderde. Hij werd stiller. Meer aanwezig. De dagen erna anders.\n\nDat is precies dit. Jullie gaan het nu bewuster doen.'},
+     {type:'scene', tekst:'Tim heeft je deze app gegeven.\n\nNiet als verrassing, niet als opdracht \u2014 maar als iets wat hij voor jullie heeft laten maken. Een plek om samen iets te ontdekken dat er al lang is, maar nooit echt de ruimte heeft gekregen.\n\nJij hebt ja gezegd. Dat is het enige wat hier telt.'},
+     {type:'inzicht', tekst:'<b>Wat is dit eigenlijk?</b>\n\nDit is geen cursus. Geen handleiding met regels die je moet kennen. Geen checklist die je moet afvinken.\n\nHet is een leerweg. Lessen die opbouwen, klein beginnen, en geleidelijk verder gaan. Sommige zijn kort \u2014 een inzicht, een gedachte. Andere vragen iets van je: probeer dit, bespreek dat, kijk wat er gebeurt.\n\nJe leest het wanneer je wilt. Je pakt wat past. Je laat liggen wat niet past. Altijd.'},
+     {type:'noot', tekst:'<b>Jij doet dit uit liefde voor Tim.</b>\n\nDat is misschien wel het mooiste startpunt dat er is.\n\nNiet iedereen begint hier omdat ze zelf al jaren weten dat ze dit willen. Veel mensen beginnen precies zoals jij \u2014 omdat ze iemand zien die iets nodig heeft, en omdat ze van die persoon houden.\n\nDat is geen zwak fundament. Dat is een sterk een.\n\nEn gaandeweg merk je misschien iets. Dat iets ook voor jou werkt. Dat je ergens van geniet. Dat iets wat je deed voor hem ook iets geeft aan jou. Dat hoef je nu niet te weten. Het mag gewoon komen, als het komt.'},
+     {type:'noot', tekst:'<b>Hoe de lessen werken.</b>\n\nElke les heeft een eigen thema. Ze bouwen op \u2014 niet omdat je iets moet \u201cbehalen,\u201d maar omdat de eerste lessen de taal geven voor wat daarna komt.\n\nAan het einde van de meeste lessen staat een oefening. Iets wat je samen kunt doen, direct na het lezen. Niet als huiswerk. Meer als: kijk eens of dit klopt voor jullie.\n\nAls Tim erbij is als je leest \u2014 en dat mag \u2014 kun je hem roepen voor die oefening. Of je leest eerst alleen, en bespreek je het later. Wat voor jou werkt.'},
+     {type:'noot', tekst:'<b>Er is geen goed of fout tempo.</b>\n\nJe kunt elke dag een les lezen. Je kunt een week niks doen. Je kunt ergens blijven hangen omdat iets tijd nodig heeft.\n\nDit pad heeft een richting maar geen muur aan het einde. Je mag er altijd tussenuit stappen, terug, of gewoon ergens blijven als dat goed voelt.\n\nAls iets niet bij je past: zeg het. Aan Tim. Aan de app. Iets weggooien is geen tekortkoming \u2014 het is precies hoe dit werkt. Jullie maken er jullie eigen versie van.'},
+     {type:'noot', tekst:'<b>Als iets niet werkt.</b>\n\nDan stop je. Of je probeert het anders. Of je vraagt iets \u2014 aan Tim, of via de chat in de app.\n\nEr is geen situatie waarin je door moet bijten. Als iets onprettig voelt, te veel vraagt, of gewoon niet klopt \u2014 dan is dat informatie. Geen mislukking.\n\nStop is stop. Altijd. Zonder uitleg nodig.'},
+     {type:'kernboodschap', tekst:'Je hoeft hier niet perfect in te zijn.\nJe hoeft het niet altijd leuk te vinden.\nJe hoeft alleen maar eerlijk te zijn \u2014 met Tim, en met jezelf.\n\nDat is genoeg. Dat is precies genoeg.'}
+   ],
+   zichtbaar:{
+     intro:'', uitleg:'', voorbeeld:'',
+     oefening:'Lees dit samen, of vertel Tim daarna \u00e9\u00e9n ding dat je opviel.'
+   },
+   verdieping:[
+     {vraag:'Moet ik alle lessen lezen?', antwoord:'Nee. Je kunt lessen overslaan, later terugkomen, of bij een les blijven die je aanspreekt. De volgorde helpt, maar is geen verplichting.'},
+     {vraag:'Wat als ik iets niet wil doen?', antwoord:'Dan doe je het niet. Je zegt het \u2014 aan Tim, of gewoon voor jezelf. Niets hier is verplicht. Alles is een uitnodiging.'},
+     {vraag:'Kan Tim ook meelezen?', antwoord:'Ja. De lessen zijn voor jou geschreven, maar Tim mag meelezen als jij dat wilt. Sommige lessen zijn juist bedoeld om samen te doen.'}
+   ],
+   meerLezen:{preview:'Hoe gebruik je deze app het best voor jullie?'}},
+
+  {id:1, titel:'Dit is van jullie', subtitel:'Wat het is, waarom het werkt, en waarom jij dit kan.', domein:'verbinding', fase:1, type:'story',
+   scroll:[
+     {type:'scene', tekst:'Jullie zijn al meer dan tien jaar samen.\n\nEn dit onderwerp is er al die tijd ook. Niet als iets nieuws, niet als een verrassing \u2014 maar als iets dat Tim al lang meedraagt, en dat tussen jullie al vaker ter sprake is gekomen. Op verschillende momenten. In verschillende woorden.\n\nHet is nooit helemaal weggegaan. Het is als een bal die je onder water probeert te houden. Dat kan \u2014 een tijdje. Maar hij blijft omhoog komen.\n\nEr zijn dingen geprobeerd. Momenten die er waren. Maar het is er nooit echt ingegaan. Meer: ok\u00e9, we doen dit even \u2014 en daarna gewoon weer verder. Niet omdat het geen fijne momenten waren \u2014 maar omdat er nooit echt aandacht voor was.\n\nTim heeft je recent gevraagd om het anders te proberen. Niet meer \u2018even.\u2019 Maar echt. Met aandacht. Met interesse. Omdat hij voelt dat er meer mogelijk is \u2014 voor hem, en voor jullie samen.\n\nEn jij hebt ja gezegd.\n\nDat is niet vanzelfsprekend. Dat is iets.\n\nDit is die keer.'},
+     {type:'inzicht', tekst:'<b>Laten we eerlijk zijn over wat bdsm eigenlijk is.</b>\n\nVergeet de beelden die je er misschien bij hebt. Bdsm is niet wat films en series er van maken.\n\nWat het w\u00e9l is: een manier van verbinden. Van vertrouwen. Van duidelijkheid. Tim voelt zich het best als jij de leiding neemt \u2014 niet als spelletje, niet als rollenspel, maar als iets dat bij hem hoort.\n\nVoor Tim is dit geen \u2018seksding.\u2019 In zijn eigen woorden: het is een intrinsieke behoefte aan verbinding, vertrouwen, nabijheid en geborgenheid.\n\nVerbinding. Vertrouwen. Nabijheid. Geborgenheid.\n\nDie vier woorden zijn het. De rest is uitleg.\n\nJij bent niet nieuw in dit verhaal. Je hebt hem al vastgemaakt. Speeltjes gebruikt. Je prachtige leren kleding gedragen terwijl hij op de grond zat. En als je goed hebt opgelet \u2014 al was het maar even \u2014 zag je dat er iets veranderde. Hij werd stiller. Meer aanwezig. De dagen erna anders.\n\nDat is precies dit. Jullie gaan het nu bewuster doen \u2014 op jouw manier, in jouw tempo. Niet omdat Tim het wil, maar omdat jij ja hebt gezegd. Dat maakt het van jullie allebei.'},
      {type:'noot', tekst:'<b>Waarom Tim dit voelt zoals hij het voelt.</b>\n\nTim draagt dit al heel lang mee. Niet als iets wat hij heeft gekozen \u2014 maar als iets wat er is. Hij heeft het niet aangeleerd. Het is er gewoon.\n\nDit is wie hij is.\n\nDat klinkt misschien groot. Misschien ook een beetje eng. Maar kijk even wat het eigenlijk betekent: Tim voelt zich het fijnst als er duidelijkheid is. Als jij zegt wat er gebeurt. Als hij niet hoeft te twijfelen, af te wegen, te kiezen \u2014 maar gewoon kan doen wat jij zegt.\n\nDat hij dit met jou wil \u2014 met jou, zijn vrouw, zijn beste vriend \u2014 zegt alles. Niet als compliment, maar als waarheid: jullie zijn al alles voor elkaar. En dit kan daar gewoon een deel van zijn.'},
      {type:'noot', tekst:'<b>Over Tim en hoe hij praat over wat er in hem leeft.</b>\n\nTim is niet iemand die snel laat zien wat er van binnen speelt. Je kent hem \u2014 hij houdt dingen voor zichzelf, ook als ze groot zijn.\n\nDit vragen \u2014 echt vragen, met woorden, aan jou \u2014 is voor hem geen kleine stap. Dat hij het doet, zegt iets. Niet over wat er miste, maar over hoe veilig hij zich bij jou voelt.\n\nAls je ooit meer wilt weten over wat er in hem leeft \u2014 over dit, of over iets anders \u2014 vraag het gewoon. Hij mag het zelf uitleggen, op zijn eigen manier. Niet als debriefing. Maar als gesprek.\n\nEn als jij iets voelt of merkt onderweg: zeg het ook. Dit werkt het best als jullie allebei spreken.'},
      {type:'noot', tekst:'<b>Over fantasie\u00ebn, werkelijkheid en realistisch zijn.</b>\n\nVeel van wat hierna komt zijn ook voor Tim deels fantasie\u00ebn. Dingen die hem fijn lijken als hij ze in zijn hoofd afspeelt \u2014 maar die in werkelijkheid ook anders kunnen uitpakken.\n\nFantasie\u00ebn zijn altijd kloppend. Ze kloppen van a tot z, want z\u00edjn hoofd schrijft het script.\n\nDaarentegen: de werkelijkheid is rommelig. Soms onhandig. Soms moeten jullie allebei lachen. Soms werkt iets gewoon niet \u2014 en is dat prima. Dat is echt. En echt is beter dan een fantasie.\n\nEen fantasie is levenloos, hoe mooi ook.\n\nDe momenten waarop het w\u00e9l klopt \u2014 wanneer hij op de grond zit en jij voelt dat hij er helemaal is, wanneer hij iets doet puur omdat jij het zegt en er een stilte valt die precies goed is \u2014 die zijn van jullie. Niet van zijn fantasie. Van jullie werkelijkheid.\n\nDaar doe je dit voor.'},
      {type:'inzicht', tekst:'<b>De drie lagen. Dit is hoe het werkt.</b>\n\nDit is geen alles-of-niets verhaal. Het heeft structuur. Drie lagen, die altijd naast elkaar bestaan.\n\n<b>Laag 1: Jullie basis.</b>\nTim en Lisanne. Partners. Ouders van Milou. De bank in Bangkok met een glas wijn. De onzin die alleen jullie begrijpen. Dit verandert niet. Dit bescherm je altijd.\nEen knuffel is een knuffel. Tim mag gewoon lief zijn \u2014 arm om je heen, dichterbij schuiven op de bank, een kus als hij langsloopt. Niet alles is de dynamiek. Jullie zijn eerst Tim en Lies.\n\nVoorbeelden: samen op de bank zonder verwachtingen. Milou naar school brengen. Een grapje dat alleen jullie snappen.\n\n<b>Laag 2: De stille onderstroom.</b>\nKleine afspraken die er altijd zijn, ook als jullie verder niks doen. Op de achtergrond. Altijd aanwezig, maar niet altijd zichtbaar.\n\nVoorbeelden: Tim luistert meteen als jij iets zegt \u2014 geen zucht, geen \u201cja zo meteen.\u201d Hij schenkt jouw glas in. Hij vraagt wat jij wilt eten voordat hij voor zichzelf kiest.\n\nDeze afspraken zijn niet in steen gegoten. Jullie kunnen ze aanpassen \u2014 samen, of jij eenzijdig. Voor een dag, voor een week, voor altijd. Ze zijn van jullie.\n\n<b>Laag 3: De bijzondere momenten.</b>\nDe bewuste keuzes die jij maakt. \u201cKom hier.\u201d \u201cOp je knie\u00ebn.\u201d \u201cVanavond.\u201d Die kies jij. Wanneer jij wilt. Als het voelt. Of niet \u2014 dat is ook jouw keuze.\n\nVoorbeelden: jij legt de halsband neer. Een berichtje overdag: \u201cvanavond.\u201d Hij zit op de grond naast de bank terwijl jij een serie kijkt.\n\nLaag 1 is jullie basis. Laag 2 is de stille onderstroom. Laag 3 is bijzonder.\n\nEn: de lagen zijn in balans. Laag 3 is mooi, maar zonder laag 1 is het leeg. En binnen elke laag zit ook balans \u2014 jullie vinden samen de vorm die bij jullie past.'},
-     {type:'noot', tekst:'<b>Wat als dit niet vanzelf voelt?</b>\n\nNiet iedereen begint hier met een innerlijk \u201cja, dit is precies wat ik wil.\u201d Sommige mensen starten omdat ze zien dat het de ander iets geeft \u2014 en dat is een volkomen geldige reden.\n\nJe hoeft je niet dominant te voelen om het te kunnen. Je hoeft niet in een bepaalde stemming te zijn. Leiderschap in een relatie is geen persoonlijkheidstype \u2014 het is een vaardigheid. En vaardigheden leer je door te doen, niet door te wachten tot het vanzelf klopt.\n\nNuchterheid is geen tegenwerking. Het is een kwaliteit. Iemand die leiding geeft zonder theater, zonder behoefte aan bevestiging, vanuit rust en helderheid \u2014 dat is precies wat hier goed bij past.\n\nJe eigen reden voor dit mag er anders uitzien dan de zijne. Die hoef je nu nog niet eens te kennen. Op een gegeven moment merk je misschien dat dit niet meer alleen zijn behoefte is \u2014 maar iets wat jij ook fijn vindt, om je eigen redenen. Dat moment hoef je niet te forceren. Het komt, of het komt niet. Beide is goed.'},
+     {type:'noot', tekst:'<b>Wat als dit niet vanzelf voelt?</b>\n\nNiet iedereen begint hier met een innerlijk \u201cja, dit is precies wat ik wil.\u201d Sommige mensen starten omdat ze zien dat het de ander iets geeft \u2014 en dat is een volkomen geldige reden.\n\nJe hoeft je niet dominant te voelen om het te kunnen. Je hoeft niet in een bepaalde stemming te zijn. Leiderschap in een relatie is geen persoonlijkheidstype \u2014 het is een vaardigheid. En vaardigheden leer je door te doen, niet door te wachten tot het vanzelf klopt.\n\nNuchterheid is geen tegenwerking. Het is een kwaliteit. Iemand die leiding geeft zonder theater, zonder behoefte aan bevestiging, vanuit rust en helderheid \u2014 dat is precies wat hier goed bij past.\n\nJe eigen reden voor dit mag er anders uitzien dan de zijne. Die hoef je nu nog niet eens te kennen. Op een gegeven moment merk je misschien dat dit niet meer alleen zijn behoefte is \u2014 maar iets wat jij ook fijn vindt, om je eigen redenen. Dat moment hoef je niet te forceren. Het komt, of het komt niet. Beide is goed.\n\nEn: je mag het ook gewoon niet leuk vinden. Sommige dingen kloppen niet voor jou, of kloppen niet nu. Dat is geen tekortkoming. Dit is geen lijst die je moet afvinken. Je pakt wat bij je past, en laat liggen wat niet past \u2014 altijd.'},
      {type:'noot', tekst:'<b>Jouw zorg, op jouw manier.</b>\n\nJij kijkt naar Tim en ziet wat hij nodig heeft. Je ziet wanneer hij te hard voor zichzelf is. Je weet wanneer hij rust nodig heeft, wanneer hij afleiding zoekt, wanneer hij gewoon even gezien wil worden.\n\nDat is een gave. En het is precies wat je hier kunt gebruiken.\n\nMaar er zit een paradox in. Wat Tim soms nodig heeft, is niet dat jij voor hem beslist w\u00e1t hij nodig heeft \u2014 maar dat jij beslist w\u00e1nneer hij het krijgt. Niet meteen. Niet op zijn initiatief. Op het jouwe.\n\nHij wil een keer geen mening hebben. Niet zelf kiezen. Niet bepalen wat hij nodig heeft. Hij wil wachten \u2014 op jou.\n\nWachten is voor hem geen straf. Het is een cadeau. De tijd tussen \u2018ik wil\u2019 en \u2018jij zegt ja\u2019 \u2014 dat is precies de ruimte waar dit voor hem leeft.\n\nDus als hij gespannen is en jij ziet het: je mag hem even laten wachten voor je iets zegt. Als hij iets wil: je mag het uitstellen. Niet omdat je onaardig bent \u2014 maar omdat hij het nodig heeft dat jij de regie houdt. Dat is zorg. Alleen anders.'},
      {type:'noot', tekst:'<b>Wat Tim je vraagt.</b>\n\nIn zijn eigen woorden:\n\nHij vraagt je of je het eerlijk een kans wilt geven. Niet blind. Niet alles meteen. Maar: probeer het echt. Ook als het onwennig voelt. Ook als het buiten je comfortzone valt.\n\nEn: kijk ook naar wat het jou oplevert. Niet alleen naar wat Tim eraan heeft. Misschien is het rust \u2014 minder onderhandelen, minder herhalen. Misschien is het lachen om hoe hij reageert. Misschien is het iets dat je nu nog niet kunt benoemen \u2014 iets dat gaandeweg nog de ruimte krijgt om te groeien.\n\nJe hoeft niet steeds iets nieuws te doen. Het zit in herhaling. Herhaling is hoe het van jullie wordt.\n\nJullie doen dit samen. Lief, opbouwend, op jullie manier. Er is geen goed of fout \u2014 alleen wat werkt voor jullie allebei, en dat ontdekken jullie onderweg.'},
      {type:'noot', tekst:'<b>Wat dit van Tim vraagt.</b>\n\nDit is geen eenrichtingsverkeer.\n\nAls jij de leiding neemt, kiest Tim er bewust voor om dat ruimte te geven. Hij schuift zijn mening naar de achtergrond \u2014 niet omdat zijn mening er niet toe doet, maar omdat hij op dat moment heeft gekozen dat j\u00edj de koers bepaalt. Zijn mening bestaat nog steeds. Maar ze is even niet aan de beurt, totdat jij ernaar vraagt.\n\nDat betekent niet dat Tim een soort makke hulpje wordt. Integendeel. Het is bewuste keuze: ik geef haar de ruimte om te leiden. En dat vraagt eigenlijk best veel van hem \u2014 omdat het ingaat tegen wat hij automatisch zou doen.\n\nAls Tim toch iets wil zeggen \u2014 een gedachte, een wens, iets wat hem bezighoudt \u2014 schrijft hij het op. Niet digitaal, maar op papier. Een vel, een notitieblokje. Hij legt het neer. En jij kiest of je het leest. Misschien meteen. Misschien later. Misschien helemaal niet. Dat is jouw keuze.\n\nDe daad van opschrijven geeft hem al iets. En jij blijft in controle over wanneer en hoe je erop ingaat.'},
-     {type:'noot', tekst:'<b>Over deze app.</b>\n\nDit is een app die Tim voor jou heeft laten maken.\n\nGeen droge handleiding. Geen lijst met regels. Maar een plek om samen te ontdekken wat bij jullie past \u2014 in jouw tempo, op jouw manier.\n\nDe stappen bouwen op. Ze beginnen klein en vertrouwd, en gaan geleidelijk verder. Niet alles zal voor jullie werken \u2014 en dat is prima. Jullie ontdekken het samen, en maken er jullie eigen vorm van. Wat blijft is van jullie. Wat niet past, laten jullie liggen.\n\nElk onderdeel is kort. Je leest het wanneer je wilt. En ertussenin: gewoon leven. Tim en Lisanne. Bangkok. Milou. Alles wat er al is.\n\nJe kunt hier foto\u2019s toevoegen \u2014 van jullie, van momenten, van dingen die voor jou betekenis krijgen. Je kunt je eigen draai eraan geven, dingen noteren.\n\nEn als je ergens niet uitkomt, is er Claude \u2014 een ai die vragen kan beantwoorden, kan meedenken, of gewoon kan bevestigen dat wat je voelt normaal is.\n\nNa dit avontuur stopt de app niet. Het wordt een plek die blijft \u2014 voor nieuwe idee\u00ebn, voor terugkijken, voor alles wat jullie nog willen ontdekken. Het eindigt niet, het groeit mee.'},
+     {type:'noot', tekst:'<b>Over deze app.</b>\n\nDit is een app die Tim voor jou heeft laten maken.\n\nGeen droge handleiding. Geen lijst met regels. Maar een plek om samen te ontdekken wat bij jullie past \u2014 in jouw tempo, op jouw manier.\n\nDe stappen bouwen op. Ze beginnen klein en vertrouwd, en gaan geleidelijk verder. Niet alles zal voor jullie werken \u2014 en dat is prima. Jullie ontdekken het samen, en maken er jullie eigen vorm van. Wat blijft is van jullie. Wat niet past, laten jullie liggen.\n\nEr is geen verplicht eindpunt. Geen niveau dat je moet halen. Dit pad heeft een richting, maar geen muur aan het einde \u2014 en je mag er altijd tussenuit stappen, terug, of gewoon ergens blijven als dat goed voelt.\n\nElk onderdeel is kort. Je leest het wanneer je wilt. En ertussenin: gewoon leven. Tim en Lisanne. Bangkok. Milou. Alles wat er al is.\n\nJe kunt hier foto\u2019s toevoegen \u2014 van jullie, van momenten, van dingen die voor jou betekenis krijgen. Je kunt je eigen draai eraan geven, dingen noteren.\n\nEn als je ergens niet uitkomt, is er Claude \u2014 een ai die vragen kan beantwoorden, kan meedenken, of gewoon kan bevestigen dat wat je voelt normaal is.\n\nNa dit avontuur stopt de app niet. Het wordt een plek die blijft \u2014 voor nieuwe idee\u00ebn, voor terugkijken, voor alles wat jullie nog willen ontdekken. Het eindigt niet, het groeit mee.'},
      {type:'noot', tekst:'<b>En jij dan?</b>\n\nTim heeft dit gevraagd. Maar dit gaat ook over jou.\n\nJij hebt een eigen lichaam. Eigen verlangens. Dingen die je fijn vindt, dingen die je nog niet weet, dingen die je misschien nooit heeft durven zeggen. Dit traject is ook een uitnodiging om dat te ontdekken. Niet als opdracht. Maar als mogelijkheid.\n\nAls je iets merkt \u2014 iets wat jou aanspreekt, iets wat je benieuwd maakt, iets wat je wil proberen \u2014 deel het. Met Tim, met de app, op je eigen manier. Jullie zijn hier allebei aan het ontdekken.'},
      {type:'noot', tekst:'<b>Je mag lachen.</b>\n\nEcht. Lachen mag. Rommelig mag. \u201cDit is gek\u201d mag hardop gezegd worden. De eerste keer dat je zegt \u201cop je knie\u00ebn\u201d en jullie allebei een beetje moeten grinniken \u2014 dat is geen mislukking. Dat is normaal. Dat is misschien wel het mooiste.\n\nHet wordt vanzelf minder vreemd. En op een dag zeg je het gewoon, en hij doet het gewoon, en het voelt als jullie.'},
      {type:'noot', tekst:'<b>Stop is stop.</b>\n\nAltijd. Meteen. Bij alles.\n\n\u201cIk wil dit niet\u201d is genoeg. Geen uitleg. Geen \u201cmaar we waren net bezig.\u201d Stop betekent stop \u2014 voor jou \u00e9n voor Tim.\n\nIn de eerste oefening kiezen jullie samen een safeword. \u00c9\u00e9n woord dat alles stopt, ook midden in iets. Je komt er waarschijnlijk bijna nooit meer op terug \u2014 maar je hebt het. Als vangrail.'},
@@ -2865,7 +3069,29 @@ const LESSEN_INHOUD = [
    ],
    meerLezen:{preview:'Wat betekent de eerste les concreet voor jullie?'}},
 
-  {id:2, titel:'Als jij het zegt..', subtitel:'Soms is \u00e9\u00e9n zin genoeg.', domein:'verbinding', fase:0, type:'story',
+  {id:34, titel:'Gewoon er zijn', subtitel:'Bij elkaar zijn zonder dat het iets moet worden.', domein:'verbinding', fase:1, type:'story',
+   scroll:[
+     {type:'scene', tekst:'Het is avond. Milou slaapt.\n\nJullie zitten op de bank. Tim heeft zijn telefoon niet gepakt. Jij ook niet.\nEr is geen serie aan. Niemand zegt iets bijzonders.\nJullie zijn er gewoon.\n\nEn dat is al iets. Eigenlijk is het best zeldzaam geworden.'},
+     {type:'inzicht', tekst:'<b>We zijn altijd ergens mee bezig.</b>\n\nTelefoon. Serie. Iets voor morgen. Iets wat je nog moet doen. Iets wat je miste. Iets wat je wilde zeggen maar vergat.\n\nStil zitten is er nauwelijks meer bij. Gewoon genieten van elkaar ook niet.\n\nEn dat is niet erg \u2014 het is gewoon hoe het leven nu werkt. Maar het betekent wel dat echt aanwezig zijn \u2014 er gewoon zijn, zonder agenda \u2014 iets is wat je bewust moet kiezen. Het komt niet vanzelf meer.'},
+     {type:'noot', tekst:'<b>Dit heeft niets met de dynamiek te maken.</b>\n\nAanwezig zijn is geen FLR-ding. Het is geen oefening. Het is geen stap in een curriculum.\n\nHet is het fundament. Zonder dit werkt de rest niet.\n\nAls jullie niet weten hoe het voelt om gewoon bij elkaar te zijn \u2014 zonder telefoon, zonder plan, zonder dat er iets moet \u2014 dan is alle spanning die daarna komt hol. Dan is er niks om op te bouwen.\n\nDit is de bodem.'},
+     {type:'noot', tekst:'<b>Aanwezig zijn klinkt simpel. Het is het niet.</b>\n\nHet vraagt dat je je gedachten even loslaat. Dat je niet alvast denkt aan morgen. Dat je niet op je telefoon kijkt \u201cvoor even.\u201d\n\nHet vraagt dat je Tim ziet. Niet zijn gezicht achter een scherm. Hem.\n\nEn het vraagt dat je het uithoudt als er even niks is. Stilte. Geen gesprek, geen actie. Gewoon twee mensen in dezelfde ruimte.\n\nDat voelt misschien onwennig. Dat is normaal. We zijn het verleerd.'},
+     {type:'noot', tekst:'<b>Het hoeft niet lang.</b>\n\nTwintig minuten op de bank, telefoon weg. Een ochtend buiten eten zonder schermen. Een avond waarop jullie allebei gewoon present zijn.\n\nNiet elke dag. Niet als verplichting. Maar met regelmaat.\n\nTim weet wat het is om aanwezig te zijn zonder agenda. Hij doet het liever dan je denkt. Geef hem de ruimte \u2014 en pak die ruimte ook zelf.'},
+     {type:'voorbeeld', tekst:'Ochtend. Tim zit buiten met zijn koffie, geen telefoon. Jij bent binnen met Milou.\n\nNa een tijdje loop je naar buiten. Je legt even je hand op zijn schouder. Je blijft even staan.\n\nNiets bijzonders. Geen gesprek. Alleen: jij was er. Hij merkte het.\n\nDat telt.'},
+     {type:'kernboodschap', tekst:'Aanwezig zijn is geen voorbereiding op iets.\nHet is al iets.\n\nEn alles wat hierna komt in de app \u2014 elk moment, elke oefening, elk signaal \u2014 werkt beter als dit er al is.'},
+     {type:'probeer', tekst:'<b>Samen:</b>\n\nKies \u00e9\u00e9n avond deze week. Telefoons weg \u2014 niet op tafel, maar echt weg. Geen serie. Geen plan.\n\nGewoon op de bank. Praten als het komt. Stilte als het er is. Kijk hoe lang jullie het volhouden \u2014 en wat er verandert als de avond vordert.\n\nDit is geen oefening in de dynamiek. Dit is een oefening in jullie.'}
+   ],
+   zichtbaar:{
+     intro:'', uitleg:'', voorbeeld:'',
+     oefening:'Kies \u00e9\u00e9n avond: telefoons weg, geen plan, gewoon samen.'
+   },
+   verdieping:[
+     {vraag:'Tim pakt altijd zijn telefoon', antwoord:'Dan zeg je het gewoon: "telefoon weg vanavond." Geen uitleg. Hij legt hem neer. Dat is laag 2 in de praktijk \u2014 jij zegt het, het gebeurt.'},
+     {vraag:'Ik vind stilte ongemakkelijk', antwoord:'Dat is normaal. Stilte voelt ongemakkelijk als je eraan gewend bent die op te vullen. Maar stilte is ook verbinding \u2014 als je er allebei in zit, hoeft er niks gezegd te worden. Laat het er gewoon zijn.'},
+     {vraag:'Moet dit een vast ritueel worden?', antwoord:'Dat mag, maar het hoeft niet. Eens in de week een avond zonder schermen is al heel wat. Vind wat bij jullie past \u2014 en laat het van jullie zijn, niet van een app.'}
+   ],
+   meerLezen:{preview:'Hoe bouw je op wat er al is?'}},
+
+  {id:2, titel:'Als jij het zegt..', subtitel:'Soms is \u00e9\u00e9n zin genoeg.', domein:'verbinding', fase:1, type:'story',
    scroll:[
      {type:'scene', tekst:'Ok\u00e9, stel je dit voor.\nJe loopt met Milou naar de deur. Terwijl je je slippers pakt zeg je: \u201coh ja \u2014 als ik terugkom wil ik dat de badkamer schoon is.\u201d\nGeen vraag. Geen overleg. Gewoon een mededeling, terloops bijna.\nHet hoeft niet als een commando te klinken. Het is gewoon: dit is wat er gebeurt.\nEn toch \u2014 voor Tim verandert er iets. Omdat het geen vraag was.'},
      {type:'inzicht', tekst:'Je vraagt Tim al regelmatig dingen. \u201cWil jij even de waterfles bijvullen?\u201d \u201cKan jij eten bestellen?\u201d Dat is normaal \u2014 zo praat je met elkaar.\nMaar het is een vraag. En Tim behandelt het ook zo: \u201cja, doe ik zo\u201d \u2014 en dan misschien wel, misschien half, misschien niet. Niet omdat hij dwars is, maar omdat een vraag ruimte laat. Ruimte om het uit te stellen, te vergeten, of gewoon te zeggen wat je wil horen. Terwijl jij eigenlijk wil dat het gewoon gebeurt.\nHet verschil zit \u2019m in toon. \u201cVul even de waterfles bij.\u201d Geen vraag, geen \u201cwil jij.\u201d Gewoon: dit is wat er moet gebeuren.\nDat klinkt klein. Maar het verandert iets bij Tim. Er is niks om over na te denken. Geen \u201czal ik het nu of straks doen,\u201d geen \u201cbedoelde ze dat echt.\u201d Gewoon: jij zei het, hij doet het. Simpel. En dat vindt hij fijn.\nJe begint dus niet bij nul. Je verschuift alleen de toon van vragen naar zeggen. En je let op wat dat met hem doet.'},
@@ -2910,7 +3136,7 @@ const LESSEN_INHOUD = [
 
   // \u2550\u2550\u2550 LES 2: DIT IS OOK VOOR JOU \u2550\u2550\u2550,
 
-  {id:3, titel:'Jij beslist', subtitel:'Keuzes maken zonder overleg.', domein:'verbinding', fase:0, type:'story',
+  {id:3, titel:'Jij beslist', subtitel:'Keuzes maken zonder overleg.', domein:'verbinding', fase:1, type:'story',
    scroll:[
      {type:'scene', tekst:'Het is lunchpauze. Tim vraagt: \u201cwat eten we vanavond?\u201d\n\nJe denkt: pasta. En je zegt het: \u201cPasta.\u201d\n\nTim zegt: \u201cok\u00e9.\u201d En koopt de ingredi\u00ebnten.\n\nKlaar.\n\nGeen twintig minuten WhatsApp-overleg. Geen \u201cof heb jij iets anders zin in?\u201d Geen \u201cik weet het niet, jij?\u201d\n\nJij beslist. Hij volgt. En het werkte prima.'},
      {type:'inzicht', tekst:'De vorige les ging over toon \u2014 zeggen in plaats van vragen. Deze les gaat een stap verder: keuzes maken zonder overleg.\n\nTim en jij overleggen. Dat is normaal, en dat blijft zo. Maar er zijn heel veel kleine keuzes in een dag die niemand hoeft te overleggen. Wat jullie eten. Wie rijdt. Welke route. Of je vanavond thuis blijft of iets doet.\n\nVoor veel mensen \u2014 zeker Tim \u2014 is constant overleggen best vermoeiend. Hij wil ook graag gewoon weten wat er gaat happen. Geen eindeloze afweging. Iemand die het besluit.\n\nDat mag jij zijn. Niet altijd. Maar vaker dan je denkt.'},
@@ -2939,7 +3165,7 @@ const LESSEN_INHOUD = [
    ],
    meerLezen:{preview:'Wat als beslissen moeilijker is dan het klinkt?'}},
 
-  {id:4, titel:'Het hoeft niet perfect', subtitel:'Je mag het raar vinden.', domein:'verbinding', fase:0, type:'story',
+  {id:4, titel:'Het hoeft niet perfect', subtitel:'Je mag het raar vinden.', domein:'verbinding', fase:1, type:'story',
    scroll:[
      {type:'scene', tekst:'Gisteravond heb je het geprobeerd. Iets uit de vorige les.\nJe besliste iets. Gewoon gezegd hoe het ging \u2014 zonder overleg, zonder te vragen of hij het er ook mee eens was.\nHij keek je aan. Even stil. Toen deed hij het.\nEn jij zat daar en dacht: wat nu?\nJe had niks gepland na die zin. Het was stil.\nTim keek je aan. Jij keek terug.\nToen begon je te lachen. Hij ook.\nEn misschien denk je nu: dat was niks. Dat telt niet.\nMaar het telt wel. Want je deed het.'},
      {type:'inzicht', tekst:'Alles wat nieuw is voelt eerst onecht.\nDe eerste keer dat je autoreed dacht je bij elke handeling na. Koppeling, spiegel, schakelen. Nu rijd je zonder erbij na te denken.\nDit werkt hetzelfde.\nHet ongemakkelijke gevoel is geen teken dat het niet bij je past.\nHet is een teken dat het <b>nieuw</b> is. Meer niet.'},
@@ -2975,7 +3201,7 @@ const LESSEN_INHOUD = [
 
  // ═══ LES 5: VAN DICHTBIJ NAAR KWETSBAAR ═══════════════════════,
 
- {id:5, titel:'Even checken', subtitel:'Praten over wat werkt \u2014 buiten het moment.', domein:'verbinding', fase:0, type:'story',
+ {id:5, titel:'Even checken', subtitel:'Praten over wat werkt \u2014 buiten het moment.', domein:'verbinding', fase:1, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is zondagochtend. Milou speelt. Jullie zitten aan tafel.\nGeen rollen. Geen dynamiek. Gewoon Tim en Lisanne.\nJij zegt: \u201cHoe was deze week voor jou?\u201d\nEn dan luister je.'},
     {type:'inzicht', tekst:'In de vorige lessen heb je geleerd: vraag niet \u201cwas dat ok\u00e9?\u201d tijdens of na een moment. Dat breekt de dynamiek.\nMaar dat betekent niet dat jullie er nooit over praten.\nIntegendeel \u2014 jullie m\u00f3\u00e9ten erover praten. Alleen niet in het moment zelf.\nDe check-in is een apart moment. Los van de dynamiek. Geen rollen, geen leiding. Gewoon twee mensen die samen kijken: wat werkt, wat niet, en hoe gaat het?'},
@@ -3003,12 +3229,43 @@ const LESSEN_INHOUD = [
     {vraag:'Hoe vaak moet dit?', antwoord:'In het begin: elke week. Dat klinkt veel, maar het hoeft maar een paar minuten te duren. Na een tijdje vinden jullie een ritme dat past \u2014 misschien elke twee weken, of gewoon als een van jullie behoefte heeft aan een gesprek.'}
   ],
   meerLezen:{
-    preview:'Volgende les: \u00e9\u00e9n gebaar en de avond verschuift.'
+    preview:'Volgende les: wat raar voor jou voelt, voelt voor hem anders.'
   }},
 
 ,
 
-  {id:6, titel:'Kom even hier', subtitel:'Van huishouden naar persoonlijk.', domein:'verbinding', fase:1, type:'story',
+ {id:37, titel:'Dat voelt anders voor hem', subtitel:'Jouw afkeer is geen signaal.', domein:'verbinding', fase:1, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Je staat op het punt iets te doen.\nEen tik. Een opdracht. Iets waardoor hij klein wordt en jij groot.\nEn ergens denk je: ik zou dit zelf niet willen.\nDus je aarzelt. Doet het zachter. Of laat het.\nNiet omdat hij het niet wil \u2014 maar omdat jij het niet kunt plaatsen.'},
+    {type:'inzicht', tekst:'Dat gevoel klopt \u2014 voor jou.\nMaar zijn ervaring van datzelfde moment is fundamenteel anders dan de jouwe.\nWat voor jou ongemak is, kan voor hem ontlasting zijn.\nWat voor jou raar voelt, voelt voor hem als thuiskomen.\nJouw afkeer is geen signaal dat je hem iets aandoet.\nHet is een signaal dat jullie het anders ervaren. Dat is precies de bedoeling.'},
+    {type:'voorbeeld', tekst:'Een tik op zijn bil. Jij zou dat vervelend vinden. Hij ervaart het als: zij neemt de ruimte. Zij mag dit. Dat voelt voor hem niet als pijn \u2014 het voelt als bevestiging.\n\nEen opdracht die hem klein maakt. Jij denkt: doe ik hem geen pijn? Hij denkt: eindelijk hoef ik even niks te beslissen.\n\nHem laten wachten terwijl jij iets anders doet. Jij voelt je misschien schuldig. Hij zit daar en voelt de spanning groeien \u2014 en dat is precies wat hij wil.'},
+    {type:'noot', tekst:'Dit betekent niet dat alles altijd goed is. Tim heeft grenzen, net als iedereen.\nMaar hij heeft ook een manier om die aan te geven: een safeword.\nJullie spreken samen een woord af \u2014 iets wat normaal nooit in een gesprek valt, zoals \u201crood\u201d of een willekeurig woord dat voor jullie werkt. Als hij dat woord zegt, stopt alles. Geen discussie, geen uitleg nodig. Gewoon stoppen, dichtbij blijven, en checken hoe het gaat.\n\nEn dat woord bestaat niet omdat jij fouten maakt. Het bestaat zodat jij vrijuit kunt gaan. Juist d\u00e1t maakt het mogelijk om verder te gaan dan je anders zou durven.'},
+    {type:'inzicht', tekst:'Als hij het safeword niet gebruikt, is alles goed.\nJe hoeft niet constant te checken. Niet te verzachten uit voorzorg. Niet elke reactie te wegen.\nHij heeft het middel om te stoppen \u2014 en als hij het niet gebruikt, is zijn stilzwijgen een antwoord.\nDat geeft jou de vrijheid om aanwezig te zijn in het moment, in plaats van toeschouwer van jezelf.'},
+    {type:'noot', tekst:'Het ongemak dat jij voelt bij dingen die jij zelf niet prettig zou vinden \u2014 dat gaat niet helemaal weg. Misschien nooit helemaal.\nMaar het wordt kleiner als je zijn reactie ziet. Als hij na een tik ontspant in plaats van samentrekt. Als hij na een opdracht stiller wordt op een manier die rust uitstraalt, niet spanning.\nZijn lichaam vertelt je meer dan jouw twijfel. Leer dat lezen \u2014 en vertrouw het meer dan je eigen ongemak.'},
+    {type:'kernboodschap', tekst:'Jij hoeft het niet zelf prettig te vinden.\nJij hoeft alleen te zien wat het met hem doet.\nEn als het ooit te veel is \u2014 hij heeft de woorden om het te zeggen.'},
+    {type:'probeer', tekst:'Doe deze week iets kleins wat jij zelf niet zou willen. Een tik, een opdracht, iets waarbij jij even moet doorbijten.\nEn kijk dan \u2014 niet naar jezelf, maar naar hem.\nWat doet het met zijn houding? Zijn ademhaling? Zijn blik?\nDat is de informatie die telt.'}
+  ],
+  verdieping:[
+    {vraag:'Wat is een goed safeword?', antwoord:'Iets wat nooit zomaar in een gesprek valt. \u201cRood\u201d werkt goed en is makkelijk te onthouden. Jullie kunnen ook iets kiezen wat voor jullie betekenis heeft. Het enige dat telt: jullie weten allebei wat het betekent en het is makkelijk te zeggen, ook als je emotioneel bent.'},
+    {vraag:'En als hij het safeword gebruikt?', antwoord:'Stop meteen. Geen vragen, geen uitleg. Gewoon dichtbij zijn. Water halen. Hand op zijn schouder. Later \u2014 niet meteen \u2014 kun je vragen wat er was. Zijn safeword gebruiken is geen mislukking. Het is het systeem dat werkt.'},
+    {vraag:'Wat als ik toch blijf twijfelen?', antwoord:'Dan doe je het zachter dan je wilt, of je doet het helemaal niet. Dat is oké. Maar kijk ook: hoe vaak gebruikt hij het safeword? Waarschijnlijk nooit. Zijn stilzwijgen is informatie. Vertrouw dat.'},
+    {vraag:'Wat als hij iets niet fijn vindt maar het safeword niet gebruikt?', antwoord:'Dan is het niet te veel voor hem \u2014 het is alleen niet zijn favoriet. Dat is anders. Niet alles hoeft fijn te zijn. Sommige dingen zijn precies omdat ze ongemakkelijk zijn. Als hij wil stoppen, zegt hij het.'},
+    {vraag:'Mag ik ook dingen doen die ik zelf spannend vind?', antwoord:'Ja \u2014 en dat is juist goed. Hoe meer jij er zelf iets in hebt, hoe echter het wordt. Je hoeft het niet te performen. Als jij ervan geniet, werkt het dubbel zo goed.'}
+  ],
+  meerLezen:{
+    preview:'Volgende les: één gebaar en de avond verschuift.'
+  }},
+
+
+ {id:55, titel:'Een gewone dinsdag', subtitel:'', domein:'dagscenario', fase:2, type:'dagscenario',
+  scroll:[
+    {type:'scene', tekst:'Het is dinsdag. Milou is naar bed.\n\nJij zit op de bank met een glas wijn.\n\u201cKom eens hier.\u201d\n\nZwee seconden later zit hij naast je. Dicht.\n\nEn je denkt: dit doe ik nu gewoon. Dit is normaal geworden.\n\nEen maand geleden zei ik dit soort dingen niet.\n\nEen maand geleden dacht ik te lang na voor ik iets zei.\n\nNu niet meer.'},
+    {type:'kernboodschap', tekst:'Je hoefde het niet te oefenen tot het perfect was.\nJe hoefde het gewoon te doen \u2014 en te kijken wat er groeide.'}
+  ],
+  verdieping:[], meerLezen:{preview:''}},
+,
+
+  {id:6, titel:'Kom even hier', subtitel:'Van huishouden naar persoonlijk.', domein:'verbinding', fase:2, type:'story',
    scroll:[
      {type:'scene', tekst:'Jullie zitten op de bank. Telefoons. Niks bijzonders.\nJij legt de jouwe neer.\n\u201cKom even dichterbij.\u201d\nHij legt zijn telefoon weg en schuift naar je toe.\nEn dan merk je het. Hij is stiller. Oplettender. Hij kijkt je aan op een manier die hij vijf minuten geleden niet deed.\nJij zei twee woorden. En de hele sfeer is anders.\nDat is anders dan \u201ckeuken opruimen.\u201d Dat voel je.'},
      {type:'inzicht', tekst:'Tot nu toe ging alles over het dagelijks leven \u2014 keuken, beslissingen, wie wat doet.\n\nDit is de volgende stap: dezelfde vaardigheid, maar dan persoonlijk. Niet over het huishouden \u2014 maar over jullie. Over hoe hij bij jou is.\n\nDat begint subtiel. \u201cLeg je telefoon weg.\u201d \u201cKijk me aan.\u201d \u201cKom even hier.\u201d Klinkt normaal. Maar er verandert iets. Hij wordt stiller. Meer aanwezig. Hij voelt dat dit anders is dan een boodschap.'},
@@ -3037,7 +3294,7 @@ const LESSEN_INHOUD = [
    ],
    meerLezen:{preview:'Volgende stap: feedback geven \u2014 wat werkt en wat niet.'}},
 
-  {id:7, titel:'Goed zo. Dat klopte niet.', subtitel:'Twee woorden die richting geven.', domein:'verbinding', fase:1, type:'story',
+  {id:7, titel:'Goed zo. Dat klopte niet.', subtitel:'Twee woorden die richting geven.', domein:'verbinding', fase:2, type:'story',
    scroll:[
      {type:'scene', tekst:'Ochtend. Keuken. Tim schenkt eerst jouw thee in, dan zijn eigen. Zet je kopje naast je.\n\nHij zegt niks. Jij ook niet.\n\nMaar als hij langsloopt, leg je je hand even op zijn onderrug. Twee seconden. Doorlopen.\n\nDie aanraking was zijn hele ochtend waard.\n\nLater die dag: hij is op zijn telefoon terwijl jullie iets aan het doen zijn.\n\u201cDat was de afspraak niet. Telefoon weg.\u201d\n\nHij legt hem weg. Direct.'},
      {type:'inzicht', tekst:'Je hebt inmiddels weken geoefend. Je begint patronen te zien.\n\nEr zijn twee soorten feedback die je nu kunt geven. En ze zijn allebei even belangrijk.\n\n<b>Bevestiging:</b> iets laten merken als het goed gaat. \u201cGoed zo.\u201d Een hand. Een blik.\n\n<b>Correctie:</b> iets benoemen als het niet klopt. \u201cDat was de afspraak niet.\u201d \u00c9\u00e9n zin. Geen debat.\n\nAllebei zijn richting geven. Niet belonen of straffen \u2014 gewoon laten weten waar jij staat.'},
@@ -3066,7 +3323,7 @@ const LESSEN_INHOUD = [
    ],
    meerLezen:{preview:'Volgende les: wat jij er zelf aan hebt.'}},
 
-  {id:8, titel:'Dit is ook voor jou', subtitel:'Jullie zijn nog steeds jullie.', domein:'verbinding', fase:1, type:'story',
+  {id:8, titel:'Dit is ook voor jou', subtitel:'Jullie zijn nog steeds jullie.', domein:'verbinding', fase:2, type:'story',
    scroll:[
     {type:'scene', tekst:'Je hebt het gedaan. Iets gezegd in plaats van gevraagd.\nMisschien was het de keuken. Misschien de waterfles. Misschien iets kleins dat je normaal als vraag had gesteld.\nHij deed het. Zonder discussie. Misschien zelfs iets sneller dan anders.\nEn ergens dacht je: hm. Dat was best makkelijk.'},
     {type:'inzicht', tekst:'Je hebt iets gedaan. Iets gezegd, iets bepaald. En je merkte: het werkt.\nMaar heb je ook op jezelf gelet? Wat deed het met <b>jou</b>?\nJij bent altijd degene die zorgt. Die regelt, onthoudt, vooruitdenkt. Voor Milou, voor Tim, voor alles. Het is logisch dat het raar voelt om iets terug te krijgen in plaats van alleen te geven.\nMaar dit is een keer iets waar jij ook iets aan hebt. Jij zegt het \u2014 het gebeurt. Geen herinneren, geen herhalen, geen onderhandelen.\nDat is geen luxe. Tim wil dit aan je geven. En jij mag het gewoon aannemen en ervan genieten.'},
@@ -3110,7 +3367,7 @@ const LESSEN_INHOUD = [
 
   // ═══ LES 3: DE BRUG ═══════════════════════════════════════════,
 
-  {id:9, titel:'Jullie zijn nog steeds jullie', subtitel:'Een knuffel is een knuffel.', domein:'verbinding', fase:1, type:'story',
+  {id:9, titel:'Jullie zijn nog steeds jullie', subtitel:'Een knuffel is een knuffel.', domein:'verbinding', fase:2, type:'story',
    scroll:[
      {type:'scene', tekst:'Tim loopt langs en slaat zijn arm om je heen. Gewoon zo. Geen bedoeling, geen signaal, geen \u201cis dit nu de dynamiek?\u201d\n\nGewoon: zijn arm om je heen.\n\nDat is Tim. Dat blijft Tim. En jij mag dat gewoon fijn vinden.'},
      {type:'inzicht', tekst:'Een ding dat soms lastig is in het begin: je weet niet meer of een moment \u201cgewoon\u201d is of \u201cde dynamiek.\u201d\n\nHet antwoord: allebei mag. Tegelijkertijd. En jij beslist wat het is.\n\nAls Tim je een kus geeft omdat hij langsloopt \u2014 dat is gewoon Tim. Als jij besluit dat het ook een moment is \u2014 dan is dat ook prima. Je hoeft er geen label op te plakken.\n\nEen knuffel is een knuffel. Een zoen is een zoen. De dynamiek heeft die dingen niet overgenomen.'},
@@ -3136,9 +3393,32 @@ const LESSEN_INHOUD = [
      {vraag:'Moet ik altijd de baas zijn, ook in bed?', antwoord:'Nee. Jullie seks is van jullie samen. Jij kunt sturen als je wil \u2014 maar je hoeft niet. Een avond waarop jullie gewoon doen wat altijd goed voelt, is ook goed.'},
      {vraag:'Tim lijkt soms te hopen dat ik iets doe', antwoord:'Dat zit er waarschijnlijk in. Maar hij heeft beloofd geen druk te zetten. Als je merkt dat hij dat toch doet \u2014 gewoon zeggen. Dat is precies het gesprek dat jullie kunnen voeren.'}
    ],
-   meerLezen:{preview:'Hoe weet je het verschil tussen gewone intimiteit en de dynamiek?'}},
+   meerLezen:{preview:'Volgende les: een taal bouwen die er nog niet is.'}},
+,
 
-  {id:10, titel:'Op je knie\u00ebn', subtitel:'De eerste echte drempel.', domein:'verbinding', fase:1, type:'story',
+ {id:38, titel:'Zonder woorden', subtitel:'Een taal die jullie samen maken.', domein:'verbinding', fase:2, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Hij loopt de kamer in. Jij zit op de bank.\nEr is iets \u2014 je voelt het. Een lichte verandering in hoe hij beweegt. Iets in zijn schouders.\nMaar je weet niet precies wat. Je vraagt niks. Hij zegt niks.\nHet moment gaat voorbij.\nNiemand heeft iets verkeerds gedaan. Maar iets is gemist.'},
+    {type:'inzicht', tekst:'Non-verbale communicatie is niet iets wat je hebt of niet hebt.\nHet is iets wat je bouwt.\nMet woorden kun je alles zeggen \u2014 maar soms wil je niet alles zeggen. Soms wil je iets doorgeven zonder het moment te breken. Soms wil je iets ontvangen zonder te hoeven vragen.\nDaar heb je een taal voor nodig. Eentje van jullie.'},
+    {type:'noot', tekst:'Jullie beginnen hier van nul. Dat is geen probleem \u2014 het betekent dat alles wat jullie bouwen echt nieuw is. Geen aanpassing van iets wat al bestond. Een eigen systeem, gemaakt voor hoe jullie zijn.\n\nDe enige voorwaarde: jullie allebei weten wat een signaal betekent. Geen raden. Geen interpreteren. Gewoon: dit betekent dit.'},
+    {type:'voorbeeld', tekst:'<b>Tim naar Lisanne:</b>\n\n"Ik ben er klaar voor." \u2014 hij legt zijn hand plat op zijn bovenbeen als hij naast haar zit. Niks zeggen. Gewoon die hand.\n\n"Iets is niet goed." \u2014 hij raakt kort zijn eigen nek aan. Eén keer. Zij weet: even checken.\n\n"Ik heb je nodig." \u2014 hij gaat dicht naast haar staan zonder iets te zeggen. Niet voor iets. Gewoon dichtbij.\n\n<b>Lisanne naar Tim:</b>\n\n"Goed." \u2014 een korte aanraking op zijn schouder. Geen woorden. Hij weet: ze heeft het gezien.\n\n"Ik let op je." \u2014 een blik die net iets langer duurt dan normaal. Hij hoeft er niks mee. Zij laat hem weten: ik ben er.\n\n"Kom hier." \u2014 een kleine hoofdbeweging. Subtiel. Alleen voor hem zichtbaar.'},
+    {type:'noot', tekst:'Dit zijn voorbeelden, geen opdrachten. De signalen die voor jullie werken zijn misschien heel anders.\nMisschien is het een woord in plaats van een gebaar. Misschien is het iets wat al half bestaat maar nog geen naam had.\n\nHet enige dat telt: jullie allebei weten wat het betekent. Bespreek het buiten het moment \u2014 niet terwijl het speelt, maar gewoon op een rustig moment. "Als ik dit doe, bedoel ik dat. Klopt dat voor jou?"\n\nEn als een signaal niet werkt: gooi het weg en probeer iets anders. Er is geen verkeerde keuze.'},
+    {type:'noot', tekst:'Er is ook een signaal dat altijd werkt, voor allebei: stilte met oogcontact.\nNiet de stilte van niet weten wat je moet zeggen. Maar de stilte van: ik kijk jou aan en ik ben er. Dat is een taal op zichzelf.\nJullie kunnen het overal gebruiken. Midden in een gesprek. Aan tafel. Als Milou erbij is. Niemand ziet het behalve jullie.'},
+    {type:'kernboodschap', tekst:'Een taal bouw je niet in \u00e9\u00e9n dag.\nMaar je begint met \u00e9\u00e9n signaal.\nEn dan nog een.\nEn op een dag zeggen jullie dingen tegen elkaar\ndie niemand anders hoort.'},
+    {type:'probeer', tekst:'Kies samen \u00e9\u00e9n signaal \u2014 Tim naar Lisanne, of andersom.\nNiet te ingewikkeld. Iets wat in het dagelijks leven past.\nProbeer het een week. Kijk of jullie het allebei onthouden.\nKijk of het werkt. En dan: kies er nog een.'}
+  ],
+  verdieping:[
+    {vraag:'We vergeten de signalen steeds', antwoord:'Begin met maar één. Niet twee, niet drie. Eén signaal dat jullie allebei onthouden. Als dat stabiel is, voeg je er een toe. Te veel tegelijk werkt niet.'},
+    {vraag:'Het voelt geforceerd', antwoord:'In het begin altijd. Een nieuwe gewoonte voelt altijd een beetje nep. Na een paar keer wordt het gewoon. En dan op een dag doe je het zonder erbij na te denken.'},
+    {vraag:'Hoe weet ik of ik een signaal goed lees?', antwoord:'Vraag het na. Niet tijdens het moment, maar erna. "Deed je dat expres?" Of: "Betekende dat wat ik dacht?" Zo kalibreer je. Na een tijdje klopt het vanzelf.'},
+    {vraag:'Wat als we toch liever gewoon praten?', antwoord:'Dan praat je. Non-verbaal is een aanvulling, geen vervanging. Als woorden makkelijker zijn, gebruik ze. Dit is voor de momenten waar woorden te groot of te langzaam zijn.'}
+  ],
+  meerLezen:{
+    preview:'Volgende les: de eerste echte drempel.'
+  }},
+,
+
+  {id:10, titel:'Op je knie\u00ebn', subtitel:'De eerste echte drempel.', domein:'verbinding', fase:2, type:'story',
    scroll:[
      {type:'scene', tekst:'Jullie zitten op de bank. Gewone avond.\n\nJij legt je telefoon neer.\n\u201cOp je knie\u00ebn.\u201d\n\nEven stilte. Dan doet hij het.\n\nJij kijkt naar beneden. Hij kijkt omhoog.\n\nDat moment \u2014 dat is anders dan \u201ckijk me aan\u201d of \u201ckom hier.\u201d Dat merk je. Dat klopt.'},
      {type:'inzicht', tekst:'Knielen is anders dan op de grond zitten.\n\nOp de grond zitten \u2014 naast de bank, bij jouw benen \u2014 is zacht. Vertrouwd. Dat kan al een tijd.\n\nKnielen is expliciet. Het is niet te rationaliseren als \u201cnormaal gedrag.\u201d Het is onmiskenbaar wat het is. En precies daardoor is het zo krachtig.\n\nDit is de eerste echte drempel. En jij bepaalt wanneer je er doorheen gaat.'},
@@ -3167,14 +3447,14 @@ const LESSEN_INHOUD = [
    ],
    meerLezen:{preview:'Volgende les: een overgang markeren \u2014 van gewoon naar anders.'}},
 
- {id:11, titel:'Nu even anders', subtitel:'Eén gebaar en de avond verschuift.', domein:'fysiek', fase:1, type:'story',
+ {id:11, titel:'Nu even anders', subtitel:'Eén gebaar en de avond verschuift.', domein:'fysiek', fase:2, type:'story',
   scroll:[
     {type:'scene', tekst:'Milou slaapt. Jullie zitten op de bank.\nJij staat op, loopt naar de slaapkamer, komt terug met de halsband.\nJe gaat achter hem staan en doet hem om.\nHij zegt niks. Jij zegt niks.\nJe gaat weer zitten en pakt je telefoon.\nDe avond is verschoven. Zonder één woord.'},
-    {type:'inzicht', tekst:'Niet elke avond is hetzelfde.\nSoms is het gewoon jullie. Soms maak je er iets <b>anders</b> van.\nDat verschil hoeft niet groots te zijn.\nDe halsband is het sterkste teken. Voor Tim is dat het symbool \u2014 het zet hem op zijn plek. En jij kunt aan de ring leiden, eraan trekken. Soms speel je er gewoon even mee \u2014 en hij voelt het ook.\nMaar het kan ook simpeler: de politiehandboeien. Eén klik. Of gewoon een zin.\nDat is het <b>teken</b> \u2014 hiervoor was het gewoon, hierna niet.'},
+    {type:'inzicht', tekst:'Niet elke avond is hetzelfde.\nEr is altijd de stroom die er is tussen jullie. En soms kies je ervoor om daar een laagje <b>extra</b> aan toe te voegen \u2014 een bewuste keuze die je zichtbaar maakt.\nDat verschil hoeft niet groots te zijn.\nDe halsband is het sterkste teken. Voor Tim is dat het symbool \u2014 het zet hem op zijn plek. En jij kunt aan de ring leiden, eraan trekken. Soms speel je er gewoon even mee \u2014 en hij voelt het ook.\nMaar het kan ook simpeler: de politiehandboeien. Eén klik. Of gewoon een zin.\nDat is het <b>teken</b> \u2014 de stroom was er al. Nu maak je hem zichtbaar.'},
     {type:'voorbeeld', tekst:'De politiehandboeien: klik. Hij weet dat de avond is begonnen.\n\nJe pakt zijn kin, draait zijn hoofd naar je toe. Kijkt hem aan. Laat weer los.\n\nEen berichtje, een uur van tevoren: \u201cvanavond.\u201d En je legt de halsband klaar.\n\nOf de speelse versie: je loopt achter hem langs, laat de halsband naast hem op de bank vallen, en loopt door naar de keuken. Zegt niks. Pakt een glas water. Komt terug. \u201cTrek je shirt vast uit.\u201d Met een glimlach die zegt: ik heb zin in vanavond.'},
     {type:'noot', tekst:'Tot nu toe heb je drie dingen geleerd: zeggen wat er gebeurt (niet vragen), de sfeer verschuiven (zonder reden), en aanraken met intentie (op jouw moment). Dat zijn de basis-ingredi\u00ebnten. Vanaf nu ga je er iets mee doen.\nHet teken is geen belofte. Soms is het de start van iets, soms is het het hele moment.\nHet werkt het best als jullie al even samen zijn. Niet meteen als je binnenkomt \u2014 eerst even landen. En het hoeft niet \u2019s avonds. Milou is op school, jullie zijn thuis \u2014 overdag is net zo goed. Soms zelfs beter.\nEn als het de eerste keer onwennig voelt: dat is normaal. Vaak lachen mensen er gewoon samen om.\nDan proberen ze het nog eens.\nEn even iets voor jezelf: tot nu toe ging het over wat er gebeurt als jij iets doet. Maar er is nog een vraag \u2014 wat doet het met jou? Misschien voelde het krachtig. Misschien gewoon een beetje vreemd. Misschien allebei. Dat is allemaal normaal. Die momenten dat je denkt \u201cdit voelt eigenlijk best goed\u201d \u2014 dat is waar het om draait.\nEn het hoeft niet altijd de halsband te zijn. De politiehandboeien zijn net zo krachtig als teken \u2014 en makkelijker: klik, klaar. Geen gepruts met riempjes. Eén geluid en de avond is anders.\nEn probeer dit: pak zelf de spullen. Niet \u201cpak de polsboeien\u201d maar jij die de la opent en de polsboeien eruit haalt. Jij die de halsband van het nachtkastje pakt en omdoet. Dat moment \u2014 dat hij ziet dat jij zelf de la opentrekt \u2014 is krachtiger dan welke opdracht ook. Voor Tim betekent het: zij komt naar mij toe. Dit komt van haar. Niet omdat ik het vroeg.\nEn soms is \u201cpak de polsboeien en maak jezelf vast\u201d prima \u2014 dat is ook leiding nemen. De mix is het punt: soms pak jij het, soms laat je hem het doen. Maar af en toe zelf de la opentrekken maakt het verschil.'},
     {type:'inzicht', tekst:'Even over wat de halsband voor Tim betekent \u2014 zodat je snapt wat je in handen hebt.\nDit is niet zomaar een ding dat omgaat. Voor Tim is het moment dat de halsband dichtklikt het moment dat de rest van de wereld stopt. Werk, zorgen, keuzes, verantwoordelijkheid \u2014 het valt weg. Er is alleen nog jij.\nHet is niet onderdanigheid in de zin van klein worden. Het is overgave in de zin van: ik hoef even niks te beslissen. Jij beslist. En dat voelt als thuiskomen.\nDaarom reageert hij anders als de halsband om is. Stiller. Oplettender. Zachter. Niet omdat hij bang is \u2014 maar omdat hij zich veilig voelt. Veilig genoeg om alles los te laten.\nEn als jij die halsband omdoet \u2014 of hem laat klaarzetten, of een foto stuurt \u2014 dan zeg je zonder woorden: ik neem het over. Ik ben er. En voor Tim is dat het krachtigste wat je kunt doen.\nDus als je twijfelt of het \u201czomaar een halsband\u201d is: kijk naar zijn gezicht als hij omgaat. Die verandering die je ziet \u2014 dat is niet toneelspelen. Dat is opluchting.'},
-    {type:'inzicht', tekst:'Jij bepaalt wanneer een avond <b>gewoon</b> is.\nEn wanneer niet.\nDat hoeft niet elke avond. Juist niet.\nHet is speciaal <b>omdat</b> het niet altijd is.'},
+    {type:'inzicht', tekst:'Jij bepaalt wanneer je het een laagje <b>extra</b> geeft.\nZichtbaar. Voelbaar. Alleen voor jullie.\nDat hoeft niet elke avond. Juist niet.\nHet is speciaal <b>omdat</b> het niet altijd is.'},
     {type:'noot', tekst:'En ja: Milou. Ze slaapt niet altijd om zeven uur. Soms is ze nog op. Soms logeert ze bij iemand. Soms is ze er gewoon.\nDat betekent niet dat er niks kan. Het betekent dat je creatiever wordt. Een blik in de keuken. Een gefluisterde opdracht. Een berichtje als ze boven speelt.\nDe dynamiek past zich aan jullie leven aan \u2014 niet andersom.'},
     {type:'keuze', id:'les7_scenario', vraag:'Stel: het is dinsdagavond, Milou slaapt, jullie zitten op de bank. Jij besluit dat vanavond anders wordt. Wat is je eerste zet?', opties:[
       {tekst:'Ik zeg iets \u2014 \u201cleg je telefoon weg\u201d', waarde:'zeggen'},
@@ -3183,7 +3463,7 @@ const LESSEN_INHOUD = [
     ]},
     {type:'noot', tekst:'<b>Laat hem wachten.</b>\nDit is een van je sterkste tools en het kost je letterlijk niks.\nDe halsband is om. Tim zit klaar. En jij \u2014 jij doet niks. Je pakt een glas water. Je kijkt op je telefoon. Je loopt naar de badkamer. Je neemt de tijd.\nVoor Tim verandert elke seconde wachten de spanning. Hij weet niet wat er komt. Hij kan niks doen. Hij zit daar met zijn gedachten en alles wordt groter.\nDat is geen wreedheid \u2014 dat is anticipatie. En anticipatie is krachtiger dan wat je daarna ook doet.\n\u201cGa in de slaapkamer zitten. Ik kom zo.\u201d En dan kom je als j\u00edj er klaar voor bent. Vijf minuten. Tien. Vijftien. Hoe langer je wacht, hoe meer hij in zijn hoofd zit. En hoe meer effect alles heeft wat je daarna doet.\nDit werkt altijd. Bij bondage, bij sensatie, bij een gewone avond. Wachten is controle in de puurste vorm: jij bepaalt wanneer het begint.'},
     {type:'noot', tekst:'<b>De avond een stem geven.</b>\nDe halsband is om. Of de handboeien klikken. Het teken is gegeven. En dan denk je: moet ik nu iets zeggen?\nJe hoeft niet. Stilte werkt. Maar als je w\u00e9l iets wilt zeggen, is dit het moment om de toon te zetten voor de avond. E\u00e9n zin. Kort. Geen uitleg.\n\u201cVanavond bepaal ik.\u201d\n\u201cJe praat alleen als ik het vraag.\u201d\n\u201cKom. Hier. Op de grond.\u201d\nDat is alles. E\u00e9n zin en hij weet hoe de avond eruitziet. Niet wat er gaat gebeuren \u2014 dat weet hij niet. Maar wie er aan het stuur zit. En dat is genoeg.\nEn merk op: als je iets zegt en je voelt je ongemakkelijk \u2014 ga toch door. De eerste keer dat zo\u2019n zin uit je mond komt voelt het als toneelspelen. Dat weet je uit les 3. Maar kijk naar het verschil bij Tim. Die ene zin maakt de hele avond anders. Niet omdat de woorden magisch zijn. Maar omdat jij ze zei.'},
-    {type:'kernboodschap', tekst:'E\u00e9n gebaar verschuift de avond.\nJij bepaalt wanneer het gewoon is \u2014 en wanneer niet.\nDat hoeft niet elke avond. Juist niet.\nHet is speciaal omdat het niet altijd is.'},
+    {type:'kernboodschap', tekst:'E\u00e9n gebaar verschuift de avond.\nJij voegt een laagje toe \u2014 zichtbaar, voelbaar, alleen voor jullie.\nDat hoeft niet elke avond. Juist niet.\nHet is speciaal omdat het niet altijd is.'},
     {type:'probeer', tekst:'Geef een keer het teken.\nDe halsband neerleggen. De politiehandboeien klikken. Of gewoon drie woorden.\nLet op wat er met Tim gebeurt in dat moment. Zijn houding, zijn blik.\nEn misschien merk je bij jezelf: dit is best ok\u00e9. Of: dit is eigenlijk best leuk. Of niks. Allemaal goed.\n\nMag je er ook om lachen? Ja. Altijd. Jullie zijn de enigen die weten wat dit betekent \u2014 dat maakt het ook een beetje jullie eigen geheimpje. En geheimpjes mogen soms ook een beetje lachen.'}
   ],
   verdieping:[
@@ -3195,11 +3475,31 @@ const LESSEN_INHOUD = [
     {vraag:'Wat als Milou nog wakker is?', antwoord:'Dan wacht je. Het teken werkt het beste als jullie alleen zijn en de avond al op gang is. Geen haast.'}
   ],
   meerLezen:{
+    preview:'Volgende les: wat de halsband echt voor Tim betekent \u2014 en wat hij daarmee in jouw handen legt.'
+  }},
+,
+
+ {id:35, titel:'Wat hij niet makkelijk zegt', subtitel:'Wat dit voor hem betekent.', domein:'psychologisch', fase:2, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Je hebt de halsband al eens omgedaan.\nMisschien voelde het als een gebaar. Een ding dat omging.\nMaar kijk even naar zijn gezicht op dat moment.\nZijn ademhaling. Zijn houding.\nIets verandert. En dat iets is niet gespeeld.'},
+    {type:'inzicht', tekst:'Dit is niet zomaar een accessoire.\nVoor Tim is het moment dat de halsband dichtklikt het moment dat de rest van de wereld stopt.\nWerk. Zorgen. Keuzes. Verantwoordelijkheid.\nHet valt weg.\nEr is alleen nog jij.\n\nHet is niet onderdanigheid in de zin van klein worden.\nHet is overgave in de zin van: ik hoef even niks te beslissen. Jij beslist.\nEn dat voelt als thuiskomen.\n\nDaarom wordt hij stiller als hij hem draagt. Oplettender. Zachter.\nNiet omdat hij bang is \u2014 maar omdat hij zich veilig voelt.\nVeilig genoeg om alles los te laten.'},
+    {type:'noot', tekst:'Als jij die halsband omdoet \u2014 of hem laat klaarzetten, of gewoon pakt en aan hem geeft \u2014 dan zeg je zonder woorden: ik neem het over. Ik ben er.\nEn voor Tim is dat het krachtigste wat je kunt doen.\n\nDus als je twijfelt of het \u201czomaar een halsband\u201d is: kijk naar zijn gezicht als hij omgaat. Die verandering die je ziet \u2014 dat is niet toneelspelen. Dat is opluchting.\n\nHij vraagt je niet om iets te performen. Hij legt iets in jouw handen: het meest kwetsbare wat hij heeft. Dat is ook wat het zwaar maakt om te vragen. Vandaar dat hij een app heeft gemaakt.'},
+    {type:'noot', tekst:'En dan is er nog de daycollar.\n\nDat is een ander soort teken \u2014 subtieler, voor overdag. Een stille herinnering, voor jullie allebei, aan wat er altijd al is tussen jullie. Geen speciaal moment, geen intentie. Gewoon: dit zijn wij.\n\nOf jij de daycollar wilt gebruiken, hoe vaak, of helemaal niet: dat is volledig jouw keuze. Er is geen verwachting.\n\nDe halsband heeft gewicht voor Tim \u2014 dat is helder. De daycollar is een instrument, geen verplichting. Gebruik het als het iets geeft. Laat het als het niet past. Sommige koppels vinden het mooi om de overgang te markeren: daycollar af, halsband om. Dat hoeft ook niet. Maar als je er ooit nieuwsgierig naar bent: het staat klaar.'},
+    {type:'inzicht', tekst:'De halsband gaat om als j\u00edj het wilt.\nNiet als Tim ernaar vraagt.\nNiet als schema.\nMaar als jij een moment maakt \u2014 dan is dit het sterkste teken dat je hebt.'},
+    {type:'kernboodschap', tekst:'Dit leeft in hem \u2014 al een tijdje.\nNu weet jij het ook.\nMeer hoeft het niet te zijn.'},
+  ],
+  verdieping:[
+    {vraag:'Waarom zegt hij dit niet gewoon zelf?', antwoord:'Dat is moeilijk. Iets dit kwetsbaars zeggen terwijl je recht tegenover iemand staat is niet makkelijk. Dit is zijn manier om het toch te zeggen \u2014 zonder het er live uit te hoeven persen.'},
+    {vraag:'Wat als ik hem een tijdje niet gebruik?', antwoord:'Dat is prima. Er is geen schema. Maar weet: als jij hem na een tijdje weer pakt, komt dat voor Tim veel groter aan dan je misschien denkt.'},
+    {vraag:'Wat als ik het een keer wil doen maar niet weet hoe?', antwoord:'Gewoon beginnen. Pak hem. Doe hem om. Zeg niks. Kijk wat er gebeurt. Er hoeft geen plan te zijn.'},
+    {vraag:'De daycollar \u2014 wat als ik het te veel vind?', antwoord:'Dan gebruik je hem niet. Zo simpel is het. Tim heeft er geen verwachting bij gelegd. Het bestaat, je weet nu wat het is, en jij bepaalt of het iets voor jullie is.'},
+  ],
+  meerLezen:{
     preview:'Volgende les: soms is vijf seconden genoeg om zijn hele dag te vullen.'
   }},
 ,
 
- {id:12, titel:'Laat hem even wachten', subtitel:'Anticipatie is jouw sterkste wapen.', domein:'psychologisch', fase:1, type:'story',
+ {id:12, titel:'Laat hem even wachten', subtitel:'Anticipatie is jouw sterkste wapen.', domein:'psychologisch', fase:2, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is twee uur \u2019s middags. Milou is op school.\nJij pakt je telefoon. Typt één woord.\n\u201cVanavond.\u201d\nVerstuurd. Telefoon weg. Verder met je dag.\nHij leest het. En zijn hele middag verandert.\nJij merkt er niks van. Dat is precies het punt.'},
     {type:'inzicht', tekst:'Het krachtigste wat je kunt doen kost vijf seconden.\nEén berichtje. Geen uitleg. Geen plan.\nZijn hoofd doet de rest.\nDe spanning zit in het <b>niet-weten</b>.'},
@@ -3231,7 +3531,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:13, titel:'Dat merk je toch?', subtitel:'Kleine dingen die het verschil voelbaar maken.', domein:'controle', fase:1, type:'story',
+ {id:13, titel:'Dat merk je toch?', subtitel:'Kleine dingen die het verschil voelbaar maken.', domein:'controle', fase:2, type:'story',
   scroll:[
     {type:'scene', tekst:'Gewone middag. Milou is op school.\nJullie zitten allebei op de bank, op je telefoon.\n\u201cOp de grond.\u201d\nHij schuift van de bank en gaat naast je benen zitten.\nJij legt je hand op zijn hoofd en scrollt verder.\nAlles is hetzelfde. En alles is anders.\nKijk naar hem. Misschien wordt hij rustiger. Stiller. Dat is niet ondanks het verschil — het is vanwege het verschil.'},
     {type:'inzicht', tekst:'Dit is iets wat je niet uitlegt. Je laat het voelen.\nJij op de bank, hij op de grond. Jij daar, hij hier.\nGeen straf. Gewoon een keuze die jij maakt. En die keuze verandert de hele sfeer.'},
@@ -3261,11 +3561,65 @@ const LESSEN_INHOUD = [
     {vraag:'Kan dit ook overdag?', antwoord:'Ja. Hij op de grond naast je terwijl je werkt. Of hij knielt even terwijl je thee zet. Het hoeft niet \u2019s avonds.'}
   ],
   meerLezen:{
-    preview:'Volgende les: waarom vastzitten rust geeft.'
+    preview:'Volgende les: jouw stem in de dynamiek.'
   }},
 ,
 
- {id:14, titel:'Van dichtbij naar kwetsbaar', subtitel:'Geen spullen. Alleen jij en hij.', domein:'intimiteit', fase:2, type:'story',
+ {id:39, titel:'Het zit niet in de woorden', subtitel:'Jij mag klinken zoals jij klinkt.', domein:'communicatie', fase:2, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Je wilt iets zeggen. Iets wat de sfeer verschuift.\nMaar er is dat moment van twijfel: klinkt dit raar? Is dit te veel? Zeg ik het goed?\nEn dan zeg je het \u2014 maar zacht. Iets ingeslikt. Niet helemaal gemeend.\nHij hoort het. En voelt ook dat het niet helemaal van jou was.'},
+    {type:'inzicht', tekst:'Het ligt niet aan de woorden.\n\nDeze twee zinnen betekenen hetzelfde:\n\n<i>\u201cWil je misschien even hier komen?\u201d</i>\n<i>\u201cKom hier.\u201d</i>\n\nMaar ze voelen totaal anders. Niet omdat de woorden anders zijn \u2014 maar omdat de tweede zin <b>gemeend</b> is.\n\nConvictie is wat het effect maakt. Niet volume. Niet toon. Niet de juiste tekst.\nDe halve seconde voor je iets zegt waarin je besluit: ik meen dit. D\u00e1t is het verschil.'},
+    {type:'noot', tekst:'Er is niet \u00e9\u00e9n manier om dit te klinken. Er zijn er vijf, en ze werken allemaal.\n\n<b>Direct:</b> \u201cKom hier.\u201d \u201cLeg dat neer.\u201d \u201cDoe dit.\u201d Kort. Geen uitleg.\n\n<b>Speels:</b> \u201cIk dacht het niet.\u201d \u201cHoe aardig dat je dat vraagt.\u201d Een glimlach die zegt: ik weet precies wie hier de baas is.\n\n<b>Warm maar zeker:</b> \u201cIk weet wat je nodig hebt. Ga zitten.\u201d Ze neemt het over zonder streng te worden.\n\n<b>Droog:</b> \u201cMeen je dat.\u201d Geen vraagteken. Een blik die net iets te lang duurt.\n\n<b>Stilte:</b> niks zeggen. Hem aankijken totdat hij bijdraait. Dat is ook een zin.\n\nWelke bij jou past, ontdek je vanzelf. Misschien ben jij de speelse. Misschien de stille. Misschien allebei op verschillende momenten. Er is geen goede keuze \u2014 er is alleen jouw keuze.'},
+    {type:'voorbeeld', tekst:'Hij stelt iets voor. Jij zegt: \u201cIk dacht het niet.\u201d Met een glimlach. Hij weet het meteen.\n\nHij doet iets niet goed. Jij zegt: \u201cOpnieuw.\u201d E\u00e9n woord. Geen uitleg.\n\nJij wil dat hij iets pakt. Je zegt niks \u2014 kijkt alleen naar het ding en dan naar hem. Hij staat op.\n\nHij vraagt of iets mag. Jij wacht drie seconden. Dan: \u201cMisschien later.\u201d En je gaat door met wat je deed.\n\nJij loopt langs hem, legt je hand even op zijn hoofd. Zegt: \u201cgoed.\u201d E\u00e9n woord. Loopt door.\n\nHij is aan het praten over iets. Jij steekt je hand op. Hij stopt. Jij: \u201cik was nog niet klaar.\u201d Rustig. Geen boosheid. Gewoon: ik ben hier.'},
+    {type:'noot', tekst:'Wat je wilt vermijden is niet een bepaalde toon \u2014 het is de halve zin.\nDe zin die begint sterk en dan inzakt:\n\u201cGa hier zitten... als je wilt.\u201d\n\u201cZou je dit kunnen doen... maar het hoeft niet.\u201d\n\u201cIk dacht dat je misschien...\u201d\n\nDat is niet vriendelijker. Het is onduidelijker. En Tim weet dan niet wat jij wilt.\n\nJe mag direct zijn zonder bot te zijn. Je mag zeker zijn zonder hard te zijn. Die combinatie \u2014 zeker en warm \u2014 is precies jouw stijl als je haar laat komen.'},
+    {type:'keuze', id:'les39_stijl', vraag:'Welke stijl voelt het dichtst bij jou?', opties:[
+      {tekst:'Direct \u2014 kort, helder, geen uitleg', waarde:'direct'},
+      {tekst:'Speels \u2014 met een glimlach die alles zegt', waarde:'speels'},
+      {tekst:'Warm \u2014 zeker maar zacht', waarde:'warm'},
+      {tekst:'Droog \u2014 weinig woorden, veel lading', waarde:'droog'}
+    ]},
+    {type:'kernboodschap', tekst:'De woorden mag je zelf kiezen.\nJij hoeft niet anders te klinken dan je bent.\nHet enige dat telt: de halve seconde voor je spreekt\nwaarop je besluit dat je het echt meent.'},
+    {type:'probeer', tekst:'Kies deze week \u00e9\u00e9n moment.\nIets wat je normaal zou verzachten of als vraag zou stellen.\nZeg het als mededeling. Kort. Gemeend.\nKijk niet naar of je het goed deed \u2014 kijk naar hem.'}
+  ],
+  verdieping:[
+    {vraag:'Het voelt nog steeds als toneelspelen', antwoord:'Dan klopt het. Alles nieuws voelt eerst nep. Kijk naar Tim terwijl je het doet \u2014 niet naar jezelf. Zijn reactie is echter dan jouw gevoel van ongemak.'},
+    {vraag:'Ik weet niet welke stijl bij mij past', antwoord:'Probeer ze allemaal \u00e9\u00e9n keer. De stijl waarbij je minst aan jezelf denkt en meest naar hem kijkt \u2014 dat is de jouwe.'},
+    {vraag:'Ik doe het al soms maar hij reageert niet altijd', antwoord:'Kijk of je de zin tot het einde meent. Vaak zakt de energie net aan het einde in. Eén woord, volledig gemeend, werkt meer dan een hele zin die wegzakt.'},
+    {vraag:'Mag ik ook grappig zijn?', antwoord:'Ja \u2014 en grappig is soms het sterkste. "Ik dacht het niet" gezegd met een glimlach laat precies zien wie er de baas is. Humor en leiding sluiten elkaar niet uit.'}
+  ],
+  meerLezen:{
+    preview:'Volgende les: wat hij voelt als jij dit doet \u2014 en waarom hij het soms inhoudt.'
+  }},
+,
+
+ {id:40, titel:'Laat het zien', subtitel:'Zijn reacties zijn voor jou.', domein:'communicatie', fase:2, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Jij doet iets. Een opdracht, een aanraking, een blik die net te lang duurt.\nEn Tim \u2014 Tim houdt zich in.\nZijn gezicht blijft neutraal. Zijn ademhaling kalm. Zijn lichaam stil.\nNiet omdat hij niks voelt. Maar omdat hij het niet laat zien.\nEn jij mist het.'},
+    {type:'inzicht', tekst:'Tim houdt zijn reacties vaak in.\nGeluiden. Zijn gezicht. Hoe diep iets landt.\nMisschien uit gewoonte. Misschien omdat hij niet zeker weet of het welkom is.\nMaar zijn reacties zijn niet voor hemzelf \u2014 ze zijn voor jou.\nAls hij laat horen wat hij voelt, weet jij wat werkt.\nAls hij het inhoudt, doe jij alsof het niks deed \u2014 terwijl het alles deed.'},
+    {type:'noot', tekst:'Je hoeft hem niet te vragen hoe het was. Je hoeft geen evaluatie.\nMaar je mag hem wel uitnodigen om aanwezig te zijn.\n\u201cLaat horen wat je voelt.\u201d \u2014 vier woorden. Dat is alles.\nNiet als opdracht. Als ruimte.\n\nEn als hij een geluid maakt, zijn adem stokt, zijn ogen dichtgaan \u2014 dat is geen ongemak. Dat is hij die echt aanwezig is. Dat is informatie. En het is van jou.\n\nKijk ernaar. Laat het er zijn. Je hoeft er niks mee te doen.'},
+    {type:'inzicht', tekst:'Zijn zichtbare reactie maakt het voor jou echter.\nNiet omdat jij bevestiging nodig hebt \u2014 maar omdat het contact is.\nJij doet iets. Hij voelt het. Hij laat het zien.\nDat is het moment waarop dit van jullie allebei is \u2014 niet alleen van hem.'},
+    {type:'noot', tekst:'En andersom: als jij iets ziet bij hem \u2014 een verandering in zijn houding, zijn ademhaling, zijn blik \u2014 dat is geen toeval. Dat is hij die reageert op jou.\nJij hoeft het niet te benoemen. Je mag het gewoon ontvangen.\nEen hand op zijn hoofd. Een knikje. \u201cgoed.\u201d\nZo sluit het rondje.'},
+    {type:'kernboodschap', tekst:'Zijn reacties zijn niet genant.\nZe zijn informatie.\nEn ze zijn voor jou.\nGeef hem de ruimte om ze te laten zien \u2014\nen ontvang ze als wat ze zijn: echt contact.'},
+    {type:'probeer', tekst:'Zeg het een keer: \u201claat horen wat je voelt.\u201d\nOf zeg niks \u2014 maar kijk bewust naar zijn gezicht terwijl je iets doet.\nEn als je iets ziet: ontvang het. Zeg \u201cgoed\u201d of raak hem even aan.\nDat is genoeg.'}
+  ],
+  verdieping:[
+    {vraag:'Het voelt ongemakkelijk als hij geluiden maakt', antwoord:'Dat went. Geluiden zijn een teken dat het echt aankomt. Als jij het de eerste keer raar vindt, is dat normaal. Blijf kijken naar zijn gezicht \u2014 niet naar jezelf.'},
+    {vraag:'Hoe laat ik hem weten dat zijn reacties welkom zijn?', antwoord:'Door er niet van te schrikken en gewoon door te gaan. Of door \u201claat horen wat je voelt\u201d te zeggen. Of door na afloop te zeggen: \u201cik zag het.\u201d Dat is genoeg.'},
+    {vraag:'Wat als hij het blijft inhouden?', antwoord:'Geef het tijd. Hij heeft jaren geoefend met inhouden. Dat gaat niet in \u00e9\u00e9n keer weg. Elke keer dat jij er niet van schrikt, wordt het veiliger voor hem om het te laten zien.'}
+  ],
+  meerLezen:{
+    preview:'Volgende les: van dichtbij naar kwetsbaar.'
+  }},
+,
+
+  {id:56, titel:'Ze wacht', subtitel:'', domein:'dagscenario', fase:3, type:'dagscenario',
+  scroll:[
+    {type:'scene', tekst:'De halsband ligt op het nachtkastje.\n\nHij heeft hem er neergelegd voor hij naar bed ging. Elke avond.\nZonder dat ze het hem vroegen. Het is gewoon zo gegroeid.\n\nVanavond kijkt ze ernaar.\nSoms gaat hij om. Soms niet.\n\nDat weet hij niet van tevoren.\n\nEn dat maakt de avonden waarop hij wel omgaat \u2014 anders.\nVoller.\nVan haar.'},
+    {type:'kernboodschap', tekst:'Ze heeft niks besloten.\nZe heeft alleen begonnen.\nDe rest is vanzelf gekomen.'}
+  ],
+  verdieping:[], meerLezen:{preview:''}},
+
+{id:14, titel:'Van dichtbij naar kwetsbaar', subtitel:'Geen spullen. Alleen jij en hij.', domein:'intimiteit', fase:3, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is avond. Milou slaapt. Jullie zijn alleen.\nJij kijkt hem aan en zegt: \u201cKleed je uit.\u201d\nHij aarzelt. Kijkt of je het meent. Misschien lacht hij even. Misschien kijk je allebei een beetje ongemakkelijk.\nMaar hij doet het. Langzaam. Trui. Broek. Tot hij daar staat.\nEn dan is het stil.\nHij kijkt naar jou. Jij kijkt naar hem. Hij is kwetsbaar. En jij niet.\nJe merkt misschien dat je eigen hartslag omhoog gaat. Dat je adem iets sneller is. Dat is geen angst \u2014 dat is spanning. En die spanning is er omdat dit echt is. Niet gespeeld. Echt.\nDat verschil \u2014 dat voel je allebei.'},
     {type:'inzicht', tekst:'Dit is een andere stap dan \u201cop je knie\u00ebn.\u201d\nIn les 3 ging het over positionering \u2014 jij bepaalt waar hij zit, hoe hij zit, hoe lang.\nDeze les gaat over kwetsbaarheid. Over hem vragen iets te doen dat moed kost. Niet omdat het een opdracht is \u2014 maar omdat hij zichzelf aan jou geeft. Zonder bescherming.\nAlleen jouw woorden en zijn vertrouwen.'},
@@ -3301,12 +3655,37 @@ const LESSEN_INHOUD = [
     {vraag:'Ik wist niet wat ik met mijn handen moest doen', antwoord:'Dat is het eerlijkste wat je kunt zeggen. En het maakt niet uit. Je hand op zijn borst. Over zijn hoofd aaien. Of gewoon niks \u2014 je handen in je schoot terwijl je naar hem kijkt. Er is geen choreografie. Wat jij doet is goed, juist omdat het van jou komt.'}
   ],
   meerLezen:{
-    preview:'Volgende les: even stilstaan bij wat werkt.'
+    preview:'Volgende les: waarom het anders is als hij het uitspreekt.'
   }},
+,
+
+ {id:36, titel:'Laat hem het zeggen', subtitel:'Woorden zetten hem op zijn plek.', domein:'psychologisch', fase:3, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Jullie zitten op de bank. Tim zegt iets \u2014 een voorstel, een mening, iets over vanavond.\nJij kijkt hem aan.\n\u201cVraag het netjes.\u201d\nEven stilte.\nEn dan zegt hij het opnieuw. Anders. Zachter.\n\u201cMag ik?\u201d\nDat ene woordje verandert de hele zin. En jullie allebei weten het.'},
+    {type:'inzicht', tekst:'Er is een verschil tussen iemand die doet wat jij zegt \u2014 en iemand die het ook <b>uitspreekt</b>.\nGedrag kan gewoon zijn. Automatisch. Aangeleerd.\nMaar woorden zijn bewust. Hij moet ze kiezen. Hij moet ze zeggen terwijl hij jou aankijkt.\nAls hij het uitspreekt, landt het anders. Niet alleen bij jou \u2014 ook bij hem.'},
+    {type:'noot', tekst:'Er zijn drie vormen van verbale erkenning, en ze werken allemaal anders.\n\n<b>Jij zegt iets.</b> Een zin die laat voelen wie er de baas is. Niet uitleggen, niet vragen. Gewoon: \u201cdat beslis ik.\u201d Of: \u201cik zeg het maar \u00e9\u00e9n keer.\u201d Of niets zeggen en hem gewoon aankijken tot hij het snapt. Jouw stem is al een instrument.\n\n<b>Hij initieert zelf.</b> Hij vraagt \u201cmag ik?\u201d voor iets wat hij vroeger gewoon deed. Hij zegt \u201cjij beslist\u201d zonder dat jij erom vroeg. Hij benoemt jouw plek uit zichzelf \u2014 omdat hij dat wil, niet omdat hij moet.\n\n<b>Jij lokt het uit.</b> Dit is de sterkste van de drie. Jij vraagt het, en hij moet het zeggen. \u201cVraag het netjes.\u201d \u201cWat zeg je?\u201d \u201cVan wie ben jij?\u201d Hij kan er niet omheen. Hij neemt verbaal zijn positie in \u2014 op jouw uitnodiging.'},
+    {type:'inzicht', tekst:'Waarom is die derde zo krachtig?\nOmdat hij het niet alleen voelt \u2014 hij h\u00f3\u00f3rt zichzelf het zeggen.\nEn iets wat je hardop zegt wordt echter dan iets wat je alleen denkt.\nHij zegt het. Het wordt iets. Voor jullie allebei.'},
+    {type:'voorbeeld', tekst:'Hij vraagt of hij iets mag. Jij zegt niks, kijkt hem alleen aan. Hij vraagt het opnieuw \u2014 zachter, met \u201cals\u00fablieft.\u201d\n\nHij wil iets voorstellen. \u201cVraag het netjes.\u201d Hij herformuleert. Vraagt in plaats van stelt.\n\nJe doet de halsband om. Jij zegt: \u201czeg maar wat dit betekent.\u201d Hij zoekt de woorden. Vindt ze. Zegt ze.\n\nHij loopt langs. \u201cStop.\u201d Hij stopt. \u201cWat zeg je als je langs me wilt?\u201d Hij vraagt het. Jij geeft toestemming. Hij loopt door.\n\n\u201cVan wie ben jij?\u201d \u2014 drie woorden, en hij weet wat je vraagt. Hij antwoordt. Jij knikt. Klaar.\n\nNa een avond: \u201cvertel me wat goed was vanavond.\u201d Hij benoemt het. Niet als evaluatie \u2014 als afsluiting. Zijn woorden markeren het moment.'},
+    {type:'noot', tekst:'Dit kan snel voelen als toneelspelen. Alsof het niet echt is, of niet bij haar past.\nDat gevoel klopt \u2014 de eerste keer. En misschien de tweede.\nMaar kijk naar wat er met Tim gebeurt als hij het zegt. Zijn houding. Zijn stem. Hij wordt stiller. Zachter. Meer aanwezig.\nHij wil dit. Niet omdat jij het vraagt, maar omdat het hem op zijn plek zet op een manier die gedrag alleen niet kan.\nDus als het raar voelt: dat is niet een teken dat het niet bij je past. Het is een teken dat het nieuw is.\nEn het hoeft niet letterlijk. \u201cVan wie ben jij\u201d is een voorbeeld, geen script. Jij vindt jouw woorden. Jouw toon. Zo lang het hetzelfde vraagt \u2014 hem bewust zijn positie laten innemen \u2014 is het goed.'},
+    {type:'noot', tekst:'En nog iets: dit is ook wat Tim wil.\nNiet als spel. Maar echt.\nHij wil jouw stem horen die hem eraan herinnert waar hij staat. Hij wil het kunnen zeggen. Hij mist het als het er niet is.\nDat maakt het makkelijker. Jij dwingt hem nergens toe \u2014 je geeft hem iets wat hij zoekt maar niet altijd zelf kan vragen.'},
+    {type:'kernboodschap', tekst:'Gedrag kun je zien.\nMaar woorden moet hij kiezen.\nAls hij het uitspreekt \u2014 op jouw uitnodiging \u2014\nlandt het ergens dieper.\nBij hem. En bij jou.'},
+    {type:'probeer', tekst:'Kies \u00e9\u00e9n moment deze week.\nHij vraagt iets. Jij zegt: \u201cvraag het netjes.\u201d\nOf: als hij langs je loopt, stop je hem even. \u201cWat zeg je?\u201d\nEen zin. Zijn woorden. Jouw uitnodiging.\nKijk wat het doet.'}
+  ],
+  verdieping:[
+    {vraag:'Het voelde als toneelspelen', antwoord:'Dat is normaal. Het went. En kijk ondertussen naar Tim \u2014 voor hem voelde het waarschijnlijk anders dan toneelspelen. Zijn reactie is de graadmeter, niet jouw gevoel van ongemak.'},
+    {vraag:'Hij reageerde er raar op', antwoord:'Mogelijk onwennig, niet negatief. De eerste keer dat iemand \u201cvraag het netjes\u201d hoort kan hij even schrikken. Dat gaat over. Herhaling maakt het herkenbaar.'},
+    {vraag:'Ik weet niet welke woorden ik moet gebruiken', antwoord:'Gebruik de jouwe. \u201cZeg het maar even netjes.\u201d \u201cHoe vraag je dat?\u201d \u201cProbeer dat opnieuw.\u201d Het hoeft niet formeel. Zolang jij de toon zet en hij herformuleert, werkt het.'},
+    {vraag:'Moet dit altijd?', antwoord:'Nee. Dit is geen regel. Het is een instrument. Gebruik het op de momenten dat je het voelt \u2014 niet als checklist.'},
+    {vraag:'Wat als hij het niet doet?', antwoord:'Wacht. Zeg niks. Kijk hem aan. Soms is stilte genoeg om hem te laten beseffen dat jij wacht op iets. En als hij het echt niet snapt: \u201ck wacht even.\u201d Dan weet hij het.'}
+  ],
+  meerLezen:{
+    preview:'Volgende les: waarom vastzitten rust geeft.'
+  }},
+,
 
  // ═══ LES 7: EVEN CHECKEN ══════════════════════════════════════,
 
- {id:15, titel:'Nergens heen kunnen', subtitel:'Waarom vastzitten rust geeft.', domein:'fysiek', fase:2, type:'story',
+ {id:15, titel:'Nergens heen kunnen', subtitel:'Waarom vastzitten rust geeft.', domein:'fysiek', fase:3, type:'story',
   scroll:[
     {type:'scene', tekst:'Jullie zitten op bed. De halsband is om.\nJij pakt zijn handen en legt ze achter zijn rug.\n\u201cZo blijven.\u201d\nHij houdt ze vast. Niet omdat er boeien zijn.\nMaar omdat jij het zei.\nMisschien zie je zijn schouders zakken. Zijn ademhaling die dieper wordt.\nHij hoeft even niks. Alleen maar zijn.'},
     {type:'inzicht', tekst:'Dit is grappig: vastmaken begint niet met een slotje. Het begint met jouw woord.\n\u201cHanden achter je rug\u201d \u2014 dat is al vastmaken. Zijn gehoorzaamheid is de boei.\nEn dat is soms krachtiger dan echte polsboeien.'},
@@ -3341,7 +3720,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:16, titel:'Wat zou er komen?', subtitel:'Als je niks ziet, voel je alles.', domein:'sensorisch', fase:2, type:'story',
+ {id:16, titel:'Wat zou er komen?', subtitel:'Als je niks ziet, voel je alles.', domein:'sensorisch', fase:3, type:'story',
   scroll:[
     {type:'scene', tekst:'Hij knielt. Blinddoek om. Handen vast.\nJij staat achter hem. Hij weet niet waar je bent.\nJe laat je nagels langzaam over zijn schouder gaan.\nHij schrikt. Ontspant. Wacht.\nDan een ijsklontje in zijn nek.\nAlles wat hij voelt is tien keer sterker.\nOmdat hij niet kan zien wat er komt.'},
     {type:'inzicht', tekst:'Het lichaam reageert op <b>contrast</b>.\nWarm na koud. Zacht na scherp. Aanraking na stilte.\nJij kiest het tempo, de afwisseling, de pauzes.\nDat is een ander soort regie dan richting geven.\nEn misschien eentje die je <b>verrast</b>.'},
@@ -3372,7 +3751,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:17, titel:'Op jouw manier', subtitel:'Jij mag richting geven in intimiteit.', domein:'intimiteit', fase:2, type:'story',
+ {id:17, titel:'Op jouw manier', subtitel:'Jij mag richting geven in intimiteit.', domein:'intimiteit', fase:3, type:'story',
   scroll:[
     {type:'scene', tekst:'Jullie liggen in bed.\nJij draait je naar hem toe. Trekt je onderbroek uit.\n\u201cHanden achter je rug.\u201d\nHij legt zijn handen achter zijn rug.\nJij pakt wat je wilt. Op jouw tempo. Op jouw manier.\nHij mag niks doen. Alleen zijn waar jij hem wilt hebben.'},
     {type:'inzicht', tekst:'Ok\u00e9, dit is een grote. Intimiteit sturen begint bij j\u00f3uw initiatief.\nNiet reageren op hem \u2014 maar nemen wat jij wilt.\nDat voelt anders dan bijsturen. Dit is richting geven. En dat mag.'},
@@ -3401,9 +3780,9 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:18, titel:'En daarna..', subtitel:'Warmte erna maakt het compleet.', domein:'verbinding', fase:2, type:'story',
+ {id:18, titel:'En daarna..', subtitel:'Warmte erna maakt het compleet.', domein:'verbinding', fase:3, type:'story',
   scroll:[
-    {type:'scene', tekst:'Jullie zijn net klaar. De halsband gaat af.\nJij legt je hand op zijn hoofd.\nHij leunt tegen je aan. Stilte.\nZijn ademhaling wordt langzamer. Zijn ogen zijn een beetje wazig.\nJe hand over zijn hoofd.\n\u201cHey. We zijn weer gewoon wij.\u201d\nDat moment is net zo belangrijk als alles wat ervoor kwam.'},
+    {type:'scene', tekst:'Jullie zijn net klaar. De halsband gaat af.\nJij legt je hand op zijn hoofd.\nHij leunt tegen je aan. Stilte.\nZijn ademhaling wordt langzamer. Zijn ogen zijn een beetje wazig.\nJe hand over zijn hoofd.\n\u201cHey. Je bent er.\u201d\nDat moment is net zo belangrijk als alles wat ervoor kwam.'},
     {type:'inzicht', tekst:'Na iets intens komt de overgang terug.\nDie overgang is niet bijzaak \u2014 het is het moment dat alles <b>landt</b>.\nHet verschil tussen iets wat je \u201cdeed\u201d en iets wat van jullie <b>is</b>.'},
     {type:'voorbeeld', tekst:'Hij leunt tegen je aan. Jij schuift dichterbij. Stilte. Na vijf minuten: \u201calles goed?\u201d Hij knikt.\n\nHij ligt tegen je aan. Stilte. Na een paar minuten praat hij weer normaal. Geland.\n\nDe volgende dag één berichtje: \u201cgisteren was fijn.\u201d Dat sluit het af.\nTim leest het drie keer. Dat maakt het verschil tussen \u201cdat was spannend\u201d en \u201cdat is van ons.\u201d'},
     {type:'noot', tekst:'Niet meteen vragen \u201choe was dat?\u201d Die analyse kan later.\nEerst even zijn. Water. Stilte. Dichtbij.\nJe merkt het aan hem wanneer hij geland is \u2014 als zijn ademhaling normaal wordt, als hij weer praat.\nSoms duurt dat twee minuten, soms langer.\nEn leiding nemen kost energie. Soms meer dan je verwacht.\nAls jij je daarna leeg of onzeker voelt: dat is normaal. Het heet dom drop en het gaat voorbij.\nJij mag ook even tegen hem aanleunen. Die zachtheid is niet het tegenovergestelde van wat ervoor kwam. Het is het andere deel ervan.\nEn nazorg is ook voor jou. “Was dat goed? Was ik te hard?” Dat is normaal. Je hoeft het niet allemaal zeker te weten.\nAls Tim vraagt hoe het was: “ik moet het even laten landen” is een prima antwoord.'},
@@ -3417,7 +3796,7 @@ const LESSEN_INHOUD = [
       {tekst:'Iets gewoons doen \u2014 thee, tv, terug naar normaal', waarde:'gewoon'}
     ]},
     {type:'kernboodschap', tekst:'Warmte erna is niet optioneel.\nHet is het belangrijkste deel.\nDe intensiteit ervoor is mooi.\nMaar de zachtheid erna maakt het compleet.'},
-    {type:'probeer', tekst:'Na het eerstvolgende bewuste moment: stilte, aanraken, dichtbij.\nDoe de halsband af als markering: we zijn weer gewoon wij.\nKijk hoeveel tijd jullie allebei nodig hebben.'}
+    {type:'probeer', tekst:'Na het eerstvolgende bewuste moment: stilte, aanraken, dichtbij.\nDoe de halsband af als markering: dit bewuste moment is compleet.\nKijk hoeveel tijd jullie allebei nodig hebben.'}
   ],
   verdieping:[
     {vraag:'Hij wilde meteen praten over hoe het was', antwoord:'Dat mag, maar het hoeft niet meteen. De beste gesprekken over een moment zijn de volgende dag — als je er met afstand naar kijkt. In het moment zelf is gewoon samen zijn genoeg.'},
@@ -3436,7 +3815,7 @@ const LESSEN_INHOUD = [
 // ═══════════════════════════════════════════════════════════════
 ,
 
- {id:19, titel:'Dit is van ons', subtitel:'Wat werkt, mag van jullie worden.', domein:'verbinding', fase:2, type:'story',
+ {id:19, titel:'Dit is van ons', subtitel:'Wat werkt, mag van jullie worden.', domein:'verbinding', fase:3, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is ochtend. Je staat in de keuken.\nTim komt binnen, zet thee voor jou. Schenkt eerst jouw kopje in. Zonder dat je het vroeg.\nDe halsband ligt op het nachtkastje. Soms gaat hij om. Soms niet.\nJullie non-verbale taal is veranderd. Een blik die net iets langer duurt. Een knikje.\nDat is geen les meer.\nDat is van jullie.'},
     {type:'inzicht', tekst:'Sommige dingen zijn al <b>gewoon</b> geworden.\nZonder dat je het doorhad.\nDat zijn jullie rituelen.\nNiet bedacht \u2014 <b>gegroeid</b>.'},
@@ -3446,7 +3825,7 @@ const LESSEN_INHOUD = [
     {type:'inzicht', tekst:'De volgende stap is niet iets uit een les.\nHet is iets dat van <b>jou</b> komt.\nIets dat je zelf bedacht.\nDat maakt het echt.\nAlles tot nu toe waren losse ingredi\u00ebnten. Beslissen, mededelen, aanraken, markeren, wachten, verschil, vastzitten, zintuigen, sturing, nazorg. Nu maak jij er een geheel van. Jouw recept.'},
     {type:'noot', tekst:'Wat hierna komt is misschien het belangrijkste van alles: wat je doet als het moment voorbij is. Want het moment erna \u2014 dat bepaalt hoe het moment zelf wordt herinnerd.'},
     {type:'noot', tekst:'Het grootste misverstand: dat het elke keer intenser moet.\nDat is niet waar. Consistentie is krachtiger dan intensiteit.\nElke dag een klein gebaar — een mededeling, een aanraking, een blik — doet meer dan één keer per maand iets groots.\nTim’s hoofd werkt zo: als het regelmatig is, blijft hij erin. Als het weken stil is en dan ineens intens, moet hij elke keer opnieuw schakelen.\nDenk aan het als een vuur. Je hoeft het niet elke avond op te stoken tot een vreugdevuur. Maar als je het helemaal laat uitgaan, kost het moeite om het weer aan te krijgen.\nKleine, regelmatige momenten houden het brandend. De grote avonden zijn dan de bonus — niet de basis.'},
-    {type:'noot', tekst:'Hoe vaker jullie dit doen, hoe belangrijker het moment erna wordt.\nMaak er een gewoonte van: na elk bewust moment even terugkomen. De halsband gaat af. Je raakt hem aan. Jullie zijn weer gewoon jullie.\nDat is geen optie \u2014 dat is onderdeel van het moment.'},
+    {type:'noot', tekst:'Hoe vaker jullie dit doen, hoe belangrijker het moment erna wordt.\nMaak er een gewoonte van: na elk bewust moment even terugkomen. Het teken gaat af. Je raakt hem aan. Dat markeert: dit bewuste moment is klaar.\nDat is geen optie \u2014 dat is onderdeel van het moment.'},
     {type:'keuze', id:'les17_eerlijk', vraag:'Is er iets dat jullie samen doen dat al als een ritueel voelt \u2014 ook al noemen jullie het niet zo?', opties:[
       {tekst:'Ja \u2014 er zijn dingen die steeds terugkomen', waarde:'ja'},
       {tekst:'Misschien \u2014 maar ik heb er nooit zo over nagedacht', waarde:'misschien'},
@@ -3472,7 +3851,86 @@ const LESSEN_INHOUD = [
 // ═══════════════════════════════════════════════════════════════
 ,
 
- {id:20, titel:'En jij dan?', subtitel:'Dit is niet alleen voor Tim.', domein:'verbinding', fase:3, type:'story',
+ {id:41, titel:'Zij hoeft geen dominante vrouw te zijn', subtitel:'Jij bent al genoeg zoals je bent.', domein:'verbinding', fase:3, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Misschien heb je wel eens gedacht: ik ben dit type niet.\nIk ben niet streng. Ik ben niet de vrouw die commandeert.\nIk heb geen zweep en wil die ook niet.\nEn toch zit je hier.\n\nGoed. Want je hoeft dat type niet te zijn.'},
+    {type:'inzicht', tekst:'Er is geen mal voor hoe een dominante vrouw eruitziet.\nGeen stem, geen houding, geen persoonlijkheidstype dat het \u201choort\u201d te zijn.\n\nSommige vrouwen zijn stil en sturen met een blik.\nSommige zijn warm en nemen het over zonder dat je het merkt.\nSommige zijn grappig en laten je lachen terwijl je precies doet wat zij wilden.\nSommige zijn streng en helder en zeggen precies wat ze bedoelen.\n\nAl die versies werken. Niet omdat ze dominant \u201czijn\u201d \u2014 maar omdat ze zichzelf zijn, met overtuiging.'},
+    {type:'noot', tekst:'Het enige wat niet werkt is een rol spelen die niet van jou is.\nAls jij jezelf geweld aandoet om iemand te zijn die je niet bent, voelt Tim dat meteen. Niet omdat hij je beoordeelt \u2014 maar omdat het contact dan weg is.\n\nWat voor Tim werkt is niet een bepaalde stijl. Het is jij, die er echt is. Jij, die iets besluit. Jij, die het meent.\n\nDe versie van jou die soms al gewoon zegt wat ze wil zonder te overleggen? Die al een keer haar hand op zijn hoofd heeft gelegd en dacht: dit voelt eigenlijk goed? Die is genoeg. Die is meer dan genoeg.'},
+    {type:'inzicht', tekst:'Leiding nemen is geen eigenschap die je hebt of niet hebt.\nHet is een keuze die je maakt \u2014 op jouw manier, in jouw tempo, in jouw toon.\nEr is geen eindniveau. Er is geen juiste versie.\nEr is alleen wat voor jullie werkt.'},
+    {type:'noot', tekst:'En nog iets: Tim vraagt niet om een dominante vrouw.\nHij vraagt om jou \u2014 maar dan de versie van jou die durft te zeggen wat ze wil, die durft te bepalen, die er echt is.\nDat is een verschil.\n\nEen dominante vrouw uit een film \u2014 dat is niet wat hij zoekt.\nJij, die een keer je hand uitsteekt en zegt \u201cnee, wacht\u201d \u2014 dat is het.'},
+    {type:'kernboodschap', tekst:'Je hoeft jezelf niet te veranderen.\nJe hoeft geen rol te spelen.\nJe hoeft alleen te besluiten dat je het meent\u2014 op jouw manier.'},
+    {type:'probeer', tekst:'Denk aan een moment deze week waarop jij iets wilde maar het niet zei.\nZeg het alsnog. Op jouw manier. Hoe je dat ook klinkt.\nEn kijk of het klopt.'}
+  ],
+  verdieping:[
+    {vraag:'Ik voel me toch soms een beetje nep', antwoord:'Dat gevoel hoort erbij als iets nieuw is. Maar kijk naar het effect \u2014 niet naar hoe je je voelt terwijl je het doet. Als Tim reageert, als er iets verschuift: het was echt.'},
+    {vraag:'Ik ben van nature heel zacht \u2014 past dit dan wel bij mij?', antwoord:'Zachtheid en leiding zijn geen tegenpolen. De warmste, zachtste versie van leiding nemen is misschien wel de krachtigste. Zacht maar zeker is een stijl, geen tekortkoming.'},
+    {vraag:'Tim lijkt soms meer te willen dan ik geef', antwoord:'Dat kan kloppen. Zijn wens en jouw tempo zijn niet altijd gelijk. Jouw tempo wint altijd. Niet omdat zijn wens niet telt, maar omdat dit alleen werkt als het ook van jou is.'}
+  ],
+  meerLezen:{preview:'Volgende les: wat je kunt doen met je lichaam.'}},
+,
+
+ {id:42, titel:'Hier ben ik', subtitel:'Jouw lichaam zegt ook iets.', domein:'fysiek', fase:3, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Je loopt langs hem heen in de gang.\nJij geeft een tik op zijn bil. Niet hard \u2014 gewoon omdat het kan.\nEn loopt door.\nHij kijkt je na.\nJij hebt niks gezegd. Je hoefde niks te zeggen.\nJouw lichaam zei het al.'},
+    {type:'inzicht', tekst:'Woorden zijn niet het enige instrument dat je hebt.\nJouw aanwezigheid, jouw beweging, jouw aanraking \u2014 die spreken ook.\n\nEen tik die zegt: ik kan dit.\nEen hand onder zijn kin die zegt: kijk mij aan.\nJij die stilstaat tot hij stopt met praten.\nJij die zijn arm pakt als hij langs wil lopen.\n\nDat zijn geen grote gebaren. Maar ze zeggen elk hetzelfde:\nhier ben ik. En ik neem de ruimte.'},
+    {type:'voorbeeld', tekst:'Jij loopt langs, geeft een tik op zijn bil. Loopt door. Kijkt niet om.\n\nHij staat te praten. Jij steekt je hand op. Hij stopt. Jij: \u201cik was nog niet klaar.\u201d\n\nJij pakt zijn kin, draait zijn hoofd naar je toe. Kijkt hem aan. Laat los.\n\nJij loopt achter hem langs, legt even je hand op zijn schouder. Zegt niks. Loopt door.\n\nHij wil de kamer uitlopen. Jij pakt zijn arm. \u201cWacht.\u201d E\u00e9n woord. Hij wacht.\n\nJij zit. Hij staat. Jij wijst naar de grond naast je. Hij gaat zitten.\n\nJij tikt met je knokkels op zijn hoofd als hij langs je loopt. Speels. Maar met lading.'},
+    {type:'noot', tekst:'Het verschil tussen een aanraking die leidt en een aanraking die vraagt zit niet in de druk \u2014 het zit in de intentie.\n\nAls jij zijn arm pakt terwijl je denkt \u201cmag ik dit?\u201d voelt hij dat.\nAls jij zijn arm pakt terwijl je denkt \u201cdit is wat er nu gebeurt\u201d voelt hij dat ook.\n\nZelfde hand. Andere energie.\n\nJij hoeft niet harder te drukken. Je hoeft alleen te besluiten dat je het doet.'},
+    {type:'noot', tekst:'En de bil-tik specifiek: jij doet dit al soms bij Lisanne, en zij vindt het niet fijn. Maar andersom \u2014 als jij het bij Tim doet \u2014 ervaart hij het anders. Niet als pijn. Als: zij neemt de ruimte. Ze kan dit doen.\n\nDat is precies het verschil waar les 37 over gaat: zijn ervaring is niet jouw ervaring. Zijn lichaam hoort bij jou op een manier die ook iets mag uitdrukken.'},
+    {type:'kernboodschap', tekst:'Je hoeft niks te zeggen.\nJe lichaam spreekt ook.\nEen tik, een grip, een blik die net te lang duurt\u2014 dat is jij die de ruimte neemt.\nDat is genoeg.'},
+    {type:'probeer', tekst:'Kies deze week \u00e9\u00e9n lichamelijk gebaar \u2014 iets kleins.\nDe tik, de hand op zijn schouder, zijn arm die je pakt.\nDoe het terloops. Zonder aankondiging.\nKijk wat er met hem gebeurt.'}
+  ],
+  verdieping:[
+    {vraag:'Het voelt agressief', antwoord:'Als het met die intentie gebeurt, ja. Maar een tik of een greep die zegt "ik ben hier, ik neem de ruimte" is iets anders dan agressie. Tim voelt het verschil. Kijk naar zijn reactie, niet naar je eigen gevoel van ongemak.'},
+    {vraag:'Wat als hij er niks van merkt?', antwoord:'Dan was het te subtiel, of hij was afgeleid. Probeer het opnieuw \u2014 iets duidelijker. Oogcontact erbij. Dat helpt.'},
+    {vraag:'Moet het altijd een fysiek gebaar zijn?', antwoord:'Nee. Dit is \u00e9\u00e9n instrument. Sommige mensen gebruiken het veel, anderen weinig. Gebruik het als het voelt \u2014 niet als verplichte techniek.'}
+  ],
+  meerLezen:{preview:'Volgende les: dit is van mij.'}},
+,
+
+ {id:43, titel:'Dit is van mij', subtitel:'De terloopse aanraking die alles zegt.', domein:'fysiek', fase:3, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Hij zit op de bank. Jij loopt langs.\nJij trekt zijn kraag even recht. Zonder te vragen.\nHij kijkt op. Jij kijkt al niet meer.\nMaar er is iets veranderd in de lucht.'},
+    {type:'inzicht', tekst:'Er is een verschil tussen aanraken en bezitten.\nAanraken is contact maken.\nBezitten is iets doen met iemands lichaam alsof het vanzelfsprekend is dat je dat mag.\n\nNiet grof. Niet dominant in de theatrale zin.\nGewoon: zijn kraag rechttrekken. Zijn haar wegstrijken. Je hand op zijn hoofd leggen zonder toestemming te vragen.\n\nDat is eigenaarschap. En het klinkt intenser dan het is \u2014 want in de praktijk zijn het de kleinste gebaren die het hardst landen.'},
+    {type:'voorbeeld', tekst:'Je trekt zijn kraag recht terwijl hij staat te praten. Zonder te stoppen met wat jij doet.\n\nJe strijkt zijn haar terug. Bekijkt hem even. Loopt door.\n\nJij controleert wat hij aanheeft voordat jullie weggaan. Kiest voor hem. Of zegt: \u201ctrek dat andere shirt aan.\u201d\n\nJij legt je benen op zijn schoot. Zegt niks. Hij beweegt niet.\n\nJij aait over zijn hoofd terwijl hij naast je op de grond zit. Gewoon \u2014 alsof dat normaal is.\n\nJij pakt zijn hand, bekijkt hem even, legt hem terug. Niks gezegd.'},
+    {type:'noot', tekst:'Dit is niet hetzelfde als de aanrakingen in les 7 of les 42.\nDie gaan over sturing en signalen.\nDit gaat over iets subtielder: de vanzelfsprekendheid waarmee je zijn lichaam benadert.\n\nAls jij zijn kraag rechttrekt alsof je er recht op hebt \u2014 zonder te vragen, zonder hem aan te kijken \u2014 zegt dat iets wat woorden niet zeggen.\n\nEn voor Tim voelt dat precies zo: zij benadert mij alsof ik van haar ben. Dat is geen klein ding.'},
+    {type:'noot', tekst:'Je kunt dit ook buiten gebruiken. In het openbaar, subtiel.\nEven zijn das rechttrekken. Je hand in zijn nek als jullie ergens staan. Zijn arm nemen.\nNiemand ziet iets bijzonders. Maar Tim voelt precies wat het is.'},
+    {type:'kernboodschap', tekst:'Je hoeft het niet aan te kondigen.\nEigenaarschap is geen woord \u2014 het is een gebaar.\nDe vanzelfsprekendheid waarmee je zijn kraag rechttrekt\nzegt meer dan een hele les.'},
+    {type:'probeer', tekst:'Doe deze week iets met zijn lichaam zonder het te vragen.\nZijn kraag, zijn haar, zijn houding.\nTerloops. Vanzelfsprekend.\nKijk of hij het voelt.'}
+  ],
+  verdieping:[
+    {vraag:'Voelt dit niet te veel als controle?', antwoord:'Het IS controle \u2014 dat is precies het punt. Maar het is zachte controle. Geen dwang, geen straffing. Gewoon de manier waarop jij zijn ruimte benadert. Tim wil dit.'},
+    {vraag:'Wat als hij er iets van zegt?', antwoord:'Dan reageert hij op iets echts. Dat is goed. Je hoeft je niet te verantwoorden. Glimlach en ga door met wat je deed.'},
+    {vraag:'Kan dit ook met kleding of uiterlijk?', antwoord:'Ja \u2014 en dat is soms de sterkste versie. Bepalen wat hij aantrekt. Zeggen dat je iets anders mooier vindt. Dat gaat over eigenaarschap op een manier die hij de hele dag met zich meedraagt.'}
+  ],
+  meerLezen:{preview:'Volgende les: de mooie momenten.'}},
+,
+
+ {id:44, titel:'Kijk ernaar', subtitel:'De mooie momenten verdienen jouw aandacht.', domein:'verbinding', fase:3, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Het was net niet perfect. Je aarzelde een seconde te lang. Of je wist niet wat je daarna moest doen. Of hij reageerde anders dan je verwachtte.\nEn daarna denk je terug aan dat ene moment \u2014 het moment dat niks klopte \u2014 in plaats van aan het moment ervoor.\nHet moment dat hij zachter werd. Stiller. Dichter bij je.\nDat moment was er ook. Maar je bent er al overheen gegaan.'},
+    {type:'inzicht', tekst:'Je brein is goed in het onthouden van wat mis ging.\nEn slecht in het vasthouden van wat klopte.\n\nMaar de mooie momenten zijn de graadmeter \u2014 niet de awkward seconden.\nAls hij zachter wordt als jij iets zegt. Als hij zijn ademhaling aanpast aan die van jou. Als hij gewoon stiller is, dichter bij je, meer aanwezig.\n\nD\u00e1t is het bewijs dat iets werkt. Niet de perfecte uitvoering.'},
+    {type:'noot', tekst:'Je hoeft het niet te analyseren. Je hoeft er niet over na te praten.\nMaar je mag het wel zien.\n\nEven pauzeren en denken: dat was echt. Dat raakte hem. Dat deed iets.\n\nNiet als bevestiging dat je het goed hebt gedaan \u2014 maar als contact met wat er tussen jullie speelt.\n\nEn weet je wat er dan gebeurt? De volgende keer doe je het iets meer. Iets bewuster. Iets echter. Niet omdat je de techniek verbetert \u2014 maar omdat je hebt gezien dat het ergens naartoe gaat.'},
+    {type:'inzicht', tekst:'Als hij zachter wordt, stiller, dichter bij jou \u2014 dat is niet toevallig.\nDat is jij die zijn kern raakt.\nJe hoeft het niet te begrijpen. Je mag het gewoon voelen.\n\u201cdeze seconde \u2014 dit was van ons.\u201d'},
+    {type:'noot', tekst:'En het mooie aan mooie momenten: ze zijn er vaker dan je denkt.\nNiet alleen bij de grote avonden. Niet alleen als alles klopt.\nMaar ook in de kleine dingen. Zijn hand die even stilhoudt als jij langs loopt. De manier waarop hij luistert als jij iets zegt. De stilte na een opdracht die hij gewoon uitvoert.\n\nDie momenten tellen. Zie ze.'},
+    {type:'kernboodschap', tekst:'Het perfecte moment bestaat niet.\nMaar het echte moment wel.\nEn het echte moment is het waard om even bij stil te staan\u2014 niet te analyseren. Gewoon te zien.'},
+    {type:'probeer', tekst:'Kies na het eerstvolgende moment \u00e9\u00e9n seconde om te kijken.\nNiet naar wat er mis ging. Naar wat er klopte.\nEen blik, een ademhaling, een stilte.\nZeg het eventueel hardop tegen jezelf: \u201cdat was echt.\u201d'}
+  ],
+  verdieping:[
+    {vraag:'Ik zie eigenlijk alleen wat er mis ging', antwoord:'Dat is normaal voor mensen die ergens mee bezig zijn. Maar probeer het als oefening: noem na elk moment \u00e9\u00e9n ding dat wel klopte. Eén. Dat is genoeg om je brein te herkalibreren.'},
+    {vraag:'Wat als er niks moois was?', antwoord:'Dan was er niks, en dat is ook prima. Niet elk moment heeft een hoogtepunt. Maar kijk eens goed \u2014 was er echt niks? Of was er iets kleins dat je bent overgeslagen?'},
+    {vraag:'Moet ik dit aan Tim vertellen?', antwoord:'Dat mag \u2014 en hij zal er blij mee zijn. "Dat moment net, dat was fijn." Drie woorden. Het sluit het moment af op een manier die het groter maakt dan het al was.'}
+  ],
+  meerLezen:{preview:'Volgende les: en jij dan?'}},
+,
+
+  {id:57, titel:'Op de markt', subtitel:'', domein:'dagscenario', fase:4, type:'dagscenario',
+  scroll:[
+    {type:'scene', tekst:'Nachtmarkt. Drukte, warmte, kramen met licht.\n\nJij loopt voor. Milou rent naast je.\nTim loopt achter.\n\nBij een kraam stop je. Kijk de kaart door.\n\u201cWij nemen de pad thai en de loempia.\u201d\n\nTim zegt niks. De man van de kraam knikt.\n\nNadat hij heeft betaald \u2014 met het geld dat jij hem gaf \u2014 leg je even je hand op zijn arm. Heel kort.\n\nNiemand ziet het. Milou eet haar loempia.\n\nMaar hij voelt het. En jij weet het. En dat is alles wat nodig is.'},
+    {type:'kernboodschap', tekst:'Het geheim zit niet in wat je doet.\nHet zit in het weten dat jullie het weten.'}
+  ],
+  verdieping:[], meerLezen:{preview:''}},
+
+{id:20, titel:'En jij dan?', subtitel:'Dit is niet alleen voor Tim.', domein:'verbinding', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Je zit alleen. Even rust.\nJe denkt terug aan gisteren. Hij knielde. Jij legde je hand op zijn hoofd.\nEn je merkte iets.\nNiet opwinding. Niet per se een kick.\nMeer zoiets als: dit klopt.\nHij luisterde. Het gebeurde. Zonder overleg.\nEn dat voelde goed.'},
     {type:'inzicht', tekst:'Tot nu toe ging het vaak over wat <b>Tim</b> voelt.\nMaar dit werkt alleen als er ook iets in zit voor <b>jou</b>.\nDat hoeft geen opwinding te zijn.\nMisschien is het rust. Misschien aandacht.\nMisschien gewoon: iemand die luistert.'},
@@ -3502,7 +3960,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:21, titel:'Regel dat even', subtitel:'Voor jou zorgen is voor hem nabijheid.', domein:'verbinding', fase:3, type:'story',
+ {id:21, titel:'Regel dat even', subtitel:'Voor jou zorgen is voor hem nabijheid.', domein:'verbinding', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is middag. Tim zit achter zijn laptop te werken.\n\u201cMasseer mijn schouders.\u201d\nHij schuift achter je en begint.\nJij bepaalt hoe lang. Jij zegt wanneer het genoeg is.\nHetzelfde als altijd \u2014 hij doet iets voor jou.\nMaar het voelt anders. Want het kwam van jou.'},
     {type:'inzicht', tekst:'Er is een verschil tussen iets doen omdat het <b>moet</b>\nen iets doen omdat <b>jij</b> het zegt.\nHetzelfde klusje, ander gevoel.\nVoor hem is dat geen last \u2014 dat is <b>nabijheid</b>.'},
@@ -3532,7 +3990,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:22, titel:'Beetje plagen', subtitel:'Speelsheid geeft ook richting.', domein:'psychologisch', fase:3, type:'story',
+ {id:22, titel:'Beetje plagen', subtitel:'Speelsheid geeft ook richting.', domein:'psychologisch', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Jullie liggen in bed. Het is ochtend.\nJij draait je om. Kijkt hem aan.\n\u201cIk had een droom over je.\u201d\nHij: \u201cwat dan?\u201d\nJij glimlacht. Staat op. Loopt naar de badkamer.\nVerder niks.\nHij denkt er de hele dag aan.'},
     {type:'inzicht', tekst:'Niet alles hoeft serieus te zijn.\nSoms is het krachtigste juist <b>licht</b>.\nEen opmerking. Een blik. Een grijns.\nSpeelsheid is richting zonder gewicht.\nEn voor Tim werkt plagen de hele dag door. E\u00e9n opmerking \u2019s ochtends en hij denkt er om drie uur nog aan. Niet omdat het gemeen is \u2014 maar omdat het zegt: ik denk aan je, en ik geniet ervan. Speels en in controle. Dat is de combinatie die alles doet.'},
@@ -3564,7 +4022,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:23, titel:'Even voelen', subtitel:'Fysieke sensatie als contrast.', domein:'sensorisch', fase:3, type:'story',
+ {id:23, titel:'Even voelen', subtitel:'Fysieke sensatie als contrast.', domein:'sensorisch', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Hij ligt op bed. Blinddoek om. Handen vast.\nJij laat je hand zacht over zijn rug gaan.\nLangzaam. Rustig.\nDan \u2014 één tik op zijn bil. Niet hard. Maar anders.\nZijn adem stokt even. Zijn huid wordt warm.\nEn alles wat je daarna zacht doet, voelt hij dubbel.'},
     {type:'inzicht', tekst:'Impact is geen agressie.\nHet is <b>contrast</b>.\nNa iets zachts voelt iets scherps intenser.\nNa iets scherps voelt zachtheid weer anders.\nJij bepaalt het ritme.'},
@@ -3595,7 +4053,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:24, titel:'Iets erbij pakken', subtitel:'Gereedschap voor wat jij wilt doen.', domein:'fysiek', fase:3, type:'story',
+ {id:24, titel:'Iets erbij pakken', subtitel:'Gereedschap voor wat jij wilt doen.', domein:'fysiek', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Je opent de la. Polsboeien. Enkelboeien. Blinddoek. Halsband. Plug. Gag. Vibrator. Hood. Tepelklemmen. Crop. Cane. De slaapzak en de bondageriem liggen ernaast. De e-stim staat opgeladen op het nachtkastje.\nJe pakt de polsboeien en de blinddoek.\nDe rest laat je liggen.\nJij kiest. Niet alles tegelijk. Niet alles elke keer.\nJe legt ze op het bed.\n\u201cLeg de halsband klaar en kleed je uit.\u201d\nHij weet wat er komt. Het wachten is al de helft.'},
     {type:'inzicht', tekst:'Elk item doet iets <b>anders</b>.\nDe halsband markeert. De boeien beperken. De blinddoek isoleert.\nDe hood blokkeert alles. De crop prikt. De e-stim tintelt.\nAls je weet wat elk ding doet, kun je <b>combineren</b>.\nEn dat is waar het interessant wordt.'},
@@ -3625,7 +4083,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:25, titel:'Zo doen we dat', subtitel:'Vaste afspraken als houvast.', domein:'controle', fase:3, type:'story',
+ {id:25, titel:'Zo doen we dat', subtitel:'Vaste afspraken als houvast.', domein:'controle', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is avond. Half acht.\nTim staat op van de bank. Loopt naar de slaapkamer.\nKomt terug met de halsband om.\nJij hebt niks gezegd. Hij weet het.\nNa zevenen draagt hij de halsband. Dat is de afspraak.\nGeen herinnering nodig. Geen vraag.\nHet is een regel. En regels werken vanzelf.'},
     {type:'inzicht', tekst:'Tot nu toe was alles spontaan. Jij besliste in het moment.\nDaar kan iets naast: vaste <b>regels</b>.\nDingen die altijd gelden.\nDat geeft structuur \u2014 ook op dagen dat er verder niks gebeurt.\nEn voor Tim is dat precies het punt. Op dagen dat de halsband niet omgaat en er niks bijzonders gebeurt, geven regels hem iets om vast te houden. Elke keer dat hij \u2019s avonds de halsband klaarlegt of eerst jouw glas inschenkt, is dat een herinnering: wij zijn wij. Niet alleen als het spannend is \u2014 altijd.\nEn het mooie voor jou: regels kosten je niks. Geen energie, geen planning. Jij hebt ze \u00e9\u00e9n keer bedacht en hij voelt ze de hele dag. Zonder dat jij er iets voor hoeft te doen.'},
@@ -3656,7 +4114,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:26, titel:'Gewoon vandaag', subtitel:'Niks is ook een keuze.', domein:'verbinding', fase:3, type:'story',
+ {id:26, titel:'Gewoon vandaag', subtitel:'Niks is ook een keuze.', domein:'verbinding', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Dinsdag. Lange dag. Milou had koorts.\n\u201cGewoon vandaag.\u201d\nHij knikt. Remote. Serie. Geen halsband.\nGewoon een avond.'},
     {type:'inzicht', tekst:'De meeste avonden zijn gewoon avonden.\n\u201cGewoon vandaag\u201d is voor momenten waarop er iets werd verwacht, maar Lisanne voelt het niet.\nNiet regressie. <b>Regulatie</b>.'},
@@ -3689,7 +4147,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:27, titel:'Ook buiten de deur', subtitel:'Het gaat mee naar buiten.', domein:'controle', fase:3, type:'story',
+ {id:27, titel:'Ook buiten de deur', subtitel:'Het gaat mee naar buiten.', domein:'controle', fase:4, type:'story',
   scroll:[
     {type:'scene', tekst:'Nachtmarkt. Drukte, warmte, geuren.\nJullie lopen langs de kraampjes. Milou rent voor jullie uit.\nJij stopt bij een kraampje.\n\u201cHij neemt de pad thai. Ik de som tam.\u201d\nDe verkoper knikt. Tim zegt niks.\nNiemand merkt het. Maar hij voelt het.\nDit stopt niet bij de voordeur.'},
     {type:'inzicht', tekst:'Buitenshuis gaat niet om opvallend gedrag.\nNiemand hoeft iets te merken.\nHet gaat om kleine dingen tussen jullie die alleen <b>jullie</b> begrijpen.\nEen laag die er altijd kan zijn \u2014 als jij dat wilt.'},
@@ -3722,7 +4180,178 @@ const LESSEN_INHOUD = [
 // ═══════════════════════════════════════════════════════════════
 ,
 
- {id:28, titel:'Jij bepaalt wanneer', subtitel:'En of.', domein:'intimiteit', fase:4, type:'story',
+ {id:45, titel:'Wat doe je met je handen?', subtitel:'Aanraking die leidt, niet vraagt.', domein:'fysiek', fase:4, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Hij staat in de keuken.\nJij loopt langs, legt je hand op zijn rug \u2014\nniet als groet, maar als teken:\n\u201cIk weet waar je bent.\u201d\nHij houdt even op met bewegen.\nEr hoeft niks gezegd te worden.\nJouw hand zei het al.'},
+    {type:'inzicht', tekst:'Je handen zeggen iets dat woorden niet kunnen.\nEen hand die <b>leidt</b> voelt anders dan een hand die <b>vraagt</b>.\nHet verschil zit niet in de kracht \u2014 het zit in de intentie.\nJij weet waar je hem naartoe wil. Dat weet hij. En je hand bevestigt het.'},
+    {type:'voorbeeld', tekst:'Jouw hand onder zijn kin: zijn hoofd omhoog, oogcontact. Geen woorden nodig.\n\nHij loopt de verkeerde kant op \u2014 jij pakt zijn schouder, stuur hem om. Rustig, vanzelfsprekend.\n\nHij staat te praten. Jij legt twee vingers op zijn arm: stop. Hij stopt.\n\nNa het eten: jij tikt op je dijbeen. Hij gaat naast je zitten.\n\nJij pakt zijn pols, leidt zijn hand naar jou. Niet vragend \u2014 verwachtend.\n\nJij brengt je hand naar zijn nek, even vasthouden. Alleen maar dat. Hij weet wat het betekent.'},
+    {type:'noot', tekst:'Er is een verschil tussen aanraken en sturen.\nAls je hem aanraakt terwijl jij ook niet zeker weet waar je hem heen wil \u2014 dan merkt hij dat. Aarzelende handen communiceren twijfel.\n\nMaar als je weet wat je wilt, en je hand gaat daarheen \u2014 dan voelt hij de intentie voor jij iets hebt gezegd.\n\nDus: weet je wat je wilt. Dan spreekt je hand voor jou.'},
+    {type:'kernboodschap', tekst:'Je handen hoeven geen toestemming te vragen.\nZe mogen sturen. Houden. Leiden.\nDat is al genoeg.'},
+    {type:'probeer', tekst:'Vandaag: gebruik je hand om iets te communiceren zonder woorden.\nEen richting aangeven. Een stilte opleggen. Een positie instellen.\nKijk wat er gebeurt als je hand het overneemt.'}
+  ],
+  verdieping:[
+    {vraag:'Ik voel me raar als ik hem zomaar stuur', antwoord:'Dat gevoel slijt snel. Begin klein: zijn schouder een richting uitsturen. Zijn hand naar jou toe brengen. Na een paar keer voelt het vanzelfsprekend \u2014 voor jullie beiden.'},
+    {vraag:'Hoe weet hij wat ik bedoel?', antwoord:'Het begin is leren. Hij leest jouw intentie, niet een code. Wees consistent: als je twee vingers op zijn arm legt bij \u201cstop\u201d, gebruik dat dan elke keer. Na een paar keer weet hij het.'},
+    {vraag:'Wat als hij het niet oppikt?', antwoord:'Zeg het dan \u00e9\u00e9n keer, rustig. Maar verwacht het de volgende keer zonder uitleg. Niet streng \u2014 gewoon: dit hoort nu bij ons.'}
+  ],
+  meerLezen:{preview:'Je lichaamstaal is deel van je stem \u2014 en je stem hoeft niet altijd woorden te zijn.'}},
+
+ {id:46, titel:'Dit mag ook van jou zijn', subtitel:'Jouw verlangen telt ook.', domein:'verbinding', fase:4, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Ze vraagt hem iets te doen.\nNiet omdat het voor hem spannend is.\nOmdat zij er zin in heeft.\n\nEn dan \u2014 heel even \u2014 denkt ze:\n\u201cMag dit wel?\u201d\n\nJa. Dit mag.'},
+    {type:'inzicht', tekst:'Een misverstand dat regelmatig opduikt: de dominante partner is er voor de ander.\nDat klopt \u2014 maar niet volledig.\nJij bent er niet alleen als instrument voor zijn beleving.\nJij hebt je eigen verlangen. Je eigen plezier. Je eigen nieuwsgierigheid.\n\nEn dat verlangen is niet iets dat je opzij zet.\nHet <b>is</b> de dynamiek. Als jij alleen doet wat hij wil, dan ben jij de spiegel van zijn fantasie. Maar als jij ook wil \u2014 dan is er echt contact.'},
+    {type:'voorbeeld', tekst:'Je wilt dat hij je een massage geeft. Lang. Op jouw manier. Dat is geen \u201csessie\u201d \u2014 dat is gewoon wat jij wilt.\n\nJe wilt dat hij de afwas doet terwijl jij kijkt. Niet als straf. Gewoon omdat jij wilt dat hij iets doet terwijl jij rust.\n\nJe bent nieuwsgierig naar iets wat je zelf wilt proberen \u2014 met hem als middel om dat te ontdekken. Dat mag.\n\nJe wilt een avond waarbij alles om jou draait. Hij kookt, hij bedient, hij is er voor jou. Niet als oefening. Gewoon als keuze.'},
+    {type:'noot', tekst:'Dit is misschien het moeilijkste deel voor Lisanne.\nNiet het leidingnemen \u2014 maar het <b>willen</b>.\n\nSommige vrouwen zijn zo gewend om te geven, te zorgen, te faciliteren \u2014 dat verlangen voor zichzelf nemen onnatuurlijk voelt. Of zelfs selfish.\n\nHet is dat niet.\nJij verlangen geven aan iemand die dat wil geven \u2014 dat is geen ego. Dat is contact.\nEn Tim? Tim wil niets liever.'},
+    {type:'kernboodschap', tekst:'Je hoeft het niet te verdienen.\nJe hoeft het niet te verklaren.\nAls jij iets wilt \u2014 dat is al genoeg reden.'},
+    {type:'probeer', tekst:'Vraag jezelf vanavond: wat wil \u00edk eigenlijk?\nNiet wat spannend is voor hem. Niet wat past in de dynamiek.\nGewoon: wat wil ik?\n\nEn doe dat. Of vraag het. Of plan het.'}
+  ],
+  verdieping:[
+    {vraag:'Voelt selfish om alleen aan mezelf te denken', antwoord:'Dat gevoel is begrijpelijk \u2014 en het klopt niet. Tim vraagt je letterlijk om dit. Zijn verlangen is dat jij jouw verlangen neemt. Als je iets voor jezelf wilt, geef je hem ook iets.'},
+    {vraag:'Ik weet niet wat ik wil', antwoord:'Dat is ook informatie. Begin klein: wat zou je lekker vinden vanavond? Een massage? Rust? Dat hij iets doet terwijl jij kijkt? Verlangen hoeft niet intens te zijn. Het mag gewoon \u2026 prettig zijn.'},
+    {vraag:'Hij lijkt het niet altijd leuk te vinden als ik iets voor mezelf vraag', antwoord:'Bespreek dit. Het kan zijn dat de manier waarop je het vraagt onduidelijk is. Of hij verwacht dat jij iets voor hem doet. Maak het expliciet: \u201cdit is wat ik wil, en ik wil dat jij het doet.\u201d Dat is leiding nemen.'}
+  ],
+  meerLezen:{preview:'Jouw verlangen is geen bijzaak. Het is het middelpunt.'}},
+
+ {id:47, titel:'Hij is de draad kwijt', subtitel:'Terugzetten zonder straffen.', domein:'psychologisch', fase:4, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Het gaat even niet goed.\nHij is afgeleid, uit zichzelf, ergens anders met zijn hoofd.\nJij voelt het \u2014 het contact is er niet.\n\nJij hoeft hem niet te straffen.\nJij hoeft hem niet te corrigeren.\nJij zet hem terug.\n\nEen blik. Een woord. Een aanraking.\n\u201cHey. Hier.\u201d\n\nEn hij is er weer.'},
+    {type:'inzicht', tekst:'Een terugzetmoment is geen straf.\nHet is een herinnering: ik ben hier, en jij bent bij mij.\n\nTim kan soms wegdriften \u2014 in zijn hoofd, in een scherm, in drukte.\nDat is menselijk. Maar jij hebt een gereedschap dat de meeste mensen niet hebben: jij kunt hem terugzetten met minimale middelen.\n\nNiet luid. Niet aanmatigend. Gewoon helder.'},
+    {type:'voorbeeld', tekst:'\u201cHey. Kijk me aan.\u201d \u2014 zacht, maar helder. Niet als vraag.\n\nJij legt je hand op zijn knie. Laat hem liggen. Wacht tot hij stopt.\n\nJij staat op, gaat voor hem staan. Geen woorden. Gewoon: ik ben hier.\n\nOf: \u201cleg je telefoon neer.\u201d Niks meer. Niks minder.\n\nOf \u2014 voor het zwaardere terugzetmoment: jij geeft hem een kleine taak. \u201cHaal water voor me.\u201d Hij doet iets voor jou. Het contact is terug.'},
+    {type:'noot', tekst:'Het verschil tussen een terugzetmoment en een berisping zit in de toon en de intentie.\n\nEen berisping zegt: je deed iets fout.\nEen terugzetmoment zegt: ik wil je bij me.\n\nHet eerste creëert schaamte. Het tweede creëert verbinding.\nTim heeft verbinding nodig. Geen straf.'},
+    {type:'noot', tekst:'En als jij merkt dat je hem steeds vaker terug moet zetten \u2014 dat is ook informatie.\nNiet over hem. Over jullie.\nMisschien heeft hij meer structuur nodig. Meer richting. Een check-in.\nHet afwijken is soms een signaal: hij mist de draad, niet omdat hij er niet wil zijn, maar omdat de draad vaag is geworden.\nDat is niet zijn schuld. Dat is iets om samen te bespreken.'},
+    {type:'kernboodschap', tekst:'Je hoeft niet boos te worden om hem terug te brengen.\nEen blik. Een woord. Je hand.\nJij bent zijn anker \u2014 gooi het uit.'},
+    {type:'probeer', tekst:'De volgende keer dat hij wegdrijft: kies bewust een terugzetmoment.\nKlein. Helder. Warm.\nKijk wat het doet.'}
+  ],
+  verdieping:[
+    {vraag:'Wat als hij boos wordt als ik hem corrigeer?', antwoord:'Dan is het geen terugzetmoment geworden, maar een berisping. Kijk naar je toon: hoe klonk het? Correctie zonder warmte klinkt als kritiek. Terugzetten met verbinding klinkt als: ik wil je bij me. Probeer het opnieuw, zachter.'},
+    {vraag:'Hoeveel mag ik dit doen?', antwoord:'Zoveel als nodig. Maar als het elke dag meerdere keren nodig is, praat er dan over. Wat mist hij? Wat mist er in de structuur? Dat gesprek is waardevoller dan tien terugzetmomenten.'},
+    {vraag:'Hij weet niet dat hij wegdrijft', antwoord:'Dat is precies waarom het terugzetmoment zo krachtig is: jij ziet het, hij misschien niet. Jij brengt hem terug voor hij er zelf erg in heeft. Dat is zorg, niet controle.'}
+  ],
+  meerLezen:{preview:'Verbinding is iets dat je actief onderhoudt. Jij kunt dat.'}},
+
+ {id:48, titel:'Zijn stem, zijn plek', subtitel:'Hij mag iets zeggen \u2014 ook hier.', domein:'verbinding', fase:4, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Ze vraagt hem iets.\nNiet een check-in. Gewoon: \u201choe voelt dit voor jou?\u201d\n\nHij zegt iets echts.\nZe luistert.\n\nDan: \u201cgoed. Ik houd het in mijn hoofd.\u201d\n\nEn ze gaan verder.\n\nZijn stem verandert niks aan wie er leiding geeft.\nMaar hij weet nu: ik tel mee.'},
+    {type:'inzicht', tekst:'Submission gaat niet over stemloosheid.\nTim heeft een eigen stem. Eigen gevoelens. Eigen grenzen.\nDe dynamiek maakt dat niet kleiner \u2014 het geeft het een plek.\n\nJij leidingnemen betekent niet dat hij geen mening heeft.\nHet betekent dat jij beslist wat je met die mening doet.\nEn soms is dat: ik hoor je, en ik kies toch anders.\nEn soms is dat: dank je, dat verandert wat ik doe.\n\nDat is leiderschap. Niet dictatuur.'},
+    {type:'voorbeeld', tekst:'Na een sessie: \u201cwat voelde goed voor jou?\u201d \u2014 en echt luisteren.\n\nTijdens een avond: \u201choe zit je erbij?\u201d Niet als check-in, maar gewoon: ik wil weten.\n\nHij zegt iets oncomfortabels. Jij zegt: \u201cik hoor je. Ik denk er over na.\u201d Niet meteen toegeven \u2014 maar ook niet wegwuiven.\n\nHij heeft ergens moeite mee. Jij maakt ruimte. Dat is niet zwak \u2014 dat is wijs.'},
+    {type:'noot', tekst:'Er is een spanning die veel mensen voelen in leiderschapsrollen: als ik luister, verlies ik dan mijn positie?\n\nNee.\n\nEen leider die luistert is sterker dan een leider die niet luistert. Want luisteren is een keuze. Jij kiest ervoor. Dat is ook macht.\n\nTim wil niet een Lisanne die altijd ja-knikt. Hij wil jou. En jij hebt oren. Die zijn onderdeel van wie je bent.'},
+    {type:'kernboodschap', tekst:'Zijn stem heeft een plek.\nNiet boven jou. Niet weg.\nBij jou.'},
+    {type:'probeer', tekst:'Vraag hem na de volgende sessie of intiem moment \u00e9\u00e9n ding: \u201cwat raakte je het meest?\u201d\nNiet om te evalueren. Gewoon om te weten.\nLuister. Doe er iets mee.'}
+  ],
+  verdieping:[
+    {vraag:'Als ik vraag hoe het voor hem is, verlies ik dan de regie?', antwoord:'Nee. De regie ligt in hoe je luistert en wat je ermee doet. Je kunt luisteren en toch de koers bepalen. Die combinatie is sterker dan \u00e9\u00e9n van beiden alleen.'},
+    {vraag:'Hij zegt nooit iets als ik vraag', antwoord:'Dat kan angst zijn \u2014 bang om de verkeerde dingen te zeggen, of de dynamiek te verstoren. Maak duidelijk dat zijn stem welkom is. \u201cIk vraag dit omdat ik het wil weten, niet om te beoordelen.\u201d Na een paar keer opent hij zich meer.'},
+    {vraag:'Wat als hij iets zegt dat ik niet wil horen?', antwoord:'Dan is er iets aan de hand dat jullie moeten bespreken. Buiten de dynamiek om, als Tim en Lisanne. Dat gesprek is de dynamiek waard.'}
+  ],
+  meerLezen:{preview:'Luisteren is ook een vorm van leiding geven.'}},
+
+ {id:49, titel:'Het dagelijkse anker', subtitel:'Een klein ritueel, elke dag.', domein:'verbinding', fase:4, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Elke ochtend, voor hij naar zijn werk gaat:\nhij staat voor haar.\n\u201cHebben we nog iets?\u201d\nOf gewoon: haar hand even vasthouden. Even kijken.\n\nZes seconden.\n\nDan de dag.\n\nDie zes seconden veranderen hoe de dag begint.'},
+    {type:'inzicht', tekst:'Je hoeft geen grote sessies te plannen om de dynamiek levend te houden.\nKleine, consistente momenten doen meer dan grote, onregelmatige.\n\nEen dagelijks ritueel is niet ingewikkeld.\nHet is een afgesproken moment waarop jullie even weten: dit zijn we. Dit is hoe we leven.\n\nHet hoeft niet lang te duren. Het moet <b>echt</b> zijn.'},
+    {type:'voorbeeld', tekst:'Ochtend: hij vraagt toestemming voordat hij de deur uit gaat. Of jij geeft hem een kus en zegt: \u201cheb een goede dag.\u201d Niet als partner \u2014 als de baas.\n\nAvond: hij meldt zich. \u201cIk ben thuis.\u201d Of jij vraagt: \u201choe was je dag?\u201d \u2014 en hij antwoordt met aandacht, niet automatisch.\n\nBij het slapengaan: even afdalen. Een moment van stilte. Zijn hoofd op jouw schoot. Of jij legt je hand op hem. Niks meer.\n\nOf: een woord. \u201cGoed gedaan vandaag.\u201d Of: \u201cmorgen beter.\u201d\nKort. Helder. Echt.'},
+    {type:'noot', tekst:'Een ritueel werkt alleen als het consistent is.\nNiet elke dag perfect \u2014 maar elke dag aanwezig.\n\nAls je een dag mist, maak er geen drama van. Begin de volgende dag opnieuw.\n\nEn als het ritueel niet meer klopt \u2014 verander het. Samen. Een ritueel dat niet meer past is geen mislukt ritueel; het is een ritueel dat uitgegroeid is. Dat is goed.'},
+    {type:'noot', tekst:'Dit hoeft geen geheim te zijn tegenover de buitenwereld.\nSommige stellen zeggen altijd dag bij de deur. Sommigen bellen elke avond. Dat is gewoon lief.\n\nDat jullie ritueel ook een laagje dieper gaat \u2014 dat weten jullie. En alleen jullie.'},
+    {type:'kernboodschap', tekst:'Een klein moment, elke dag.\nNiet spectaculair. Niet zwaar.\nGewoon: dit zijn wij. En wij kiezen dit.'},
+    {type:'probeer', tekst:'Spreek \u00e9\u00e9n ritueel af voor de komende week.\nKlein. Haalbaar. Elke dag.\nKijk na een week: wat heeft het gedaan?'}
+  ],
+  verdieping:[
+    {vraag:'Het voelt geforceerd', antwoord:'Dat is normaal in het begin. Alles wat nieuw is voelt eerst onwennig. Geef het twee weken. Als het daarna nog geforceerd voelt, kies dan iets anders \u2014 maar houdt het principe: een dagelijks moment.'},
+    {vraag:'We vergeten het steeds', antwoord:'Koppel het aan iets wat jullie al doen: ochtendkoffie, het moment voor het slapengaan, het thuiskomen. Geen nieuw moment inplannen \u2014 een bestaand moment lading geven.'},
+    {vraag:'Hij wil meer dan een kleine ritueel', antwoord:'Dat verlangen is begrijpelijk. Maar het kleine ritueel is het fundament. Grotere sessies zijn mooier als het fundament solide is. Begin klein. Bouw op.'}
+  ],
+  meerLezen:{preview:'Consistentie is krachtiger dan intensiteit.'}},
+
+
+ 
+  {id:58, titel:'Bijna een jaar', subtitel:'', domein:'dagscenario', fase:5, type:'dagscenario',
+  scroll:[
+    {type:'scene', tekst:'Ze vraagt hem: \u201choe was je dag?\u201d\n\nNiet automatisch. Ze kijkt hem aan terwijl ze het vraagt.\nStoort hem bij zijn telefoon. Wacht.\n\nHij legt hem neer. Vertelt iets echts.\n\nZe knikt. Ze legt haar hand op zijn knie.\n\nDit is een avond. Zoals veel andere avonden.\nMaar ook niet. Want ze weet nu hoe dit aanvoelt als ze eraan meegeeft.\n\nEn hij weet het ook.\n\nEn Milou eet haar boterham en vraagt of ze na het eten mag tekenen.'},
+    {type:'kernboodschap', tekst:'Het leven gaat gewoon door.\nEn tegelijk is er iets dat niet meer weggaat.\nKlein. Zeker. Van jullie.'}
+  ],
+  verdieping:[], meerLezen:{preview:''}},
+
+{id:50, titel:'Praten zonder het dood te praten', subtitel:'Het gesprek na het moment.', domein:'verbinding', fase:5, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Na een intens moment.\nJullie liggen naast elkaar.\nZe wil het bespreken. Hij ook.\n\nMaar er is een verschil tussen praten over wat er was\nen wat er was wegnemen met woorden.\n\nSoms is de stilte de beste nabespreking.'},
+    {type:'inzicht', tekst:'Nabespreken is waardevol. Maar er zit een valkuil.\n\nAls je elk moment direct analyseert, begin je het te ontmantelen.\nJe bent dan bezig met beoordelen in plaats van beleven.\n\nEr is een moment voor woorden. En er is een moment voor stilte.\nHet is handig om het verschil te weten.'},
+    {type:'voorbeeld', tekst:'Direct na een sessie: niet de diepte in. Eventueel een kort \u201calles goed?\u201d. Dan rust.\n\nLater \u2014 een uur, de volgende ochtend: dan het gesprek. Hoe was het? Wat raakte je? Wat wil je meer van? Wat minder?\n\nDe nabespreking is niet voor problemen. Het is voor groei. Begin met wat goed ging, niet met wat niet goed ging.\n\nEnkele vragen die werken:\n\u201cWat raakte je het meest?\u201d\n\u201cWat wil je de volgende keer vaker?\u201d\n\u201cWas er een moment dat je me nodig had en ik er niet was?\u201d'},
+    {type:'noot', tekst:'Er is ook dropdrop \u2014 de emotionele dip na een intens moment. Dat kan de volgende dag zijn, of een paar dagen later. Soms voelt Tim zich even leeg, of verdrietig, of afstandelijk. Dat is normaal.\n\nAls dat gebeurt: geen analyse. Gewoon nabijheid. Een hand. \u201cIk ben er.\u201d\n\nHet gaat vanzelf over. En als het niet overgaat, dan is dat het moment voor een echt gesprek.'},
+    {type:'kernboodschap', tekst:'Niet elk moment hoeft in woorden.\nMaar de woorden die je kiest \u2014 zeg ze op het goede moment.\nDan landen ze.'},
+    {type:'probeer', tekst:'Spreek een patroon af: na intieme momenten eerst stilte (en/of slapen), en de nabespreking de volgende ochtend bij de koffie.\nZo weet je allebei: het gesprek komt. We hoeven het er nu niet over te hebben.'}
+  ],
+  verdieping:[
+    {vraag:'Hij wil er nooit over praten', antwoord:'Sommige mensen praten moeilijk na iets intens. Verlaag de drempel: stuur hem een berichtje de volgende dag. \u201c\u00e9\u00e9n ding dat je mooi vond?\u201d Dat is makkelijker dan een gesprek aan tafel.'},
+    {vraag:'Ik analyseer alles direct, dat is mijn natuur', antwoord:'Dat mag. Maar schrijf het voor jezelf op, en breng het later in. Zo verwerk je het zonder het moment weg te praten.'},
+    {vraag:'Wat is dropdrop precies?', antwoord:'Na een intense ervaring daalt het adrenaline en endorfine. Het lichaam en het hoofd landen. Soms voelt dat als een dip: leeg, melancholisch, soms licht verdrietig. Het is geen signaal dat iets mis was. Het is gewoon landing. Nabijheid helpt het meest.'}
+  ],
+  meerLezen:{preview:'De manier waarop jullie praten over wat jullie doen is net zo belangrijk als wat jullie doen.'}},
+
+ {id:51, titel:'De reis is het doel', subtitel:'Je hoeft nergens aan te komen.', domein:'verbinding', fase:5, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Ze kijkt naar wat ze al hebben gedaan.\nNaar hoe anders het nu voelt dan een jaar geleden.\n\nNiet omdat ze \u201cklaar\u201d zijn.\nMaar omdat dit \u2014 dit bewegen, dit ontdekken, dit samen \u2014\nhet punt is.\n\nEr is geen eindstation.'},
+    {type:'inzicht', tekst:'Er is een neiging om te denken: als we dit niveau bereiken, zijn we er.\nOf: als we dit hebben gedaan, kunnen we verder.\n\nMaar intimiteit groeit niet lineair. Het golft.\nSoms intens, soms rustig, soms terugstap, soms een sprong.\n\nDe dynamiek is niet iets dat je afrondt. Het is iets dat je leeft.\nEn dat is precies waarom het mooi is.'},
+    {type:'voorbeeld', tekst:'Een maand lang voel je niks bijzonders \u2014 en dan ineens, op een doodgewone avond, is er dat moment.\n\nJij probeert iets nieuws en het werkt niet. Maar jullie lachen erom en proberen iets anders. Dat is ook de reis.\n\nHij heeft een periode dat hij minder aanwezig is. Jullie bespreken het. Het keert terug. De dynamiek is niet kapot geweest \u2014 het was even stil.\n\nJij ontdekt iets over jezelf wat je niet verwachtte. Dat is een cadeau van de reis.'},
+    {type:'noot', tekst:'Het is normaal dat de intensiteit fluctueert.\nHet leven heeft drukke periodes. Ziek zijn. Stress. Een kind dat 's nachts wakker wordt.\nDan is de dynamiek even op de achtergrond. Dat is niet mislukt. Dat is leven.\n\nWat telt is het terugkomen. Niet omdat het \u201cmoet\u201d, maar omdat het van jullie is.'},
+    {type:'kernboodschap', tekst:'Je bent niet onderweg naar iets.\nJe bent er al.\nElke dag dat jullie dit leven \u2014 dat is de bestemming.'},
+    {type:'probeer', tekst:'Kijk samen terug: wat was een moment van de afgelopen tijd dat jullie allebei bijbleef?\nNiet het meest intense. Gewoon: een moment dat van jullie was.\nBenoem het. Vier het even.'}
+  ],
+  verdieping:[
+    {vraag:'Wat als we een lange tijd niks doen met de dynamiek?', antwoord:'Dat kan. Het leven bepaalt soms het tempo. De dynamiek verdwijnt niet als je er een tijdje niet actief mee bezig bent \u2014 zolang de basis er is. En die basis zijn jullie.'},
+    {vraag:'Ik heb het gevoel dat ik altijd verder moet', antwoord:'Dat is een misvatting die veel dominant partners hebben. \u201cVerder\u201d is niet het doel. Dieper in wat er al is \u2014 d\u00e1t is de groei.'},
+    {vraag:'Hij wil altijd meer, intenser, verder', antwoord:'Bespreek dit. Zijn verlangen naar meer is niet per definitie een signaal dat jullie nu tekort komen. Soms is het gewoon verlangen. Maar als het steeds aanwezig is, kan het zijn dat hij iets mist wat niet over intensiteit gaat.'}
+  ],
+  meerLezen:{preview:'Jullie zijn al goed. Jullie kunnen ook groeien. Die twee sluiten elkaar niet uit.'}},
+
+ {id:52, titel:'Dagelijks leven', subtitel:'De dynamiek in de kleine dingen.', domein:'verbinding', fase:5, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Hij ruimt de vaatwasser in.\nZij loopt langs, legt een hand op zijn rug \u2014 kort.\nGaat door.\n\nHij voelt het de rest van de avond.\n\nDe dynamiek zit niet in de sessies.\nHet zit hier. In dit.'},
+    {type:'inzicht', tekst:'De mooiste dynamieken leven in het dagelijks leven.\nNiet als performance. Niet als mode.\nAls een laag die er altijd is.\n\nEen hand op zijn rug. Iets voor hem beslissen. Hem ergens om vragen op een bepaalde toon.\nKleine dingen. Die optellen.'},
+    {type:'voorbeeld', tekst:'Hij kookt. Jij zit aan tafel en je kijkt toe. Dat is ook een positie.\n\n\u201cKan jij even\u2026\u201d wordt \u201cDoe jij even\u2026\u201d \u2014 woordje weg, toon erbij.\n\nJij pakt zijn hand in de auto en houdt hem vast. Even druk. Loslaten.\n\nJij kiest het restaurant. Niet overleggen. Gewoon: \u201cwe gaan hier naartoe.\u201d\n\nHij heeft een slechte dag. Jij zegt: \u201cga even liggen. Ik kom zo.\u201d Niet vragend. Gewoon.'},
+    {type:'noot', tekst:'Het gevaar van \u201cdagelijkse dynamiek\u201d is dat het toneelspel wordt.\nJij doet alsof je de baas bent, hij doet alsof hij volgt \u2014 maar het raakt niet.\n\nHet werkt als het echt is. Als jij die hand op zijn rug legt omdat jij dat wilt, niet omdat het hoort.\nAls jij beslissingen neemt omdat jij die mening hebt, niet als oefening.\n\nKort gezegd: doe wat je wilt doen. Doe het met overtuiging. Kijk wat er gebeurt.'},
+    {type:'kernboodschap', tekst:'De dynamiek hoeft niet te beginnen bij de slaapkamerdeur.\nHet kan er de hele dag al zijn.\nKlein. Echt. Van jullie.'},
+    {type:'probeer', tekst:'Kies \u00e9\u00e9n moment morgen \u2014 \u00e9\u00e9n gewoon moment \u2014\nen zet er bewust een laagje op.\nEen andere toon. Een beslissing nemen. Een hand.\nKijk wat het doet.'}
+  ],
+  verdieping:[
+    {vraag:'Het voelt alsof ik altijd \u201caan\u201d moet zijn', antwoord:'Dat is precies wat niet de bedoeling is. De dynamiek is geen modus die je aanzet. Het zijn kleine keuzes die je maakt als je er zin in hebt. Soms maak je ze, soms niet. Dat is ook goed.'},
+    {vraag:'Hij merkt het soms niet eens', antwoord:'Dat is oké. Jij doet het voor de verbinding, niet voor de bevestiging. Maar als je wilt dat hij het merkt: maak oogcontact. Dan weet hij dat het intentioneel is.'},
+    {vraag:'Is dit niet gewoon een relatie?', antwoord:'Ja. Dat is precies het punt. De dynamiek maakt jullie relatie niet vreemder. Het verdiept hem.'}
+  ],
+  meerLezen:{preview:'Elke dag kleine keuzes. Dat is de dynamiek.'}},
+
+ {id:53, titel:"Tim's binnenkant", subtitel:'Wat hij zelden zegt, maar altijd voelt.', domein:'psychologisch', fase:5, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Er zijn momenten dat Tim niks zegt.\nMaar als je goed kijkt, zie je het:\nde ontspanning in zijn schouders.\nDe manier waarop hij ademt.\nDe blik die zacht wordt.\n\nHij is er. Helemaal.\nDit is wat hij altijd heeft gewild.'},
+    {type:'inzicht', tekst:'Tim draagt veel in zijn hoofd.\nControle, verantwoordelijkheid, vooruitzien.\nNiet klagen \u2014 dat is gewoon hoe hij is.\n\nMaar er is iets in hem dat smacht naar het tegenovergestelde:\nhet mogen loslaten. Het niet hoeven weten. Het er gewoon mogen zijn.\n\nDat is wat jij hem geeft als jij leiding neemt.\nNiet de afwezigheid van Tim. De rust van Tim.'},
+    {type:'voorbeeld', tekst:'Hij doet een taak die jij hem hebt gegeven. Zijn hoofd is leeg. Gewoon dit, nu, voor haar. Dat is rust die hij nergens anders vindt.\n\nJij neemt de beslissing. Hij hoeft niet na te denken. Hij volgt. Opluchting.\n\nJij bent aanwezig. Hij voelt het. Zijn lijf laat los.\n\nNa een sessie: hij is stiller, zachter. Dat is niet leeg zijn. Dat is gevuld zijn.'},
+    {type:'noot', tekst:'Tim houdt dingen soms voor zichzelf. Niet omdat hij wil verbergen \u2014 maar omdat woorden groot zijn en hij niet alles wil bederven met uitleg.\n\nDat betekent soms dat jij iets moet lezen zonder dat hij het zegt.\nZijn stille aanwezigheid is ook communicatie.\nEen hand op zijn schouder zegt meer dan een vraag soms.\n\nEn als je het toch wilt weten: vraag het later. Klein. \u201cHoe voelde dat voor jou?\u201d'},
+    {type:'kernboodschap', tekst:'Zijn stilte is geen afwezigheid.\nHet is vaak de diepste aanwezigheid.\nJij ziet hem. Dat is genoeg.'},
+    {type:'probeer', tekst:'Kijk de volgende keer dat jullie een moment hebben bewust naar hem.\nNiet naar wat hij doet \u2014 naar hoe hij <i>\u00ees</i>.\nWat zie je in zijn lichaam? In zijn blik?\nDat is zijn binnenkant. Die is voor jou.'}
+  ],
+  verdieping:[
+    {vraag:'Ik weet nooit wat er in hem omgaat', antwoord:'Dat is deels Tim. Hij articuleert zijn innerlijk niet makkelijk. Maar zijn lijf praat. Kijk naar zijn ademhaling, zijn schouders, zijn gezicht. Dat leert je meer dan woorden.'},
+    {vraag:'Hij zegt dat alles goed is maar het voelt niet zo', antwoord:'Vertrouw je gevoel. Vraag het nog een keer, later, anders: \u201cik zag iets aan je \u2014 was er iets?\u201d Niet als aanklacht. Als aandacht. Dat opent meer dan een directe vraag.'},
+    {vraag:'Soms lijkt hij niet aanwezig tijdens een sessie', antwoord:'Dat kan zijn hoofd zijn dat nog niet los is. Geef hem een taak. Of stop even. \u201cHey. Ik ben hier.\u201d Kijk hem aan. Breng hem terug. En als het structureel is, bespreek het dan.'}
+  ],
+  meerLezen:{preview:'Jij ziet hem zoals hij zelden gezien wordt. Dat is een cadeau dat hij je geeft.'}},
+
+ {id:54, titel:'Passie verandert van vorm', subtitel:'Dat is normaal. Dat is goed.', domein:'verbinding', fase:5, type:'story',
+  scroll:[
+    {type:'scene', tekst:'Het eerste jaar is anders dan het derde jaar.\nIntenser misschien. Verrassender.\n\nMaar het derde jaar \u2014 met het weten, de rust, de vanzelfsprekendheid \u2014\ndat heeft iets wat het eerste jaar nooit had.\n\nHet heet: vertrouwen.'},
+    {type:'inzicht', tekst:'Passie verandert. Dat is geen verlies.\n\nAan het begin is er de nieuwigheid. De spanning van het ontdekken.\nDat gaat over. En wat ervoor in de plek komt, als je het toelaat, is iets anders: verdieping.\n\nJe kent elkaar. Je weet wat werkt. Je hoeft het niet meer te bewijzen.\nDat maakt ruimte voor een soort intimiteit die aan het begin niet bestond.'},
+    {type:'voorbeeld', tekst:'Jaar \u00e9\u00e9n: alles is nieuw, alles is spannend, je ontdekt alles.\nJaar drie: een blik is al genoeg. Jij weet wat die blik betekent. Hij ook.\n\nAan het begin zoek je het grote moment. Later zie je de kleine momenten \u2014 en je weet wat ze waard zijn.\n\nDe dynamiek aan het begin voelt misschien intenser. Later voelt ze vanzelfsprekender. Beide zijn echt.'},
+    {type:'noot', tekst:'Als de passie minder voelt: check in.\nNiet met paniek. Met nieuwsgierigheid.\n\n\u201cWat missen we de laatste tijd?\u201d\n\u201cWat wil jij proberen?\u201d\n\u201cWanneer hadden we voor het laatst een echt moment?\u201d\n\nPassie heeft soms gewoon een zetje nodig. Geen revolutie. Een kleine intentie.'},
+    {type:'kernboodschap', tekst:'De vonk verandert \u2014 hij gaat niet uit.\nZolang jullie het blijven voeden, is het er.\nDat is al een hele mooie belofte.'},
+    {type:'probeer', tekst:'Schrijf samen, los van elkaar, \u00e9\u00e9n ding op: wat wil ik dat we de komende drie maanden proberen?\nVergelijk de briefjes.\nEn kies er \u00e9\u00e9n uit om te doen.'}
+  ],
+  verdieping:[
+    {vraag:'Het is minder spannend geworden', antwoord:'Dat is normaal. Maar \u201cminder spannend\u201d is niet hetzelfde als \u201cminder goed\u201d. Kijk of er iets is wat jullie al lang niet hebben gedaan. Herhaal iets van vroeger. Soms zit de spanning niet in het nieuwe \u2014 maar in het herkennen.'},
+    {vraag:'Hij lijkt minder geinteresseerd', antwoord:'Vraag het hem. Direct. \u201cIk merk dat we het er minder over hebben \u2014 is er iets?\u201d Dat gesprek is de moeite waard, ook als het ongemakkelijk begint.'},
+    {vraag:'Wat als de dynamiek verdwijnt?', antwoord:'Dan kies je hem opnieuw. Niet uit verplichting. Maar als een bewuste keuze: dit zijn wij, en dit willen wij. Die keuze maak je elke dag een beetje. Dat is genoeg.'}
+  ],
+  meerLezen:{preview:'Dit is geen eindpunt. Het is een thuiskomen.'}},
+
+{id:28, titel:'Jij bepaalt wanneer', subtitel:'En of.', domein:'intimiteit', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Jullie zijn in bed. Het is intens.\nHij is dichtbij. Je voelt het aan zijn ademhaling.\nJij legt je hand op zijn borst.\n\u201cStop. Nog niet.\u201d\nHij stopt. Wacht. Kijkt je aan.\nTien seconden. Twintig.\n\u201cVerder.\u201d\nDie paar seconden veranderden alles.'},
     {type:'inzicht', tekst:'Jij beslist <b>of</b> hij klaarkomt.\nNiet als straf. Als iets dat van jou is.\nDie ene beslissing verandert het hele moment.\nElk moment telt als het einde niet <b>vaststaat</b>.\nWaarom dit zo intens is: zijn hele lijf is op dat ene moment gericht. Elke aanraking, elke seconde wordt tien keer zo intens omdat hij niet weet of het mag. Jij hebt de sleutel. Dat maakt alles wat eraan voorafgaat geladen.'},
@@ -3751,7 +4380,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:29, titel:'Dit heeft gevolgen', subtitel:'Soms is \u00e9\u00e9n zin niet genoeg.', domein:'controle', fase:4, type:'story',
+ {id:29, titel:'Dit heeft gevolgen', subtitel:'Soms is \u00e9\u00e9n zin niet genoeg.', domein:'controle', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Woensdagavond. Derde keer telefoon opgepakt. \u201cTelefoon inleveren. Op het nachtkastje. Je krijgt hem terug als ik het zeg.\u201d\nNa een uur: \u201cJe mag hem weer pakken.\u201d Hand op zijn been. \u201cHet is goed.\u201d'},
     {type:'inzicht', tekst:'Soms is benoemen genoeg.\nMaar soms niet.\nDan mag je er iets aan toevoegen.\nNiet straf. Niet een systeem. Wat voelt goed in het moment.\nHet verschil met correctie (les 8) is dat een consequentie iets <b>tastbaars</b> toevoegt. Woorden alleen laten Tim nadenken. Een consequentie laat hem het voelen \u2014 in zijn lijf, in zijn avond, in de volgende dag.\nEn nee, dat is niet wreed. Het is het bewijs dat jij het meent. Alleen woorden zonder gevolg voelt als een opmerking. Een consequentie voelt als: zij neemt dit serieus. En dat is voor hem geruststellend, niet beangstigend.\nDaarom is de afsluiting zo belangrijk. \u201cHet is klaar. Kom hier.\u201d Schone lei. Jullie zijn goed.'},
@@ -3787,7 +4416,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:30, titel:'Een hele avond', subtitel:'Van begin tot eind, op jouw manier.', domein:'controle', fase:4, type:'story',
+ {id:30, titel:'Een hele avond', subtitel:'Van begin tot eind, op jouw manier.', domein:'controle', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is overdag. Milou is op school.\nJij pakt je telefoon. \u201cVanavond heb ik plannen.\u201d\nJe denkt na. Niet lang. Drie stappen:\nHalsband. Vastzitten. Blinddoek.\nEn daarna: stilte, nabijheid, landen.\nDat is een hele avond. Op jouw manier.\nJe had het in dertig seconden bedacht.'},
     {type:'inzicht', tekst:'Je hebt al alle onderdelen.\nJe hoeft ze alleen achter elkaar te <b>zetten</b>.\nBegin, midden, eind.\nDat klinkt als werk. Maar je had het net in dertig seconden bedacht.'},
@@ -3814,7 +4443,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:31, titel:'Tussen zijn oren', subtitel:'De krachtigste tool is zijn hoofd.', domein:'psychologisch', fase:4, type:'story',
+ {id:31, titel:'Tussen zijn oren', subtitel:'De krachtigste tool is zijn hoofd.', domein:'psychologisch', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Het is avond. Milou slaapt. Jullie zijn in de woonkamer.\nJij staat op. Loopt naar de slaapkamer.\nKomt terug met de polsboeien, de blinddoek en de halsband.\nLegt ze op de salontafel. Zegt niks.\nGaat weer zitten. Pakt je telefoon.\nHij kijkt naar de spullen. Dan naar jou. Dan weer naar de spullen.\nJij kijkt niet op.\nNa een uur zeg je: \u201cniet vanavond.\u201d\nEn je ruimt ze op.'},
     {type:'inzicht', tekst:'Jij deed <b>niks</b>.\nEn toch was de hele avond van jou.\nDat is psychologisch spel.\nZijn hoofd deed al het werk.'},
@@ -3843,7 +4472,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:32, titel:'Vandaag niet', subtitel:'De zwaarste consequentie is afwezigheid.', domein:'controle', fase:4, type:'story',
+ {id:32, titel:'Vandaag niet', subtitel:'De zwaarste consequentie is afwezigheid.', domein:'controle', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Zaterdagochtend. Iets is gisteravond fout gegaan.\n\u201cVandaag niet.\u201d\nTwee woorden.\nGewone dag, maar de laag is weg.\nVoor het slapen gaan: \u201cMorgen weer gewoon.\u201d\nHij ademt uit.'},
     {type:'inzicht', tekst:'De dynamiek wegnemen is zwaarder dan elke straf.\nZeldzaam gebruiken. Voor momenten waar je echt voelt: dit was te ver.'},
@@ -3877,7 +4506,7 @@ const LESSEN_INHOUD = [
   }},
 ,
 
- {id:33, titel:'En nu verder', subtitel:'Dit is pas het begin.', domein:'verbinding', fase:4, type:'story',
+ {id:33, titel:'En nu verder', subtitel:'Dit is pas het begin.', domein:'verbinding', fase:5, type:'story',
   scroll:[
     {type:'scene', tekst:'Je staat in de keuken. Tim loopt langs.\nJe pakt hem bij zijn arm. Trekt hem naar je toe.\nLegt je hand in zijn nek. Kijkt hem aan.\nZegt niks.\nLaat hem los. Gaat verder met wat je deed.\nNiet omdat de app het suggereerde.\nNiet omdat je het plande.\nMaar omdat je het <b>wilde</b>.'},
     {type:'inzicht', tekst:'Tweeëntwintig stappen.\nJe hebt richting gegeven, aangeraakt met intentie, hem vastgezet, zijn zintuigen bespeeld, hem gestuurd in bed.\nJe hebt rituelen gebouwd en grenzen bepaald.\nDe stappen stoppen hier.\nWat jullie hebben <b>niet</b>.'},
@@ -3910,6 +4539,14 @@ const LESSEN_INHOUD = [
     preview:null
   }}
 
+
+,
+ {id:59, titel:'Dit zijn jullie', subtitel:'', domein:'dagscenario', fase:5, type:'dagscenario',
+  scroll:[
+    {type:'scene', tekst:'Milou slaapt.\n\nHet huis is stil.\n\nSoms liggen jullie naast elkaar en zeggen jullie niks. En het is niet ongemakkelijk. Het is vol.\n\nJij weet wat hij nodig heeft. Hij weet wat jij wilt. Niet altijd. Niet perfect. Maar vaker dan vroeger.\n\nDit is niet wat het leek in het begin.\nHet is meer.'},
+    {type:'kernboodschap', tekst:'Je was al genoeg toen je begon.\nJij hebt dit gemaakt.\nEn hij was er \u2014 de hele tijd.'}
+  ],
+  verdieping:[], meerLezen:{preview:''}},
 
 ];
 
@@ -4560,7 +5197,7 @@ function getOntdekkingStatus(){
     afgewezen: neeCount,
     // Tempo: als 2+ teveel of 3+ nee → vertraag
     tempoOmlaag: teveelCount >= 2 || neeCount >= 3,
-    // Klaar voor volgende fase: 3+ fijn en geen recente teveel
+    // Klaar voor volgende fase: 4+ fijn en geen recente teveel
     klaarVoorMeer: fijnCount >= 3 && teveelCount === 0
   };
 }
@@ -4823,7 +5460,7 @@ function getTimErvaartTekst(sug){
 // ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
 // OPDRACHTTAAL PER FASE — hoe de app Lisanne aanspreekt
-// Fase 0-1: uitnodigend ("Probeer eens...", "Kijk hoe het voelt als...")
+// Fase 1-2: uitnodigend ("Probeer eens...", "Kijk hoe het voelt als...")
 // Fase 2-3: duidelijk ("Zeg tegen Tim...", "Doe dit vanavond...")
 // Fase 4+: stellig ("Tim doet vanavond...", directe instructie)
 // ═══════════════════════════════════════════════════════════════
@@ -4831,7 +5468,7 @@ function getTimErvaartTekst(sug){
 // Fallback: fase 1 als app 7+ dagen bestaat OF 5+ suggesties bekeken OF 3+ unieke open dagen
 function getEffectieveLesjesFase(){
   const s4 = getSpoor4State();
-  const fase = s4.fase || 0;
+  const fase = s4.fase || 1;
   // Cap op 5: lessen/mini-lesjes gaan maar tot fase 5, leerpaden tot 6
   if(fase >= 1) return Math.min(fase, 5);
 
@@ -5076,7 +5713,7 @@ function getLesGate(lesId){
 
 // ── Stap-voor-stap lessen-systeem ──
 
-const DOMEIN_KLEUREN = {verbinding:'112,196,169', controle:'126,167,255', fysiek:'120,160,210', psychologisch:'164,176,255', sensorisch:'140,180,230', intimiteit:'160,140,220', service:'100,180,170'};
+const DOMEIN_KLEUREN = {verbinding:'112,196,169', controle:'126,167,255', fysiek:'120,160,210', psychologisch:'164,176,255', sensorisch:'140,180,230', intimiteit:'160,140,220', service:'100,180,170', communicatie:'180,160,200', dagscenario:'160,150,130'};
 
 // ── LES → SUGGESTIE VOORKEUR MAPPING ──
 // Per les: welke suggestie-categorieën, vibes en actieTypes het beste passen
@@ -5470,6 +6107,14 @@ function toonScrollLes(les, kleur){
     '</footer>';
   }
 
+  // ── Dagscenario: directe sluit-knop (geen probeer-gate) ──
+  var dagscenarioFooter = '';
+  if(les.type === 'dagscenario' && !alGelezen){
+    dagscenarioFooter = '<div class="lesson-block" style="text-align:center;margin-top:2rem">'+
+      '<button class="lesson-primary" onclick="window._scrollLesMarkeerGelezen()" style="background:rgba(160,150,130,.2);border:1px solid rgba(160,150,130,.3)">Gelezen \u2192</button>'+
+    '</div>';
+  }
+
   // ── Overlay opbouwen ──
   var overlay = document.createElement('div');
   overlay.id = 'lesOverlay';
@@ -5483,6 +6128,7 @@ function toonScrollLes(les, kleur){
       (les.subtitel ? '<p class="lesson-subtitle">'+les.subtitel+'</p>' : '')+
     '</header>'+
     contentHtml+
+    dagscenarioFooter+
     (alGelezen ? footerHtml : '')+
   '</div>';
 
@@ -5842,6 +6488,20 @@ function renderLessenOverzicht(){
     const kleur = DOMEIN_KLEUREN[les.domein] || '126,167,255';
     const nr = les.id;
 
+    // Dagscenario's — visuele brug tussen fases
+    if(les.type === 'dagscenario'){
+      if(gelezen){
+        html += `<div onclick="toonLes(${nr})" style="margin:0.5rem 0;padding:.4rem .7rem;cursor:pointer;opacity:.5;text-align:center">
+          <p style="font-size:.7rem;color:var(--text3);font-style:italic">\u2014\u2014 ${les.titel} \u2014\u2014</p>
+        </div>`;
+      } else {
+        html += `<div onclick="toonLes(${nr})" style="margin:0.5rem 0;padding:.4rem .7rem;cursor:pointer;text-align:center">
+          <p style="font-size:.72rem;color:rgba(${kleur},.5);font-style:italic">\u2014\u2014 ${les.titel} \u2014\u2014</p>
+        </div>`;
+      }
+      return;
+    }
+
     if(isVolgende){
       // Huidige les — gehighlight
       html += `<div onclick="toonLes(${nr})" style="margin-bottom:.35rem;padding:.55rem .7rem;background:rgba(${kleur},.1);border-left:3px solid rgba(${kleur},.6);border-radius:0 var(--radius-sm) var(--radius-sm) 0;cursor:pointer">
@@ -5893,7 +6553,7 @@ function toonVolgendeV26Les(){
 
 function getOpdrachttaalPrefix(sug){
   const s4 = getSpoor4State();
-  const fase = s4.fase || 0;
+  const fase = s4.fase || 1;
 
   // Relationele suggesties krijgen geen opdrachttaal-prefix
   if(sug.cat === 'relationeel' || sug.vibe === 'warm') return null;
@@ -6443,10 +7103,10 @@ function activeerLisanneIdee(){
 function getBDSMFraming(){
   const ts = getThemaState();
   const t = ts.actiefThema;
-  if(t <= 2) return { fase:1, prefix:'Kijk wat dit doet.', toon:'uitleggend' };
-  if(t === 3) return { fase:2, prefix:'Dit werkt. Kijk maar.', toon:'meedenkend' };
-  if(t === 4) return { fase:3, prefix:'Hoe was dit voor jou?', toon:'incheckend' };
-  return { fase:4, prefix:'Dit is iets van jullie.', toon:'loslatend' };
+  if(t <= 2) return { fase:2, prefix:'Kijk wat dit doet.', toon:'uitleggend' };
+  if(t === 3) return { fase:3, prefix:'Dit werkt. Kijk maar.', toon:'meedenkend' };
+  if(t === 4) return { fase:4, prefix:'Hoe was dit voor jou?', toon:'incheckend' };
+  return { fase:5, prefix:'Dit is iets van jullie.', toon:'loslatend' };
 }
 
 // Anti-coaching teksten per thema-overgang
@@ -8803,7 +9463,7 @@ const LEERPAD_TERUGBLIK = {
 // ─── STATE UITBREIDING: Spoor4 tracking ───
 function getSpoor4State(){
   return LS.get('l_spoor4', {
-    fase: 0,                // 0=gewoon samen, 1=kleine signalen, etc.
+    fase: 1,                // 0=gewoon samen, 1=kleine signalen, etc.
     stap: 1,                // huidige stap binnen actief leerpad
     energieVandaag: null,   // 'laag','normaal','goed' (null=niet ingevuld)
     weekSpoorTelling: {},   // {1:2, 2:1, 3:0, 4:1} deze week
@@ -8824,7 +9484,7 @@ function beantwoordLeerpadTerugblik(antwoord){
   s4.laatsteTerugblik = today();
   // Log het antwoord voor inzicht
   const tbLog = LS.get('l_leerpadTerugblikLog', []);
-  tbLog.push({datum: today(), fase: s4.fase || 0, antwoord: antwoord});
+  tbLog.push({datum: today(), fase: s4.fase || 1, antwoord: antwoord});
   LS.set('l_leerpadTerugblikLog', tbLog);
   LS.set('l_leerpadTerugblik_'+today(), true);
   saveSpoor4State(s4);
@@ -8855,18 +9515,18 @@ const TIM_SPOOR_REMINDERS = {
 
 // ─── INZICHTEN per fase (voor suggestiekaart) ───
 const FASE_INZICHTEN = [
-  {fase:0, tekst:'Fijn dat je er bent. Dit is van jullie \u2014 op jouw tempo, op jouw manier.'},
-  {fase:1, tekst:'Tim reageert sterk op kleine signalen van jouw kant. Het hoeft niet groot te zijn.',
+  {fase:1, tekst:'Fijn dat je er bent. Dit is van jullie \u2014 op jouw tempo, op jouw manier.'},
+  {fase:2, tekst:'Tim reageert sterk op kleine signalen van jouw kant. Het hoeft niet groot te zijn.',
    uitleg:'Het zijn niet de grote gebaren die Tim raken, maar de kleine. Een aanraking in het voorbijgaan, een berichtje zonder aanleiding.'},
-  {fase:1, tekst:'Stevig aanraken is niet hard. Het is duidelijk.',
+  {fase:2, tekst:'Stevig aanraken is niet hard. Het is duidelijk.',
    uitleg:'Als je Tim\'s pols vastpakt of je duim in zijn schouder drukt, voelt hij geen pijn — hij voelt dat jij er bent.'},
-  {fase:2, tekst:'Kiezen voelt misschien raar. Dat is normaal. Tim vindt het fijn als jij kiest.',
+  {fase:3, tekst:'Kiezen voelt misschien raar. Dat is normaal. Tim vindt het fijn als jij kiest.',
    uitleg:'Tim reageert beter op duidelijkheid. Niet omdat hij niet kan kiezen, maar omdat jouw keuze hem rust geeft.'},
-  {fase:2, tekst:'Een opdracht hoeft niet streng te zijn. Het is een aanleiding voor een leuk moment.'},
-  {fase:3, tekst:'Tim\'s lichaam is niet iets dat je \'mag\' aanraken. Het is van jullie samen.'},
-  {fase:4, tekst:'Je hoeft niet te weten wat je gaat doen. De hint zelf doet al iets.',
+  {fase:3, tekst:'Een opdracht hoeft niet streng te zijn. Het is een aanleiding voor een leuk moment.'},
+  {fase:4, tekst:'Tim\'s lichaam is niet iets dat je \'mag\' aanraken. Het is van jullie samen.'},
+  {fase:5, tekst:'Je hoeft niet te weten wat je gaat doen. De hint zelf doet al iets.',
    uitleg:'Als je Tim een berichtje stuurt met \'vanavond heb ik plannen\', maakt het niet uit of je die plannen al hebt.'},
-  {fase:4, tekst:'Anticipatie is krachtiger dan het moment zelf.'},
+  {fase:5, tekst:'Anticipatie is krachtiger dan het moment zelf.'},
   {fase:5, tekst:'Een blinddoek is geen seks-ding. Het is een manier om aanraking intenser te maken.'},
   {fase:5, tekst:'Jij hoeft dit niet te \'willen\' zoals Tim het wil. Jij mag het op jouw manier doen.'},
   {fase:6, tekst:'Wat je nu kunt, kon je 3 maanden geleden niet. Dat is niet niks.'}
@@ -9090,9 +9750,9 @@ function kiesSuggestie(state){
   window._schedulerLog.forceerZacht = forceerZacht;
 
   // ═══════════════════════════════════════
-  // STAP 4: Fase 0 check (eerste 5 dagen)
+  // STAP 4: Fase 1 check (eerste 5 dagen)
   // ═══════════════════════════════════════
-  if(s4.fase === 0 && dagenActief < 5){
+  if(s4.fase === 1 && dagenActief < 5){
     let pool = SUGGESTIE_POOL.filter(s =>
       s.leerpad === 0 && !recenteIds.includes(s.id)
     );
@@ -9103,9 +9763,9 @@ function kiesSuggestie(state){
     }
     return pool.length > 0 ? pick(pool) : null;
   }
-  // Fase 0 → fase 1 transitie
-  if(s4.fase === 0 && dagenActief >= 5){
-    s4.fase = 1;
+  // Fase 1 → fase 2 transitie
+  if(s4.fase === 1 && dagenActief >= 5){
+    s4.fase = 2;
     s4.stap = 1;
     saveSpoor4State(s4);
   }
@@ -9784,8 +10444,8 @@ function weightedPick(options){
 
 // ─── Helper: bepaalActiefLeerpad ───
 function _bepaalActiefLeerpad(state, s4){
-  // Fase 0 al afgehandeld, begin bij 1
-  if(s4.fase < 1) return 1;
+  // Fase 1 is startfase, begin bij 2
+  if(s4.fase < 2) return 2;
 
   const historie = state.historie || [];
   let hoogstePad = 1;
@@ -11140,7 +11800,7 @@ function getPauzeDagen(){
 }
 
 // ─── Feature-gates per fase ──────────────────────────────────────
-// Fase 0: Tim only (dagritme + discipline)
+// Fase 1: Tim only (dagritme + discipline)
 // Fase 1: Tim toont app aan Lisanne
 // Fase 2: Lisanne kan meekijken (Tim's voortgang zien)
 // Fase 3: Lisanne kan overrides geven
@@ -12112,7 +12772,7 @@ function selectView(v){
 let onboardingStap = 0;
 let toonOnboarding = false; // in-memory flag — refresh = terug naar home
 
-const APP_BUILD = '2026-04-02 20:38';
+const APP_BUILD = '2026-04-03 12:38';
 
 const ONBOARDING_LISANNE = [
   { tekst:'<span style="font-size:.65rem;color:var(--text3);opacity:.5;float:right">v' + APP_BUILD + '</span>Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
@@ -13610,10 +14270,10 @@ function renderVandaag(state){
   //  ZONE 1B — WEEK-THEMA KAART (subtiel, boven hoofdkaart)
   //  Toont huidige leerpad + beschrijving
   // ════════════════════════════════════════════
-  const _wtFase = _s4State.fase || 0;
+  const _wtFase = _s4State.fase || 1;
   const _wtThema = LEERPAD_THEMAS[_wtFase];
   if(_wtThema){
-    const _wtTotaal = Object.keys(LEERPAD_THEMAS).length; // 7 (fase 0-6)
+    const _wtTotaal = Object.keys(LEERPAD_THEMAS).length; // 7 (fase 1-7)
     let _wtBalk = '';
     for(let i=0; i<_wtTotaal; i++){
       _wtBalk += `<div class="wtk-seg${i <= _wtFase ? ' actief' : ''}"></div>`;
@@ -13868,7 +14528,7 @@ function renderVandaag(state){
         <p style="font-size:.85rem;color:var(--text2);line-height:1.5;font-style:italic">${_naAfloop}</p>
       </div>`;
     }
-    const _s4Fase = (getSpoor4State().fase || 0);
+    const _s4Fase = (getSpoor4State().fase || 1);
     if(s.leerpad && s.leerpad > 0 && LEERPAD_THEMAS[s.leerpad] && _s4Fase >= 1){
       _meerInfoHtml += `<p style="font-size:.75rem;color:var(--text3);margin-top:.3rem;opacity:.7">Past bij: ${LEERPAD_THEMAS[s.leerpad].naam}</p>`;
     }
@@ -14005,8 +14665,8 @@ function renderVandaag(state){
       hoofdkaartHtml += `<p style="font-size:.85rem;color:var(--text2);text-align:center;margin-top:.4rem;line-height:1.4">Misschien heb je al gemerkt dat kleine dingen effect hebben. Misschien nog niet. Allebei is goed. Vanaf nu krijg je af en toe iets anders \u2014 kleine suggesties om uit te proberen. In jullie tempo.</p>`;
       hoofdkaartActies = `<button onclick="LS.set('l_eersteWeekGezien',true);renderApp()" class="btn btn-ghost" style="width:100%;font-size:.85rem">Verder</button>`;
     // Fase-overgang (latere fases)
-    } else if((function(){ const _s4=getSpoor4State(); const _ap=_s4.fase||0; const _th=LEERPAD_THEMAS[_ap]; return _s4.laatsteLeerpad!==null && _s4.laatsteLeerpad!==_ap && _th && _th.overgang && !LS.get('l_faseOvergangGezien_'+_ap); })()){
-      const _s4=getSpoor4State(); const _ap=_s4.fase||0; const _th=LEERPAD_THEMAS[_ap];
+    } else if((function(){ const _s4=getSpoor4State(); const _ap=_s4.fase || 1; const _th=LEERPAD_THEMAS[_ap]; return _s4.laatsteLeerpad!==null && _s4.laatsteLeerpad!==_ap && _th && _th.overgang && !LS.get('l_faseOvergangGezien_'+_ap); })()){
+      const _s4=getSpoor4State(); const _ap=_s4.fase || 1; const _th=LEERPAD_THEMAS[_ap];
       hoofdkaartContext = 'Nieuw hoofdstuk';
       hoofdkaartHtml += `<p style="font-size:.95rem;color:var(--text1);line-height:1.5;text-align:center">${_th.overgang}</p>`;
       hoofdkaartHtml += `<p style="font-size:.82rem;color:var(--accent);text-align:center;margin-top:.4rem;opacity:.8;font-style:italic">Kleine richting is al genoeg. Merk hoe jouw kleine keuzes de sfeer veranderen.</p>`;
@@ -14061,7 +14721,7 @@ function renderVandaag(state){
   //  ZONE 2B — PERIODIEKE LEERPAD-TERUGBLIK
   //  Elke ~14 dagen, als leerpad >= 1
   // ════════════════════════════════════════════
-  const _tbFase = _s4State.fase || 0;
+  const _tbFase = _s4State.fase || 1;
   const _tbLaatsteDatum = _s4State.laatsteTerugblik;
   const _tbDagenSinds = _tbLaatsteDatum ? daysSince(_tbLaatsteDatum) : 999;
   const _tbGezienKey = 'l_leerpadTerugblik_'+today();
@@ -14511,6 +15171,14 @@ function renderGids(){
     </div>
   </div>`;
 
+  // ── SESSIEGIDS ──
+  const _sessieHtml = renderSessieGids();
+  if(_sessieHtml) html += _sessieHtml;
+
+  // ── TAALBANK ──
+  const _taalHtml = renderTaalPool();
+  if(_taalHtml) html += _taalHtml;
+
   // ── HANDLEIDING ──
   html += renderHandleiding();
 
@@ -14528,6 +15196,136 @@ function renderGids(){
   </div>`;
 
   return html;
+}
+
+function renderSessieGids(){
+  const v = getLesVoortgang();
+
+  const genoegGelezen = (minFase) => {
+    if(minFase <= 1) return true;
+    if(minFase === 2) return v.gelezen.length >= 4;
+    if(minFase === 3) return v.gelezen.length >= 10;
+    if(minFase === 4) return v.gelezen.length >= 18;
+    return v.gelezen.length >= 26;
+  };
+
+  const beschikbaar = SESSIE_ACTIVITEITEN.filter(a => genoegGelezen(a.fase));
+  if(beschikbaar.length === 0) return '';
+
+  const ZWAAR = ['', '\u25cf', '\u25cf\u25cf', '\u25cf\u25cf\u25cf'];
+
+  let html = `<div class="info-panel" style="margin-bottom:1rem">
+    <p class="section-label">Sessiegids</p>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.8rem;line-height:1.5">Idee\u00ebn voor momenten samen. Begin klein. Laat het groeien.</p>`;
+
+  // Group by zwaarheid
+  [1, 2, 3].forEach(z => {
+    const items = beschikbaar.filter(a => a.zwaarheid === z);
+    if(!items.length) return;
+    const labels = ['Licht', 'Midden', 'Intensief'];
+    html += `<p style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:.7rem 0 .35rem">${labels[z-1]} ${ZWAAR[z]}</p>`;
+    items.forEach(a => {
+      const allId = 'sgids_' + a.id;
+      html += `<div style="margin-bottom:.4rem;border:1px solid rgba(126,167,255,.08);border-radius:var(--radius-sm);overflow:hidden">
+        <button onclick="var el=document.getElementById('${allId}');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.sgids-arrow').textContent=el.style.display==='none'?'\u25be':'\u25b4'"
+          style="all:unset;width:100%;padding:.5rem .7rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box">
+          <div>
+            <p style="font-size:.86rem;color:var(--text1);font-weight:500;margin:0 0 .1rem">${a.titel}</p>
+            <p style="font-size:.72rem;color:var(--text3);margin:0">${a.duur}${a.alleen ? ' \u2022 alleen thuis' : ''}</p>
+          </div>
+          <span class="sgids-arrow" style="color:var(--text3);font-size:.8rem">\u25be</span>
+        </button>
+        <div id="${allId}" style="display:none;padding:.5rem .7rem .7rem;border-top:1px solid rgba(255,255,255,.05)">
+          <p style="font-size:.84rem;color:var(--text2);line-height:1.55;margin:0 0 .6rem">${a.beschrijving}</p>
+          <p style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:0 0 .3rem">Stappen</p>
+          ${a.stappen.map((s,i) => `<p style="font-size:.82rem;color:var(--text2);line-height:1.5;padding:.2rem 0;border-bottom:1px solid rgba(255,255,255,.03)">${i+1}. ${s}</p>`).join('')}
+          ${a.noot ? `<p style="font-size:.78rem;color:var(--text3);font-style:italic;margin:.5rem 0 0;line-height:1.5">${a.noot}</p>` : ''}
+        </div>
+      </div>`;
+    });
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function renderTaalPool(){
+  const v = getLesVoortgang();
+  const fase = getSpoor4State ? (getSpoor4State().fase || 1) : 1;
+
+  // Welke zinnen zijn beschikbaar op basis van huidig fase-niveau?
+  // We bepalen dit aan de hand van gelezen lessen: fase 2 open na les 6
+  const genoegGelezen = (minFase) => {
+    if(minFase <= 1) return true;
+    if(minFase === 2) return v.gelezen.length >= 4;
+    if(minFase === 3) return v.gelezen.length >= 10;
+    if(minFase === 4) return v.gelezen.length >= 18;
+    return v.gelezen.length >= 26;
+  };
+
+  const beschikbaar = TAAL_POOL.filter(z => genoegGelezen(z.fase));
+
+  if(beschikbaar.length === 0){
+    return ''; // Nog niet beschikbaar
+  }
+
+  const TOON_LABELS = {direct:'Direct', speels:'Speels', warm:'Warm', droog:'Droog', stilte:'Stilte'};
+  const SIT_LABELS = {dagelijks:'Dagelijks', sessie:'Sessie', buiten:'Buiten', 'na-afloop':'Na afloop', terugzetten:'Terugzetten', erkenning:'Erkenning'};
+  const DOEL_LABELS = {positie:'Positie markeren', opdracht:'Opdracht geven', terugzetten:'Terugzetten', eigenaarschap:'Eigenaarschap', bevestigen:'Bevestigen', grens:'Grens stellen', erkenning:'Erkenning'};
+
+  // Filter state (in-memory via data attribute)
+  const panelId = 'taalpool-panel';
+
+  let html = `<div class="info-panel" style="margin-bottom:1rem" id="${panelId}">
+    <p class="section-label">Taalbank</p>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.8rem;line-height:1.5">Zinnen die je kunt gebruiken. Niet als script \u2014 als startpunt. Kies wat bij jou past.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.8rem" id="taalpool-filters">`;
+
+  // Filter buttons
+  const tonen = [...new Set(beschikbaar.map(z=>z.toon))];
+  html += `<button class="taalpool-filter taalpool-filter--active" data-filter="alles" onclick="taalPoolFilter('alles')">Alles</button>`;
+  tonen.forEach(t => {
+    html += `<button class="taalpool-filter" data-filter="toon:${t}" onclick="taalPoolFilter('toon:${t}')">${TOON_LABELS[t]||t}</button>`;
+  });
+  const situs = [...new Set(beschikbaar.map(z=>z.situatie))];
+  situs.forEach(s => {
+    html += `<button class="taalpool-filter" data-filter="sit:${s}" onclick="taalPoolFilter('sit:${s}')">${SIT_LABELS[s]||s}</button>`;
+  });
+
+  html += `</div>
+
+    <div id="taalpool-items">`;
+
+  beschikbaar.forEach(z => {
+    const nieuw = z.fase >= (fase - 0); // highlight newest fase
+    html += `<div class="taalpool-item" data-toon="${z.toon}" data-sit="${z.situatie}" data-doel="${z.doel}">
+      <p class="taalpool-zin">\u201c${z.tekst}\u201d</p>
+      <div class="taalpool-meta">
+        <span class="taalpool-tag">${TOON_LABELS[z.toon]||z.toon}</span>
+        <span class="taalpool-tag">${SIT_LABELS[z.situatie]||z.situatie}</span>
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+
+  return html;
+}
+
+function taalPoolFilter(filter){
+  const items = document.querySelectorAll('.taalpool-item');
+  const btns = document.querySelectorAll('.taalpool-filter');
+  btns.forEach(b => b.classList.toggle('taalpool-filter--active', b.dataset.filter === filter));
+  items.forEach(item => {
+    if(filter === 'alles'){
+      item.style.display = '';
+    } else if(filter.startsWith('toon:')){
+      item.style.display = item.dataset.toon === filter.slice(5) ? '' : 'none';
+    } else if(filter.startsWith('sit:')){
+      item.style.display = item.dataset.sit === filter.slice(4) ? '' : 'none';
+    }
+  });
 }
 
 function renderHandleiding(){
@@ -16079,7 +16877,7 @@ function debugSimuleerWeek(){
     const s4 = LS.get('l_spoor4', null);
     if(s4){
       if(!s4.weekSpoorTelling) s4.weekSpoorTelling = {1:0, 2:0, 3:0, 4:0};
-      if(typeof s4.fase !== 'number') s4.fase = 0;
+      if(typeof s4.fase !== 'number') s4.fase = 1;
       if(typeof s4.successReeks !== 'number') s4.successReeks = 0;
       LS.set('l_spoor4', s4);
     }
