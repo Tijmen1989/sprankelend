@@ -3027,9 +3027,34 @@ const MINI_LESJES = [
 // MeerLezen: herhaling + stapeling + letOp + normalisatie + preview
 // ═══════════════════════════════════════════════════════════════
 const LESSEN_INHOUD = [
+
+  // ═══ LES 61: DOE DIT EERST ═══════════════════════════════════════════════
+  {id:61, titel:'Doe dit eerst', subtitel:'Eén zin. Kijk wat er gebeurt.', domein:'verbinding', fase:1, type:'story',
+   scroll:[
+     {type:'scene', tekst:'Tim heeft je deze app gegeven.\n\nNiet als verrassing, niet als opdracht \u2014 maar als iets wat hij voor jullie heeft laten maken.\n\nJe hoeft nu niks te begrijpen. Je hoeft alleen iets te proberen.'},
+     {type:'probeer', tekst:'Zeg tegen Tim \u2014 wanneer het uitkomt, vandaag of morgen:\n\n\u201cHaal een glas water voor me.\u201d\n\nNiet vragen. Niet \u201cwil je even...\u201d Niet zachter maken dan je bedoelt.\n\nGewoon zeggen. Als mededeling.\n\nJe geeft hem waarschijnlijk al kleine opdrachtjes \u2014 \u201cpak even dit\u201d, \u201cdoe jij dat.\u201d Dat is niet wat we bedoelen.\n\nHet verschil is intentie. Je zegt het niet omdat het handig is. Je zegt het omdat jij beslist dat het zo gaat. Voel dat verschil als je het zegt \u2014 het zit in je toon, in je ogen, in de halve seconde dat je hem aankijkt.\n\nEn kijk dan wat er gebeurt.'},
+     {type:'inzicht', tekst:'Wat je net deed lijkt klein.\n\nMaar het verschil zit niet in wat je zei \u2014 maar in hoe je het zei. Met intentie. Niet als verzoek, maar als beslissing.\n\nEen vraag laat ruimte. Een zin met intentie zet iets in beweging.\n\nDat verschil \u2014 dat is waar dit hele traject over gaat.'},
+     {type:'noot', tekst:'Let op wat er bij hem gebeurt.\n\nDat hij stopt met wat hij deed. Dat hij naar je kijkt. Dat hij meteen beweegt.\n\nNiet omdat hij moet \u2014 maar omdat jij iets neerzette waar hij op reageert. Iets wat anders klonk dan \u201cwil je even...\u201d\n\nHij voelt dat verschil. Misschien beter dan jij. Dat is niet niks. Dat is precies het begin.'},
+     {type:'kernboodschap', tekst:'Dit is waar het begint.\n\nNiet met grote dingen. Niet met regels. Niet met seks.\n\nMaar met kleine momenten waarin jij iets zegt \u2014 met intentie \u2014 en hij beweegt.'},
+     {type:'noot', tekst:'Wat je hierbij voelt, maakt niet uit.\n\nMisschien was het een beetje ongemakkelijk. Misschien voelde het gewoon normaal. Misschien merk je er nog weinig van. Misschien dacht je: dat doe ik toch al?\n\nMaar als je het met intentie deed \u2014 als je even bewust koos om het te zeggen als mededeling, niet als vraag \u2014 dan was het anders. Ook als het niet zo voelde.\n\nAlles is goed. Dit is alleen het begin.'},
+     {type:'keuze', id:'les61_gevoel', vraag:'Hoe voelde dat?', opties:[
+       {tekst:'Best normaal \u2014 ik doe dit eigenlijk al', waarde:'normaal'},
+       {tekst:'Een beetje raar \u2014 maar hij deed het gewoon', waarde:'raar'},
+       {tekst:'Ik heb het nog niet geprobeerd', waarde:'nog_niet'},
+       {tekst:'Spannender dan ik dacht', waarde:'spannend'}
+     ]}
+   ],
+   verdieping:[
+     {vraag:'Ik doe dit toch al?', antwoord:'Misschien wel. Maar let op het verschil: zei je het als verzoek of als beslissing? \u201cWil je even water pakken?\u201d is anders dan \u201cHaal een glas water voor me.\u201d Zelfde resultaat. Maar de intentie is anders \u2014 en Tim voelt dat.'},
+     {vraag:'Hij reageerde niet anders dan normaal', antwoord:'Dat kan. Niet elke keer is er een zichtbaar verschil. Maar hoe vaker je het doet \u2014 met intentie \u2014 hoe meer je gaat zien. Geef het een paar dagen.'},
+     {vraag:'Dit voelt een beetje gek', antwoord:'Dat is normaal. Alles wat nieuw is voelt eerst een beetje gek. Je hoeft er niks mee \u2014 gewoon doorgaan naar de volgende les.'}
+   ],
+   meerLezen:{preview:'Wat je net deed \u2014 daar gaat dit over.'}},
+
+  // ═══ LES 1: DIT IS VAN JULLIE ═══════════════════════════════════════════
   {id:1, titel:'Dit is van jullie', subtitel:'Wat het is, hoe het werkt, en wat je van jezelf nodig hebt.', domein:'verbinding', fase:1, type:'story',
    scroll:[
-     {type:'scene', tekst:'Tim heeft je deze app gegeven.\n\nNiet als verrassing, niet als opdracht \u2014 maar als iets wat hij voor jullie heeft laten maken. Een plek om samen iets te ontdekken dat er al lang is, maar nooit echt de ruimte heeft gekregen.\n\nJij hebt ja gezegd. Dat is het enige wat hier telt.'},
+     {type:'scene', tekst:'Wat je net deed \u2014 dat kleine moment met het glas water, of wat het ook was \u2014 daar gaat dit over.\n\nNiet groter dan dat. Jij zei iets, hij bewoog. De rest van deze les legt uit waarom dat werkt, en wat jullie ermee kunnen.\n\nJij hebt ja gezegd. Dat is het enige wat hier telt.'},
      {type:'noot', tekst:'<b>Dit is een laagje erbij.</b>\n\nJullie zijn Tim en Lisanne. Ouders van Milou. Al meer dan tien jaar samen. Dat verandert hier niet.\n\nDit is geen nieuw leven. Geen andere identiteit. Het gewone leven blijft gewoon \u2014 de bank, Bangkok, Milou naar school, de onzin die alleen jullie begrijpen.\n\nDit is een laagje dat soms bovenop dat gewone leven komt. Op een avond. Een moment. Een keuze. En daarna: gewoon weer jullie.\n\nMeestal merk je het niet eens aan de buitenkant. Het zit alleen even meer in de lucht. Dat is genoeg.'},
      {type:'inzicht', tekst:'<b>Wat is dit eigenlijk?</b>\n\nVergeet de beelden die je er misschien bij hebt. Dit is niet wat films en series ervan maken.\n\nWat het w\u00e9l is: een manier van verbinden. Van vertrouwen. Van duidelijkheid. Tim voelt zich het best als jij de leiding neemt \u2014 niet als spelletje, niet als rollenspel, maar als iets dat past bij wie hij is.\n\nIn zijn eigen woorden: het is een behoefte aan verbinding, vertrouwen en geborgenheid.\n\nVerbinding. Vertrouwen. Geborgenheid.\n\nJij bent niet nieuw in dit verhaal. Je hebt hem al vastgemaakt. Speeltjes gebruikt. En als je goed hebt opgelet \u2014 al was het maar even \u2014 zag je dat er iets veranderde. Hij werd stiller. Meer aanwezig. De dagen erna anders.\n\nDat is precies dit. Jullie gaan het nu bewuster doen \u2014 op jouw manier, in jouw tempo. Tim wil dit \u2014 dat is het startpunt. Maar dat jij ja hebt gezegd, maakt het van jullie allebei.'},
      {type:'noot', tekst:'<b>Waarom Tim dit voelt zoals hij het voelt.</b>\n\nTim draagt dit al heel lang mee. Niet als iets wat hij heeft gekozen \u2014 maar als iets wat er is. Het is er gewoon.\n\nTim voelt zich het fijnst als jij de richting geeft. Als jij zegt wat er gaat gebeuren, en hij gewoon kan volgen. Niet zelf bepalen, niet twijfelen \u2014 gewoon volgen. Dat geeft hem rust. Dat zet zijn hoofd uit.\n\nDat hij dit met jou wil \u2014 met jou, zijn vrouw, zijn beste vriend \u2014 zegt alles. Jullie zijn al alles voor elkaar. En dit kan daar gewoon een deel van zijn.'},
@@ -5022,6 +5047,10 @@ LESPRACTICE_SUGGESTIES.forEach(s => SUGGESTIE_POOL.push(s));
 // LESOEFENINGEN: Lesson-linked practice actions (3 per lesson)
 // ═══════════════════════════════════════════════════════════════
 const LESOEFENINGEN = [
+  // Les 61: Doe dit eerst
+  {lesId:61, volgorde:1, tekst:'Zeg tegen Tim: "Haal een glas water voor me." Niet vragen — zeggen. Met intentie. Let op zijn reactie.', context:'elk moment', cat:'opdracht'},
+  {lesId:61, volgorde:2, tekst:'Probeer vandaag nog één ding te zeggen als mededeling in plaats van als vraag. Iets kleins. Let op het verschil.', context:'elk moment', cat:'opdracht'},
+
   // Les 1: Dit is van jullie (de pitch)
   {lesId:1, volgorde:1, tekst:'Kies een rustig moment voor het eerste gesprek. Bespreek het safeword en de drie basisafspraken.', context:'avond', cat:'relationeel'},
   {lesId:1, volgorde:2, tekst:'Nadat jullie het safeword hebben gekozen: schrijf het op. Leg het ergens neer.', context:'elk moment', cat:'relationeel'},
@@ -5727,10 +5756,10 @@ function getLesGate(lesId){
   return true; // DEBUG: alle lessen ontgrendeld
   const les = LESSEN_INHOUD.find(l => l.id === lesId);
   if(!les) return false;
-  // Les 1 is altijd beschikbaar
-  if(lesId === 1) return true;
-  // Volgende les is beschikbaar als de vorige (in array-volgorde) als 'klaar' is gemarkeerd
   const curIdx = LESSEN_INHOUD.findIndex(l => l.id === lesId);
+  // Eerste les (index 0) is altijd beschikbaar
+  if(curIdx === 0) return true;
+  // Volgende les is beschikbaar als de vorige (in array-volgorde) als 'klaar' is gemarkeerd
   if(curIdx <= 0) return false;
   const vorigeLes = LESSEN_INHOUD[curIdx - 1];
   const v = getLesVoortgang();
@@ -12825,7 +12854,7 @@ function selectView(v){
 let onboardingStap = 0;
 let toonOnboarding = false; // in-memory flag — refresh = terug naar home
 
-const APP_BUILD = '2026-04-04 07:55';
+const APP_BUILD = '2026-04-04 08:46';
 
 const ONBOARDING_LISANNE = [
   { tekst:'<span style="font-size:.65rem;color:var(--text3);opacity:.5;float:right">v' + APP_BUILD + '</span>Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
