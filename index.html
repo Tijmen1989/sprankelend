@@ -2377,7 +2377,7 @@ const INZICHT_POOL = [
   { id:2, label:'Jij zet de toon',
     varianten:[
       {min:1,max:2, tekst:'Als jij beslist, hoeft Tim niet na te denken. Dat vindt hij fijn.',
-       uitleg:'Het gaat niet om controle. Het gaat om duidelijkheid. Tim vindt het prettig als jij de richting bepaalt.'},
+       uitleg:'Het gaat om duidelijkheid \u00e9n controle. Tim vindt het prettig als jij de richting bepaalt.'},
       {min:3,max:5, tekst:'Als jij de toon zet, ontspant Tim sneller. Dat komt van jou \u2014 niet van hemzelf.',
        uitleg:'Tim kan dit niet voor zichzelf doen. Jouw beslissingen geven hem een soort rust die hij nergens anders vindt.'}
     ]},
@@ -2403,7 +2403,7 @@ const INZICHT_POOL = [
   { id:6, label:'Structuur maakt het makkelijk',
     varianten:[
       {min:1,max:2, tekst:'Structuur maakt dingen makkelijker voor Tim. Hij hoeft niet na te denken \u2014 jij hebt het al beslist.',
-       uitleg:'Dit gaat niet over controle. Het gaat over duidelijkheid. Een plan geeft rust, voor jullie allebei.'},
+       uitleg:'Duidelijkheid \u00e9n controle \u2014 dat is wat een plan geeft. Rust, voor jullie allebei.'},
       {min:3,max:5, tekst:'Hoe meer structuur jij geeft, hoe meer Tim kan loslaten.',
        uitleg:'Structuur is niet streng. Het is een kader waarbinnen Tim ontspant. Dat klinkt raar, maar het werkt zo.'}
     ]},
@@ -5315,7 +5315,7 @@ const WAAROM_ZO_POOL = {
     'Zeggen in plaats van vragen is geen onbeleefdheid. Het is duidelijkheid. En duidelijkheid is wat Tim zoekt.'
   ],
   beslissing: [
-    'Door te kiezen voor hem neem je de last van het moeten-kiezen weg. Dat is een cadeautje, geen controle.',
+    'Door te kiezen voor hem neem je de last van het moeten-kiezen weg. Dat is controle \u2014 en dat is precies wat hij wil.',
     'Elke beslissing die jij neemt \u2014 hoe klein ook \u2014 bevestigt dat jij de leiding hebt. En dat is precies wat rust geeft.'
   ],
   item: [
@@ -12897,7 +12897,7 @@ function selectView(v){
 let onboardingStap = 0;
 let toonOnboarding = false; // in-memory flag — refresh = terug naar home
 
-const APP_BUILD = '2026-04-06 14:20';
+const APP_BUILD = '2026-04-06 14:22';
 
 const ONBOARDING_LISANNE = [
   { tekst:'<span style="font-size:.65rem;color:var(--text3);opacity:.5;float:right">v' + APP_BUILD + '</span>Tim heeft iets voor jullie gemaakt.<br><br>Dit is geen cursus en geen opdracht. Het is een app die kleine ideeën geeft \u2014 dingen die jullie al een beetje doen, maar dan bewuster.', knop:'Verder \u2192' },
