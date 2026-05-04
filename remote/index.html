@@ -2334,7 +2334,7 @@
 <!-- MODE SELECT -->
 <div id="mode-select" class="screen active">
   <h1>⚡ Sprankelend</h1>
-  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0092</div>
+  <div id="app-version" style="color:#555;font-size:11px;font-family:monospace;margin:-4px 0 8px 0;">v1.0093</div>
 
   <!-- Progress indicator -->
   <div style="display:flex;gap:4px;margin:0 auto 20px;max-width:300px;">
@@ -2503,6 +2503,11 @@
       <button onclick="showScreen('sender-choice')" class="mode-btn" style="padding:16px;background:linear-gradient(135deg,#1a1a3e,#3e2a2a);border:2px solid #e94560;color:#e0e0e0;border-radius:12px;cursor:pointer;text-align:left;">
         <div style="font-size:1.1em;font-weight:bold;color:#e94560;">📱 Zender (Lisanne)</div>
         <div style="font-size:0.8em;color:#888;margin-top:4px;">Stuur schokken naar je partner</div>
+      </button>
+
+      <button onclick="startSurvival()" class="mode-btn" style="padding:16px;background:linear-gradient(135deg,#1a1a3e,#3e1a1a);border:2px solid #ff6b35;color:#e0e0e0;border-radius:12px;cursor:pointer;text-align:left;">
+        <div style="font-size:1.1em;font-weight:bold;color:#ff6b35;">🔥 Overlevingsmodus</div>
+        <div style="font-size:0.8em;color:#888;margin-top:4px;">Overleven, punten beheren, uitdagingen accepteren</div>
       </button>
     </div>
 
@@ -3430,6 +3435,86 @@
   </div>
 
   <button class="back-btn" onclick="goBack()">Terug</button>
+</div>
+
+<!-- SURVIVAL MODE SCREEN -->
+<div id="survival" class="screen">
+  <div class="header">
+    <h2>🔥 Overlevingsmodus</h2>
+    <div class="subtitle" id="survival-subtitle">Golven van intensiteit — overleven en punten beheren</div>
+  </div>
+
+  <!-- FIX15: Terug knop altijd zichtbaar -->
+  <button id="survival-back-btn" onclick="goBack()" style="width:100%;padding:8px;font-size:0.85em;background:transparent;border:1px solid #555;color:#888;border-radius:6px;cursor:pointer;margin-bottom:12px;">← Terug naar menu</button>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:8px;">
+    <div style="flex:1;text-align:center;">
+      <div style="font-size:0.8em;color:#666;margin-bottom:4px;">GOLF</div>
+      <div style="font-size:1.6em;font-weight:bold;color:#ff6b35;" id="survival-wave-display">0</div>
+    </div>
+    <div style="flex:1;text-align:center;">
+      <div style="font-size:0.8em;color:#666;margin-bottom:4px;">PUNTEN</div>
+      <div style="font-size:1.6em;font-weight:bold;color:#4caf50;" id="survival-points-display">50</div>
+    </div>
+    <div style="flex:1;text-align:center;">
+      <div style="font-size:0.8em;color:#666;margin-bottom:4px;">MOEILIJKHEID</div>
+      <div style="font-size:0.95em;font-weight:bold;color:#f39c12;" id="survival-difficulty-display">—</div>
+    </div>
+  </div>
+
+  <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px;">
+    <div style="font-size:0.8em;color:#666;margin-bottom:8px;">INTENSITEIT</div>
+    <div id="survival-intensity-bar" style="width:100%;height:24px;background:#333;border-radius:6px;overflow:hidden;">
+      <div style="height:100%;background:linear-gradient(90deg,#4caf50,#ff9800,#e94560);width:0%;transition:width 0.15s;" id="survival-intensity-fill"></div>
+    </div>
+  </div>
+
+  <div id="survival-status-box" style="background:rgba(255,107,53,0.1);border:1px solid #ff6b35;border-radius:8px;padding:12px;margin-bottom:16px;text-align:center;min-height:60px;display:flex;align-items:center;justify-content:center;">
+    <div style="font-size:1em;color:#e0e0e0;" id="survival-status-text">Kies moeilijkheid en start</div>
+  </div>
+
+  <div id="survival-settings-panel" style="background:#111;border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:16px;">
+    <div style="font-size:0.9em;font-weight:bold;color:#f39c12;margin-bottom:12px;">⚙️ Moeilijkheid kiezen</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="survivalSelectDifficulty('mild')" id="btn-mild" style="padding:10px;background:#1a1a3e;border:2px solid #888;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:0.9em;">
+        <div style="font-weight:bold;">Mild</div>
+        <div style="font-size:0.75em;color:#888;">60s, +1.5%/golf</div>
+      </button>
+      <button onclick="survivalSelectDifficulty('normaal')" id="btn-normaal" style="padding:10px;background:#1a1a3e;border:2px solid #888;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:0.9em;">
+        <div style="font-weight:bold;">Normaal</div>
+        <div style="font-size:0.75em;color:#888;">90s, +3%/golf</div>
+      </button>
+      <button onclick="survivalSelectDifficulty('zwaar')" id="btn-zwaar" style="padding:10px;background:#1a1a3e;border:2px solid #888;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:0.9em;">
+        <div style="font-weight:bold;">Zwaar</div>
+        <div style="font-size:0.75em;color:#888;">120s, +4%/golf</div>
+      </button>
+      <button onclick="survivalSelectDifficulty('meedogenloos')" id="btn-meedogenloos" style="padding:10px;background:#1a1a3e;border:2px solid #888;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:0.9em;">
+        <div style="font-weight:bold;">Meedogenloos</div>
+        <div style="font-size:0.75em;color:#888;">120s, +5%/golf</div>
+      </button>
+    </div>
+    <button onclick="survivalBeginCalibration()" id="btn-start-calibration" style="width:100%;padding:12px;background:#ff6b35;border:none;color:#fff;border-radius:6px;cursor:pointer;font-weight:bold;margin-top:12px;font-size:0.95em;">▶ Beginnen met ijking</button>
+  </div>
+
+  <div id="survival-log-box" style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:16px;max-height:120px;overflow-y:auto;font-size:0.85em;color:#888;line-height:1.4;">
+    <div id="survival-log" style="min-height:40px;"></div>
+  </div>
+
+  <!-- Panic knop: altijd zichtbaar wanneer sessie actief -->
+  <button id="survival-panic-btn" onclick="survivalPanic()" style="width:100%;padding:14px;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;font-size:1.1em;display:none;">🛑 PANIEK — STOP ALLES</button>
+
+  <div id="survival-end-screen" style="display:none;background:#1a1a2e;border-radius:12px;padding:20px;text-align:center;">
+    <div style="font-size:2em;margin-bottom:16px;">🏆</div>
+    <div style="font-size:1.3em;font-weight:bold;color:#f39c12;margin-bottom:12px;" id="survival-end-title">Sessie Voorbij</div>
+    <div style="margin-bottom:16px;font-size:0.95em;color:#ccc;">
+      <div style="margin-bottom:8px;">Golven overleefd: <span style="font-weight:bold;color:#ff9800;" id="survival-end-waves">0</span></div>
+      <div style="margin-bottom:8px;">Uitdagingen voltooid: <span style="font-weight:bold;color:#4caf50;" id="survival-end-challenges">0</span></div>
+      <div style="margin-bottom:8px;">Score: <span style="font-weight:bold;color:#f39c12;" id="survival-end-score">0</span></div>
+      <div>Record: <span style="font-weight:bold;color:#ff6b35;" id="survival-end-best">0</span></div>
+    </div>
+    <button onclick="survivalShowSettings()" style="width:100%;padding:10px;background:#333;border:1px solid #555;color:#e0e0e0;border-radius:6px;cursor:pointer;margin-bottom:8px;">🔄 Opnieuw spelen</button>
+    <button onclick="goBack()" style="width:100%;padding:10px;background:#f39c12;border:none;color:#000;border-radius:6px;cursor:pointer;font-weight:bold;">← Terug naar menu</button>
+  </div>
 </div>
 
 <!-- RECEIVER SCREEN -->
@@ -6277,6 +6362,7 @@ function goBack() {
   stopSessionWarnings(); // SK7/audit fix: clear session warning interval
   stopSoloRandom();
   stopSafewordListening();
+  if (typeof survivalCleanup === 'function') survivalCleanup();
   // FIX3: also clean up solo safeword
   if (typeof stopSoloSafewordListening === 'function') stopSoloSafewordListening();
   safewordState.paused = false;
@@ -12469,7 +12555,8 @@ function answerTrivia(mode, chosen, correct) {
 function updateFloatingPanic() {
   const wrap = document.getElementById('floating-panic-wrap');
   if (!wrap) return;
-  const isActive = myRole === 'solo' || myRole === 'sender' || myRole === 'receiver';
+  // FIX33: Hide floating panic during survival (has its own panic button)
+  const isActive = (myRole === 'solo' || myRole === 'sender' || myRole === 'receiver') && !(typeof survivalState !== 'undefined' && survivalState.active);
   wrap.style.display = isActive ? 'flex' : 'none';
 }
 
@@ -14209,6 +14296,11 @@ function speak(text, onEnd) {
     try { safewordState.recognition.stop(); } catch(e) {}
     safewordState._pausedForTTS = true;
   }
+  // FIX23: Also pause survival speech recognition during TTS to prevent echo
+  if (typeof survivalState !== 'undefined' && survivalState.speechRec && survivalState.active) {
+    try { survivalState.speechRec.stop(); } catch(e) {}
+    survivalState._speechPausedForTTS = true;
+  }
 
   // Cancel + aggressive reset of speechSynthesis
   clearInterval(ttsResumeInterval);
@@ -14257,6 +14349,11 @@ function speak(text, onEnd) {
           try { if (safewordState.recognition) safewordState.recognition.start(); } catch(e) {
             console.warn('[Safeword] Herstart na TTS mislukt:', e.message);
           }
+        }
+        // FIX23: Restart survival speech recognition after TTS finishes
+        if (typeof survivalState !== 'undefined' && survivalState._speechPausedForTTS && survivalState.active && survivalState.phase !== 'ended') {
+          survivalState._speechPausedForTTS = false;
+          try { if (survivalState.speechRec) survivalState.speechRec.start(); } catch(e) {}
         }
         if (onEnd) onEnd();
       }, 500);
@@ -16742,6 +16839,11 @@ function stopSoloSafewordListening() {
 }
 
 function triggerSoloSafeword() {
+  if (survivalState.active) {
+    survivalHandleSafeword();
+    return;
+  }
+
   safewordState.paused = true;
   // Stop ALL audio/stimulation
   stateManager.stopAll();
@@ -17919,7 +18021,7 @@ function makeDraggable(el) {
 
 <div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
   <button id="floating-softer" onclick="softerNow()" style="flex:1;padding:18px;font-size:1em;background:#e67e22;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">🔽 Zachter</button>
-  <button id="floating-panic" onclick="if(myRole==='solo')panicStopSolo();else panicStop();" style="flex:2;padding:18px;font-size:1.2em;background:#c0392b;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">⚠️ PANIC STOP</button>
+  <button id="floating-panic" onclick="if(survivalState&&survivalState.active)survivalPanic();else if(myRole==='solo')panicStopSolo();else panicStop();" style="flex:2;padding:18px;font-size:1.2em;background:#c0392b;color:white;border:none;border-radius:12px;min-height:64px;cursor:pointer;font-weight:bold;">⚠️ PANIC STOP</button>
 </div>
 
 <!-- TV Display — fullscreen receiver controlled by sender -->
@@ -18192,6 +18294,1192 @@ function makeDraggable(el) {
   <div style="font-size:1.3em;color:#ff9800;font-weight:bold;margin-bottom:8px;">Tab niet actief!</div>
   <div style="font-size:0.9em;color:#ccc;text-align:center;max-width:300px;">Chrome vertraagt audio op achtergrond-tabs.<br>Houd deze tab op de voorgrond voor betrouwbare stimulatie.</div>
 </div>
+
+<script>
+// ===== OVERLEVINGSMODUS (Survival Mode) v1.0093 =====
+// Fixes applied: FIX1-20 from deep code audit
+
+const survivalState = {
+  active: false,
+  phase: 'idle', // idle, calibrating, storm, rest, paused, ended
+  wave: 0,
+  points: 50,
+  startLevel: 50,
+  difficulty: 'normaal',
+  // FIX45: escalation, stormDuration, currentIntensity removed (dead state — preset is always re-read)
+  challengesCompleted: 0,
+  // silentRestCount removed (FIX29: was dead code, never incremented)
+  tooMuchUsed: false, // FIX6: one-time "te veel" for wave 1
+  stormTypeUsed: [],
+  oscillator: null,
+  gainNode: null,
+  stormInterval: null,
+  stormEndTimer: null,
+  restTimers: [], // FIX4: track all rest-phase timeouts for cleanup
+  speechRec: null,
+  stormShape: [],
+  stormShapeIndex: 0,
+  calibrationLevel: 0,
+  calibrationOsc: null, // FIX3: continuous calibration oscillator
+  calibrationGain: null,
+  calibrationTimer: null,
+  challengePending: false, // FIX5: track if challenge is being offered
+  challengeType: null,
+  _speechPausedForTTS: false, // FIX23: track if speech rec paused for TTS
+  bestScore: parseInt(localStorage.getItem('survivalBestScore') || '0')
+  // FIX45: lastStartLevel removed (stored but never read back)
+};
+
+const SURVIVAL_DIFFICULTIES = {
+  mild: {
+    label: 'Mild',
+    stormDuration: 60,
+    escalation: 1.5,
+    startBudget: 65,
+    costMultiplier: 0.8,
+    challengeRewardMult: 1.2,
+    recoverySilence: 5,
+    thinkTime: 12
+  },
+  normaal: {
+    label: 'Normaal',
+    stormDuration: 90,
+    escalation: 3,
+    startBudget: 50,
+    costMultiplier: 1.0,
+    challengeRewardMult: 1.0,
+    recoverySilence: 3,
+    thinkTime: 10
+  },
+  zwaar: {
+    label: 'Zwaar',
+    stormDuration: 120,
+    escalation: 4,
+    startBudget: 40,
+    costMultiplier: 1.2,
+    challengeRewardMult: 0.9,
+    recoverySilence: 1,
+    thinkTime: 8
+  },
+  meedogenloos: {
+    label: 'Meedogenloos',
+    stormDuration: 120,
+    escalation: 5,
+    startBudget: 30,
+    costMultiplier: 1.5,
+    challengeRewardMult: 0.8,
+    recoverySilence: 0,
+    thinkTime: 6
+  }
+};
+
+const WAVE_COSTS = [3, 4, 5, 7, 9, 11, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63, 73, 84, 96, 110];
+
+const MILESTONES = {
+  5: 'Overlever',
+  8: 'Veteraan',
+  12: 'Held',
+  16: 'Legende',
+  20: 'Onsterfelijk'
+};
+
+const STORM_TYPES = ['standard', 'staircase', 'wavy', 'staccato'];
+
+// FIX5: Challenge definitions with rewards
+const SURVIVAL_CHALLENGES = [
+  { id: 'double_duration', text: 'Dubbele stormduur', reward: 15 },
+  { id: 'extra_intensity', text: 'Storm op plus 15 procent', reward: 12 },
+  { id: 'no_rest', text: 'Twee stormen zonder rust', reward: 20 },
+  { id: 'gamble', text: 'Gok: dubbele kosten of gratis', reward: 0 } // special handling
+];
+
+function startSurvival() {
+  myRole = 'solo';
+  ensureAudio();
+
+  if (selectedElectrodeConfig) {
+    const configMap = { loops_plug: 'loops_and_plug', loops_only: 'loops_only', plug_only: 'plug_only', custom: 'custom' };
+    electrodeConfig.type = configMap[selectedElectrodeConfig] || selectedElectrodeConfig;
+    applyElectrodeConfig();
+    showScreen('survival');
+  } else {
+    pendingScreenAfterSetup = 'survival';
+    showScreen('electrode-setup');
+    document.getElementById('setup-step-1').classList.add('active');
+  }
+
+  updateFloatingPanic();
+  requestWakeLock();
+  startSessionWarnings();
+
+  // FIX53: Gate lives inside <div id="receiver"> which is hidden — move to body so it renders
+  const gate = document.getElementById('audio-activation-gate');
+  if (gate) {
+    document.body.appendChild(gate);
+    gate.style.display = 'flex';
+  }
+
+  initTabDetection();
+
+  survivalState.active = true;
+  survivalShowSettings();
+}
+
+function survivalShowSettings() {
+  // FIX60: Re-activate survival when returning to settings (e.g. "Opnieuw spelen" from end screen)
+  survivalState.active = true;
+  survivalState.phase = 'idle';
+  document.getElementById('survival-settings-panel').style.display = 'block';
+  document.getElementById('survival-end-screen').style.display = 'none';
+  document.getElementById('survival-panic-btn').style.display = 'none';
+  document.getElementById('survival-back-btn').style.display = 'block';
+  document.getElementById('survival-wave-display').textContent = '0';
+  document.getElementById('survival-points-display').textContent = '—';
+  document.getElementById('survival-difficulty-display').textContent = '—';
+  document.getElementById('survival-intensity-fill').style.width = '0%';
+  document.getElementById('survival-status-text').textContent = 'Kies moeilijkheid en start';
+
+  // Clear log
+  const logEl = document.getElementById('survival-log');
+  if (logEl) logEl.innerHTML = '';
+  survivalLog('Kies moeilijkheid en begin');
+}
+
+function survivalSelectDifficulty(diff) {
+  survivalState.difficulty = diff;
+  document.querySelectorAll('#survival-settings-panel button[onclick^="survivalSelectDifficulty"]').forEach(b => {
+    b.style.borderColor = '#888';
+    b.style.color = '#e0e0e0';
+  });
+  const btn = document.getElementById('btn-' + diff);
+  if (btn) {
+    btn.style.borderColor = '#ff6b35';
+    btn.style.color = '#ff6b35';
+  }
+  const preset = SURVIVAL_DIFFICULTIES[diff];
+  document.getElementById('survival-difficulty-display').textContent = preset.label;
+  survivalLog('Moeilijkheid: ' + preset.label);
+}
+
+function survivalBeginCalibration() {
+  const diff = survivalState.difficulty;
+  if (!SURVIVAL_DIFFICULTIES[diff]) {
+    survivalLog('⚠️ Kies eerst een moeilijkheid!');
+    return;
+  }
+
+  const preset = SURVIVAL_DIFFICULTIES[diff];
+  // FIX45: removed dead assignments (stormDuration, escalation) — preset is re-read each wave
+  survivalState.points = preset.startBudget;
+  survivalState.wave = 0;
+  survivalState.challengesCompleted = 0;
+  survivalState.stormTypeUsed = [];
+  survivalState.tooMuchUsed = false;
+  // FIX52: Reset stale challenge state from previous session
+  survivalState.challengeType = null;
+  survivalState.challengePending = false;
+  survivalState._lastChanceCount = 0;
+
+  // FIX67: Stop any existing calibration audio from a previous attempt (prevents orphaned oscillators on double-click)
+  survivalStopCalibrationAudio();
+
+  survivalState.calibrationLevel = 5;
+
+  document.getElementById('survival-settings-panel').style.display = 'none';
+  document.getElementById('survival-panic-btn').style.display = 'block';
+  document.getElementById('survival-back-btn').style.display = 'none';
+  document.getElementById('survival-points-display').textContent = survivalState.points;
+
+  survivalState.phase = 'calibrating';
+  survivalLog('Ijking gestart — zeg "stop" als het goed voelt');
+
+  // FIX1: Start speech recognition for calibration commands
+  survivalStartSpeechRecognition();
+
+  // FIX3: Start continuous calibration oscillator instead of short blips
+  survivalStartCalibrationAudio();
+}
+
+// FIX3: Continuous oscillator for calibration that smoothly ramps up
+function survivalStartCalibrationAudio() {
+  const ctx = ensureAudio();
+  const safetyLimit = getEffectiveSafetyLimit();
+
+  survivalState.calibrationOsc = ctx.createOscillator();
+  survivalState.calibrationOsc.type = 'sine';
+  survivalState.calibrationOsc.frequency.value = 150;
+
+  survivalState.calibrationGain = ctx.createGain();
+  survivalState.calibrationGain.gain.value = 0.001;
+
+  // Respect electrode config silent channel
+  if (electrodeConfig.silentChannel === 'a' || electrodeConfig.silentChannel === 'b') {
+    const splitter = ctx.createChannelSplitter(2);
+    const merger = ctx.createChannelMerger(2);
+    const lGain = ctx.createGain();
+    const rGain = ctx.createGain();
+    lGain.gain.value = electrodeConfig.silentChannel === 'a' ? 0 : 1;
+    rGain.gain.value = electrodeConfig.silentChannel === 'b' ? 0 : 1;
+    survivalState.calibrationGain.channelCount = 2;
+    survivalState.calibrationGain.channelCountMode = 'explicit';
+    survivalState.calibrationGain.channelInterpretation = 'speakers';
+    survivalState.calibrationGain.connect(splitter);
+    splitter.connect(lGain, 0);
+    splitter.connect(rGain, 1);
+    lGain.connect(merger, 0, 0);
+    rGain.connect(merger, 0, 1);
+    merger.connect(getMasterLimiter());
+  } else {
+    survivalState.calibrationGain.connect(getMasterLimiter());
+  }
+
+  survivalState.calibrationOsc.connect(survivalState.calibrationGain);
+  survivalState.calibrationOsc.start();
+
+  // FIX35: Set initial gain to calibrationLevel immediately (avoid 2s silence)
+  const initVol = (survivalState.calibrationLevel / 100) * safetyLimit;
+  survivalState.calibrationGain.gain.setTargetAtTime(Math.max(initVol, 0.001), ctx.currentTime, 0.3);
+
+  // Ramp up 1% per 2 seconds via setInterval
+  survivalState.calibrationTimer = setInterval(() => {
+    if (survivalState.phase !== 'calibrating') {
+      survivalStopCalibrationAudio();
+      return;
+    }
+    survivalState.calibrationLevel = Math.min(survivalState.calibrationLevel + 1, 95);
+    const vol = (survivalState.calibrationLevel / 100) * safetyLimit;
+    // FIX47: Use ensureAudio() instead of stale ctx closure
+    survivalState.calibrationGain.gain.setTargetAtTime(Math.max(vol, 0.001), ensureAudio().currentTime, 0.05);
+
+    document.getElementById('survival-intensity-fill').style.width = survivalState.calibrationLevel + '%';
+    document.getElementById('survival-status-text').textContent = 'Ijking: ' + survivalState.calibrationLevel + '% — zeg "stop"';
+
+    if (survivalState.calibrationLevel >= 95) {
+      // FIX64: Don't call survivalStopCalibrationAudio() here — survivalCalibrateStop() already calls it
+      survivalCalibrateStop();
+    }
+  }, 2000);
+}
+
+function survivalStopCalibrationAudio() {
+  if (survivalState.calibrationTimer) {
+    clearInterval(survivalState.calibrationTimer);
+    survivalState.calibrationTimer = null;
+  }
+  // FIX37: Fade out before stopping to prevent e-stim click/jolt
+  if (survivalState.calibrationOsc) {
+    try {
+      if (survivalState.calibrationGain) {
+        const ctx = ensureAudio();
+        survivalState.calibrationGain.gain.setTargetAtTime(0.001, ctx.currentTime, 0.01);
+      }
+      const osc = survivalState.calibrationOsc;
+      survivalState.calibrationOsc = null;
+      setTimeout(() => {
+        try { osc.stop(); } catch(e) {}
+      }, 50);
+    } catch(e) {
+      try { survivalState.calibrationOsc.stop(); } catch(e2) {}
+      survivalState.calibrationOsc = null;
+    }
+  }
+  // FIX69+80: Disconnect + delay nulling gain so fade-out can complete, then free graph.
+  // Only null calibrationGain if it still references the OLD node — prevents race condition
+  // if calibration restarts within 60ms (FIX67 double-click scenario).
+  const calGainToDisconnect = survivalState.calibrationGain;
+  setTimeout(() => {
+    try { if (calGainToDisconnect) calGainToDisconnect.disconnect(); } catch(e) {}
+    if (survivalState.calibrationGain === calGainToDisconnect) {
+      survivalState.calibrationGain = null;
+    }
+  }, 60);
+}
+
+function survivalCalibrateStop() {
+  survivalStopCalibrationAudio();
+  survivalState.startLevel = survivalState.calibrationLevel;
+  // FIX45: currentIntensity removed (dead state)
+
+  if (survivalState.startLevel < 5) {
+    survivalLog('⚠️ Niveau te laag — probeer opnieuw');
+    survivalState.phase = 'idle';
+    document.getElementById('survival-settings-panel').style.display = 'block';
+    // FIX44: Restore UI state properly
+    document.getElementById('survival-back-btn').style.display = 'block';
+    document.getElementById('survival-panic-btn').style.display = 'none';
+    document.getElementById('survival-intensity-fill').style.width = '0%';
+    document.getElementById('survival-status-text').textContent = 'Niveau te laag — kies opnieuw';
+    return;
+  }
+
+  // FIX56: Removed dead localStorage write (survivalLastStartLevel never read back)
+
+  survivalLog('Startniveau: ' + survivalState.startLevel + '%');
+  document.getElementById('survival-status-text').textContent = 'Startniveau: ' + survivalState.startLevel + '%';
+  // FIX31: Also announce wave 1 cost
+  const wave1Cost = survivalGetWaveCost(1);
+  // FIX61: Track the timeout so safeword/panic cleanup can cancel it
+  speak('Niveau vastgesteld op ' + survivalState.startLevel + ' procent. Je hebt ' + survivalState.points + ' punten. Eerste golf kost ' + wave1Cost + '.', () => {
+    const t = setTimeout(() => {
+      if (survivalState.phase === 'ended' || survivalState.phase === 'paused') return;
+      survivalStartWave1();
+    }, 1500);
+    survivalState.restTimers.push(t);
+  });
+}
+
+function survivalStartWave1() {
+  survivalState.wave = 1;
+  // FIX46: Don't set phase here — survivalStartStorm() handles it after budget check
+  survivalState._lastChanceCount = 0; // FIX38: reset last-chance counter
+  survivalUpdateUI();
+  survivalStartStorm();
+}
+
+// FIX1: Full speech recognition for survival mode commands
+function survivalStartSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    survivalLog('⚠️ Spraakherkenning niet beschikbaar');
+    return;
+  }
+
+  // Stop any existing recognition
+  if (survivalState.speechRec) {
+    try { survivalState.speechRec.stop(); } catch(e) {}
+  }
+
+  const rec = new SR();
+  rec.lang = 'nl-NL';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1; // FIX57: Only alternative[0] is used, save overhead
+
+  // FIX25+36: Safeword checks interim (fast detection), other commands only on final
+  rec.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript.toLowerCase().trim();
+      if (!t) continue;
+
+      // Safeword: check on ALL results (interim + final) for fastest detection
+      const safeword = safewordState.word || (document.getElementById('solo-safeword-input')?.value || '').trim().toLowerCase();
+      if (safeword && safeword.length >= 2 && t.includes(safeword)) {
+        survivalLog('🛡️ SAFEWORD "' + safeword + '" gedetecteerd');
+        survivalHandleSafeword();
+        return;
+      }
+
+      // All other commands: only on final results to prevent double-fire
+      if (!e.results[i].isFinal) continue;
+      survivalHandleVoiceCommand(t);
+    }
+  };
+
+  // FIX72: Track consecutive errors to prevent infinite restart loop on permission denied
+  let consecutiveErrors = 0;
+
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech') { consecutiveErrors = 0; return; }
+    if (e.error === 'aborted') return;
+    consecutiveErrors++;
+    survivalLog('⚠️ Spraak: ' + e.error);
+    if (e.error === 'not-allowed') {
+      survivalLog('⚠️ Microfoon geweigerd — spraakbesturing uit');
+      consecutiveErrors = 999; // prevent restart
+    }
+  };
+
+  rec.onend = () => {
+    // Auto-restart if survival is still active (but stop after too many consecutive errors)
+    if (survivalState.active && survivalState.phase !== 'ended' && consecutiveErrors < 5) {
+      setTimeout(() => {
+        if (survivalState.active && survivalState.speechRec) {
+          try { survivalState.speechRec.start(); } catch(e) {}
+        }
+      }, 200);
+    } else if (consecutiveErrors >= 5 && survivalState.active && survivalState.phase !== 'ended') {
+      // FIX74: Warn user that voice control stopped working
+      survivalLog('⚠️ Spraakherkenning gestopt — gebruik paniekknop');
+      const statusEl = document.getElementById('survival-status-text');
+      if (statusEl && survivalState.phase === 'storm') {
+        statusEl.textContent = '⚡ Storm ' + survivalState.wave + ' (geen spraak)';
+      }
+    }
+  };
+
+  survivalState.speechRec = rec;
+  try { rec.start(); } catch(e) {
+    survivalLog('⚠️ Kon spraakherkenning niet starten');
+  }
+}
+
+function survivalHandleVoiceCommand(transcript) {
+  const phase = survivalState.phase;
+  // FIX22+36: Safeword detection moved to rec.onresult (interim) for fastest response
+
+  // FIX2: "stop" during calibration
+  if (phase === 'calibrating' && (transcript.includes('stop') || transcript.includes('goed') || transcript.includes('oké'))) {
+    survivalCalibrateStop();
+    return;
+  }
+
+  // FIX6: "te veel" during wave 1
+  if (phase === 'storm' && survivalState.wave === 1 && !survivalState.tooMuchUsed &&
+      (transcript.includes('te veel') || transcript.includes('teveel'))) {
+    survivalState.tooMuchUsed = true;
+    survivalLog('Te veel! Herstart golf 1 op -20%');
+    survivalStopStormAudio();
+    survivalState.startLevel = Math.max(5, Math.round(survivalState.startLevel * 0.8));
+    // FIX45: currentIntensity removed (dead state)
+    // FIX56: Removed dead localStorage write (survivalLastStartLevel never read back)
+    // FIX50: Track timeout in restTimers so safeword cleanup can cancel it
+    // FIX59: Refund the cost that was already subtracted by the first survivalStartStorm()
+    // so the retry doesn't double-charge wave 1
+    survivalState.points += survivalGetWaveCost(1);
+    survivalState.phase = 'rest'; // allow cleanup to work
+    speak('Niveau verlaagd naar ' + survivalState.startLevel + ' procent.', () => {
+      const t = setTimeout(() => {
+        if (survivalState.phase !== 'rest') return; // FIX50: phase guard
+        survivalStartStorm();
+      }, 1000);
+      survivalState.restTimers.push(t);
+    });
+    return;
+  }
+
+  // FIX68: Challenge check BEFORE saldo — "ja" during challenge must not be swallowed by "saldo"
+  // FIX5: "ja" / "nee" for challenges
+  if (survivalState.challengePending) {
+    if (transcript.includes('ja')) {
+      survivalAcceptChallenge();
+      return;
+    }
+    if (transcript.includes('nee') || transcript.includes('niet')) {
+      survivalDeclineChallenge();
+      return;
+    }
+  }
+
+  // FIX68: "saldo" moved here — after challenge check, so "ja" isn't swallowed
+  if ((phase === 'storm' || phase === 'rest') && transcript.includes('saldo')) {
+    speak('' + survivalState.points);
+    return;
+  }
+
+  // FIX10: "hervat" / "stop" after safeword (also accept 'resuming' for stop)
+  if (phase === 'paused' || phase === 'resuming') {
+    if (transcript.includes('hervat') || transcript.includes('verder') || transcript.includes('door')) {
+      survivalResume();
+      return;
+    }
+    if (transcript.includes('stop') || transcript.includes('klaar')) {
+      survivalEndSession();
+      return;
+    }
+  }
+}
+
+function survivalStartStorm() {
+  // FIX26: Check budget BEFORE setting phase to 'storm'
+  const cost = survivalGetWaveCost(survivalState.wave);
+  if (cost > survivalState.points) {
+    survivalState.phase = 'rest'; // No storm happening, stay in rest-like state
+    survivalEndBudget();
+    return;
+  }
+
+  survivalState.phase = 'storm';
+  survivalState.points -= cost;
+
+  const difficulty = SURVIVAL_DIFFICULTIES[survivalState.difficulty];
+
+  // FIX16: Wave 1 always 'standard', after that random
+  const stormType = survivalState.wave === 1 ? 'standard' : survivalGenerateStormType();
+
+  // FIX18: Cap escalation at wave 20
+  const escalationWave = Math.min(survivalState.wave - 1, 19);
+  const baseIntensity = Math.min(
+    survivalState.startLevel + escalationWave * difficulty.escalation,
+    95 // absolute max before safety limiter
+  );
+
+  // Apply challenge modifiers
+  let duration = difficulty.stormDuration;
+  let intensityBoost = 0;
+  if (survivalState.challengeType === 'double_duration') {
+    duration *= 2;
+    survivalState.challengeType = null;
+  }
+  if (survivalState.challengeType === 'extra_intensity') {
+    // FIX41: +15% RELATIVE, not +15 absolute (text says "plus 15 procent")
+    intensityBoost = Math.round(baseIntensity * 0.15);
+    survivalState.challengeType = null;
+  }
+
+  survivalState.stormShape = survivalGenerateStormShape(stormType, Math.min(baseIntensity + intensityBoost, 95), duration);
+  survivalState.stormShapeIndex = 0;
+
+  // FIX48: Frequency variation between waves, save for rest hum matching
+  const freq = 150 + (Math.random() - 0.5) * 80;
+  survivalState._lastStormFreq = freq;
+
+  survivalStartStormAudio(freq);
+  survivalUpdateUI();
+
+  document.getElementById('survival-status-text').textContent = '⚡ Storm ' + survivalState.wave;
+  survivalLog('Golf ' + survivalState.wave + ' — ' + stormType + ' — kosten: ' + cost);
+
+  // End storm after duration
+  if (survivalState.stormEndTimer) clearTimeout(survivalState.stormEndTimer);
+  survivalState.stormEndTimer = setTimeout(() => {
+    survivalEndStorm();
+  }, duration * 1000);
+
+  // FIX30: Session save removed — restore was never implemented, save was misleading
+}
+
+// FIX16: Wave 1 always standard
+function survivalGenerateStormType() {
+  let type;
+  let attempts = 0;
+  do {
+    type = STORM_TYPES[Math.floor(Math.random() * STORM_TYPES.length)];
+    attempts++;
+  } while (survivalState.stormTypeUsed.length > 0 &&
+           survivalState.stormTypeUsed[survivalState.stormTypeUsed.length - 1] === type &&
+           attempts < 10);
+
+  survivalState.stormTypeUsed.push(type);
+  if (survivalState.stormTypeUsed.length > 3) survivalState.stormTypeUsed.shift();
+  return type;
+}
+
+// FIX7+11+12: Complete rewrite of storm shape generation
+function survivalGenerateStormShape(stormType, baseIntensity, duration) {
+  const shape = [];
+  const steps = Math.ceil(duration * 10); // 10 steps per second (100ms intervals)
+  const REST_LEVEL = 2; // FIX7: ramp down to 2%, not startLevel
+
+  if (stormType === 'standard') {
+    const rampUpEnd = Math.floor(steps * 0.12);
+    const variationEnd = Math.floor(steps * 0.72);
+    const peakEnd = Math.floor(steps * 0.82);
+    const hasPeak = Math.random() < 0.5;
+
+    for (let i = 0; i < steps; i++) {
+      if (i < rampUpEnd) {
+        // Ramp up from REST_LEVEL to baseIntensity
+        shape.push(REST_LEVEL + (baseIntensity - REST_LEVEL) * (i / rampUpEnd));
+      } else if (i < variationEnd) {
+        // FIX12: Variation relative to intensity (±10% of baseIntensity, not ±10 absolute)
+        const variationRange = baseIntensity * 0.1;
+        const variation = (Math.random() - 0.5) * 2 * variationRange;
+        shape.push(Math.max(REST_LEVEL, baseIntensity + variation));
+      } else if (i < peakEnd) {
+        // Peak: +10% of baseIntensity
+        shape.push(hasPeak ? baseIntensity * 1.1 : baseIntensity);
+      } else {
+        // FIX7: Ramp down to REST_LEVEL, not startLevel
+        const rampDownProgress = (i - peakEnd) / (steps - peakEnd);
+        const fromLevel = hasPeak ? baseIntensity * 1.1 : baseIntensity;
+        shape.push(fromLevel - (fromLevel - REST_LEVEL) * rampDownProgress);
+      }
+    }
+  } else if (stormType === 'staircase') {
+    // FIX11: Use Math.floor for integer step boundaries
+    const numStairs = 4;
+    const rampUpSteps = Math.floor(steps * 0.1);
+    const rampDownSteps = Math.floor(steps * 0.1);
+    // FIX54: stepsPerStair based on stair zone (80%), not total steps
+    const stairZone = steps - rampUpSteps - rampDownSteps;
+    const stepsPerStair = Math.floor(stairZone / numStairs);
+
+    for (let i = 0; i < steps; i++) {
+      if (i < rampUpSteps) {
+        shape.push(REST_LEVEL + (survivalState.startLevel - REST_LEVEL) * (i / rampUpSteps));
+      } else if (i >= steps - rampDownSteps) {
+        const progress = (i - (steps - rampDownSteps)) / rampDownSteps;
+        shape.push(baseIntensity - (baseIntensity - REST_LEVEL) * progress);
+      } else {
+        const stairIndex = Math.min(Math.floor((i - rampUpSteps) / stepsPerStair), numStairs - 1);
+        const stairLevel = survivalState.startLevel + (baseIntensity - survivalState.startLevel) * ((stairIndex + 1) / numStairs);
+        shape.push(stairLevel);
+      }
+    }
+  } else if (stormType === 'wavy') {
+    const rampUpSteps = Math.floor(steps * 0.1);
+    const rampDownSteps = Math.floor(steps * 0.1);
+
+    for (let i = 0; i < steps; i++) {
+      if (i < rampUpSteps) {
+        shape.push(REST_LEVEL + (baseIntensity - REST_LEVEL) * (i / rampUpSteps));
+      } else if (i >= steps - rampDownSteps) {
+        const progress = (i - (steps - rampDownSteps)) / rampDownSteps;
+        shape.push(baseIntensity - (baseIntensity - REST_LEVEL) * progress);
+      } else {
+        // FIX12+42: Wave amplitude relative, phase offset to avoid discontinuity at ramp-up end
+        const waveAmp = baseIntensity * 0.12;
+        const waveProg = (i - rampUpSteps) / (steps - rampUpSteps - rampDownSteps);
+        const wave = Math.sin(waveProg * Math.PI * 4) * waveAmp;
+        shape.push(Math.max(REST_LEVEL, baseIntensity + wave));
+      }
+    }
+  } else if (stormType === 'staccato') {
+    const pulseLength = Math.max(Math.floor(steps / 8), 5);
+    const rampUpSteps = Math.floor(steps * 0.08);
+    const rampDownSteps = Math.floor(steps * 0.08);
+    // FIX58: Removed dead 'high' variable (pulse toggling uses modulo since FIX43)
+
+    for (let i = 0; i < steps; i++) {
+      if (i < rampUpSteps) {
+        shape.push(REST_LEVEL + (baseIntensity * 0.5 - REST_LEVEL) * (i / rampUpSteps));
+      } else if (i >= steps - rampDownSteps) {
+        // FIX43: Always ramp down from midpoint (baseIntensity * 0.65) regardless of pulse position
+        const progress = (i - (steps - rampDownSteps)) / rampDownSteps;
+        const fromLevel = baseIntensity * 0.65;
+        shape.push(fromLevel * (1 - progress) + REST_LEVEL * progress);
+      } else {
+        if (Math.floor((i - rampUpSteps) / pulseLength) % 2 === 0) {
+          shape.push(baseIntensity);
+        } else {
+          shape.push(Math.max(REST_LEVEL, baseIntensity * 0.3));
+        }
+      }
+    }
+  }
+
+  // FIX63: Cap all shape values at 95 (prevents intensity bar showing >95% and keeps semantics clean)
+  for (let j = 0; j < shape.length; j++) {
+    shape[j] = Math.min(shape[j], 95);
+  }
+
+  // Ensure exact length
+  while (shape.length < steps) shape.push(REST_LEVEL);
+  return shape.slice(0, steps);
+}
+
+function survivalStartStormAudio(freq) {
+  const ctx = ensureAudio();
+  const safetyLimit = getEffectiveSafetyLimit();
+
+  survivalState.oscillator = ctx.createOscillator();
+  survivalState.oscillator.type = 'sine';
+  survivalState.oscillator.frequency.value = freq;
+
+  survivalState.gainNode = ctx.createGain();
+  survivalState.gainNode.gain.value = 0.001;
+
+  // Route through electrode config
+  if (electrodeConfig.silentChannel === 'a' || electrodeConfig.silentChannel === 'b') {
+    const splitter = ctx.createChannelSplitter(2);
+    const merger = ctx.createChannelMerger(2);
+    const lGain = ctx.createGain();
+    const rGain = ctx.createGain();
+    lGain.gain.value = electrodeConfig.silentChannel === 'a' ? 0 : 1;
+    rGain.gain.value = electrodeConfig.silentChannel === 'b' ? 0 : 1;
+    survivalState.gainNode.channelCount = 2;
+    survivalState.gainNode.channelCountMode = 'explicit';
+    survivalState.gainNode.channelInterpretation = 'speakers';
+    survivalState.gainNode.connect(splitter);
+    splitter.connect(lGain, 0);
+    splitter.connect(rGain, 1);
+    lGain.connect(merger, 0, 0);
+    rGain.connect(merger, 0, 1);
+    merger.connect(getMasterLimiter());
+  } else {
+    survivalState.gainNode.connect(getMasterLimiter());
+  }
+
+  survivalState.oscillator.connect(survivalState.gainNode);
+  survivalState.oscillator.start();
+
+  survivalState.stormShapeIndex = 0;
+
+  if (survivalState.stormInterval) clearInterval(survivalState.stormInterval);
+  survivalState.stormInterval = setInterval(() => {
+    if (survivalState.phase !== 'storm' || survivalState.stormShapeIndex >= survivalState.stormShape.length) {
+      return;
+    }
+
+    const intensity = survivalState.stormShape[survivalState.stormShapeIndex];
+    // FIX65: Re-read safetyLimit each tick (user may change slider mid-storm)
+    const vol = Math.min((intensity / 100), getEffectiveSafetyLimit());
+
+    try {
+      // FIX47: Use ensureAudio() instead of stale ctx closure
+      survivalState.gainNode.gain.setTargetAtTime(Math.max(vol, 0.001), ensureAudio().currentTime, 0.02);
+    } catch(e) {}
+
+    const fillEl = document.getElementById('survival-intensity-fill');
+    if (fillEl) fillEl.style.width = Math.min(intensity, 100) + '%';
+
+    survivalState.stormShapeIndex++;
+  }, 100);
+}
+
+function survivalStopStormAudio() {
+  if (survivalState.stormInterval) {
+    clearInterval(survivalState.stormInterval);
+    survivalState.stormInterval = null;
+  }
+  if (survivalState.stormEndTimer) {
+    clearTimeout(survivalState.stormEndTimer);
+    survivalState.stormEndTimer = null;
+  }
+  if (survivalState.oscillator) {
+    try {
+      // Fade out quickly to avoid click
+      if (survivalState.gainNode) {
+        const ctx = ensureAudio();
+        survivalState.gainNode.gain.setTargetAtTime(0.001, ctx.currentTime, 0.01);
+      }
+      // FIX49: Capture reference — setTimeout must stop THIS oscillator, not whatever
+      // survivalState.oscillator points to 50ms later (rest hum may have replaced it)
+      const oscToStop = survivalState.oscillator;
+      // FIX69+79: Capture gainNode reference. Delay disconnect to AFTER fade-out completes (50ms).
+      // Disconnecting immediately (old FIX69) interrupted the fade-out, causing an abrupt
+      // signal drop that could be painful on an e-stim device.
+      const gainToDisconnect = survivalState.gainNode;
+      survivalState.oscillator = null;
+      survivalState.gainNode = null;
+      setTimeout(() => {
+        try { oscToStop.stop(); } catch(e) {}
+        try { if (gainToDisconnect) gainToDisconnect.disconnect(); } catch(e) {}
+      }, 50);
+    } catch(e) {
+      survivalState.oscillator = null;
+      survivalState.gainNode = null;
+    }
+  }
+}
+
+// FIX8+48: Start low background hum during rest, matching last storm frequency
+function survivalStartRestHum() {
+  const ctx = ensureAudio();
+  const safetyLimit = getEffectiveSafetyLimit();
+
+  survivalState.oscillator = ctx.createOscillator();
+  survivalState.oscillator.type = 'sine';
+  // FIX48: Use last storm frequency to avoid jarring frequency shift
+  survivalState.oscillator.frequency.value = survivalState._lastStormFreq || 150;
+
+  survivalState.gainNode = ctx.createGain();
+  const humVol = Math.min(0.02, safetyLimit * 0.03); // 2-3% intensity
+  survivalState.gainNode.gain.value = humVol;
+
+  if (electrodeConfig.silentChannel === 'a' || electrodeConfig.silentChannel === 'b') {
+    const splitter = ctx.createChannelSplitter(2);
+    const merger = ctx.createChannelMerger(2);
+    const lGain = ctx.createGain();
+    const rGain = ctx.createGain();
+    lGain.gain.value = electrodeConfig.silentChannel === 'a' ? 0 : 1;
+    rGain.gain.value = electrodeConfig.silentChannel === 'b' ? 0 : 1;
+    survivalState.gainNode.channelCount = 2;
+    survivalState.gainNode.channelCountMode = 'explicit';
+    survivalState.gainNode.channelInterpretation = 'speakers';
+    survivalState.gainNode.connect(splitter);
+    splitter.connect(lGain, 0);
+    splitter.connect(rGain, 1);
+    lGain.connect(merger, 0, 0);
+    rGain.connect(merger, 0, 1);
+    merger.connect(getMasterLimiter());
+  } else {
+    survivalState.gainNode.connect(getMasterLimiter());
+  }
+
+  survivalState.oscillator.connect(survivalState.gainNode);
+  survivalState.oscillator.start();
+
+  const fillEl = document.getElementById('survival-intensity-fill');
+  if (fillEl) fillEl.style.width = '3%';
+}
+
+function survivalEndStorm() {
+  survivalStopStormAudio();
+  // FIX81: Increment wave IMMEDIATELY so score is correct even if panic pressed during milestone TTS.
+  // (Previously wave++ was in afterMilestone callback, creating a ~2-3 sec window where score undercounted.)
+  const justSurvivedWave = survivalState.wave;
+  survivalState.wave++;
+  survivalState.phase = 'rest';
+  survivalLog('Golf ' + justSurvivedWave + ' overleefd');
+  survivalUpdateUI();
+
+  // FIX40: Milestone uses callback so rest-phase TTS waits (prevents cancel on meedogenloos)
+  const afterMilestone = () => {
+    // FIX24: Check for "no_rest" challenge BEFORE starting rest hum
+    if (survivalState.challengeType === 'no_rest') {
+      survivalState.challengeType = null;
+      // FIX81: wave already incremented above
+      survivalLog('⚡ Geen rust — volgende storm direct!');
+      // FIX62: Track timeout so safeword cleanup can cancel it
+      const tNoRest = setTimeout(() => {
+        if (survivalState.phase !== 'rest') return;
+        survivalStartStorm();
+      }, 500);
+      survivalState.restTimers.push(tNoRest);
+      return;
+    }
+
+    // FIX8: Start rest hum (only if we're actually resting)
+    survivalStartRestHum();
+    // FIX81: wave already incremented above
+    survivalStartRest();
+  };
+
+  // FIX9+17: Milestone check for the wave we just survived
+  if (MILESTONES[justSurvivedWave]) {
+    survivalLog('🏅 Milestone: ' + MILESTONES[justSurvivedWave] + '!');
+    speak('Milestone bereikt: ' + MILESTONES[justSurvivedWave] + '!', afterMilestone);
+  } else {
+    afterMilestone();
+  }
+}
+
+// FIX4: Complete rewrite of rest phase with proper timing
+function survivalStartRest() {
+  survivalClearRestTimers();
+  const difficulty = SURVIVAL_DIFFICULTIES[survivalState.difficulty];
+
+  // Phase 1: Recovery silence
+  const t1 = setTimeout(() => {
+    if (survivalState.phase !== 'rest') return;
+
+    // Phase 2: TTS announcement — cost of next wave
+    const nextCost = survivalGetWaveCost(survivalState.wave);
+    const ttsMsg = survivalState.points + ' punten. Volgende golf kost ' + nextCost + '.';
+
+    speak(ttsMsg, () => {
+      if (survivalState.phase !== 'rest') return;
+
+      // FIX28: Phase 3: Maybe offer challenge (~40-50% of rests after wave 2)
+      const offerChallenge = survivalState.wave > 2 && (survivalState.wave % 3 === 0 || survivalState.wave % 2 === 0) && Math.random() < 0.5;
+
+      if (offerChallenge) {
+        survivalOfferChallenge();
+        // After challenge resolves (or times out), countdown starts from survivalAcceptChallenge/survivalDeclineChallenge
+      } else {
+        // Phase 4: Think time, then countdown
+        const t2 = setTimeout(() => {
+          if (survivalState.phase !== 'rest') return;
+          survivalCountdownAndNextStorm();
+        }, difficulty.thinkTime * 1000);
+        survivalState.restTimers.push(t2);
+      }
+    });
+  }, difficulty.recoverySilence * 1000);
+  survivalState.restTimers.push(t1);
+}
+
+// FIX5: Real challenge system
+function survivalOfferChallenge() {
+  const difficulty = SURVIVAL_DIFFICULTIES[survivalState.difficulty];
+  // Pick a random challenge
+  const challenge = SURVIVAL_CHALLENGES[Math.floor(Math.random() * SURVIVAL_CHALLENGES.length)];
+  const reward = challenge.id === 'gamble' ? survivalGetWaveCost(survivalState.wave) : Math.round(challenge.reward * difficulty.challengeRewardMult);
+
+  survivalState.challengePending = true;
+  survivalState.challengeType = challenge.id;
+  survivalState._challengeReward = reward;
+
+  let msg;
+  if (challenge.id === 'gamble') {
+    msg = 'Gok: dubbele kosten of gratis. Zeg ja of nee.';
+  } else {
+    msg = challenge.text + ' voor ' + reward + ' punten. Ja of nee?';
+  }
+
+  survivalLog('Uitdaging: ' + msg);
+  speak(msg);
+
+  // Auto-decline after think time if no response
+  const autoDecline = setTimeout(() => {
+    if (survivalState.challengePending) {
+      survivalDeclineChallenge();
+    }
+  }, SURVIVAL_DIFFICULTIES[survivalState.difficulty].thinkTime * 1000 + 3000);
+  survivalState.restTimers.push(autoDecline);
+}
+
+function survivalAcceptChallenge() {
+  if (!survivalState.challengePending) return;
+  survivalState.challengePending = false;
+
+
+  const type = survivalState.challengeType;
+  const reward = survivalState._challengeReward || 0;
+
+  if (type === 'gamble') {
+    // 50/50
+    if (Math.random() < 0.5) {
+      survivalLog('🎰 Gok gewonnen! Volgende golf is gratis');
+      speak('Gewonnen! Volgende golf gratis.');
+      survivalState.points += survivalGetWaveCost(survivalState.wave); // refund next cost
+    } else {
+      const penalty = survivalGetWaveCost(survivalState.wave);
+      survivalState.points = Math.max(0, survivalState.points - penalty);
+      survivalLog('🎰 Gok verloren! -' + penalty + ' punten');
+      speak('Verloren. Min ' + penalty + ' punten.');
+    }
+    survivalState.challengeType = null;
+  } else {
+    // Other challenges: give reward, effect applied in survivalStartStorm
+    survivalState.points += reward;
+    survivalState.challengesCompleted++;
+    survivalLog('✅ Uitdaging geaccepteerd: +' + reward + ' punten');
+    speak('Geaccepteerd. Plus ' + reward + ' punten.');
+  }
+
+  survivalUpdateUI();
+
+  const t = setTimeout(() => {
+    if (survivalState.phase !== 'rest') return;
+    survivalCountdownAndNextStorm();
+  }, 2000);
+  survivalState.restTimers.push(t);
+}
+
+function survivalDeclineChallenge() {
+  if (!survivalState.challengePending) return;
+  survivalState.challengePending = false;
+  survivalState.challengeType = null;
+
+
+  survivalLog('Uitdaging geweigerd');
+
+  const t = setTimeout(() => {
+    if (survivalState.phase !== 'rest') return;
+    survivalCountdownAndNextStorm();
+  }, 1500);
+  survivalState.restTimers.push(t);
+}
+
+// FIX13: Countdown beeps via TTS speak (not e-stim signal)
+function survivalCountdownAndNextStorm() {
+  // Stop rest hum
+  survivalStopStormAudio();
+
+  // Use speak for countdown instead of sending signal to 2B
+  speak('3, 2, 1', () => {
+    if (survivalState.phase !== 'rest') return;
+    survivalStartStorm();
+  });
+}
+
+function survivalEndBudget() {
+  // Don't decrement wave — it's the wave Tim couldn't afford
+  survivalLog('Budget op! Punten: ' + survivalState.points);
+  // FIX34: Update status text
+  document.getElementById('survival-status-text').textContent = '💰 Budget op — laatste kans!';
+
+  speak('Je hebt niet genoeg punten. Neem een uitdaging aan of de sessie stopt.', () => {
+    survivalOfferLastChallenge();
+  });
+}
+
+function survivalOfferLastChallenge() {
+  // FIX38: Track consecutive last chances to prevent infinite loop
+  survivalState._lastChanceCount = (survivalState._lastChanceCount || 0) + 1;
+
+  if (survivalState._lastChanceCount > 3) {
+    survivalLog('Geen kansen meer — sessie eindigt');
+    speak('Geen kansen meer. Sessie voorbij.', () => survivalEndSession());
+    return;
+  }
+
+  survivalState.challengePending = true;
+  const cost = survivalGetWaveCost(survivalState.wave);
+  survivalState.challengeType = 'double_duration';
+  // FIX38: Reward covers cost but leaves NOTHING extra (no infinite loop)
+  survivalState._challengeReward = cost;
+
+  speak('Laatste kans: dubbele stormduur om door te gaan. Ja of nee?');
+  survivalLog('Laatste kans #' + survivalState._lastChanceCount + ': dubbele duur voor ' + cost + ' punten');
+
+  // Auto-end after 10 seconds if no response
+  const autoEnd = setTimeout(() => {
+    if (survivalState.challengePending) {
+      survivalState.challengePending = false;
+      survivalEndSession();
+    }
+  }, 10000);
+  survivalState.restTimers.push(autoEnd);
+}
+
+function survivalEndSession() {
+  // FIX66: Removed dead empty if-block (wave-1 is already correct for incomplete waves)
+  const wavesOverleefd = survivalState.wave - 1;
+
+  survivalStopStormAudio();
+  survivalStopCalibrationAudio();
+  survivalClearRestTimers();
+
+  // FIX27: Stop speech recognition on session end
+  if (survivalState.speechRec) {
+    try { survivalState.speechRec.stop(); } catch(e) {}
+    survivalState.speechRec = null;
+  }
+
+  survivalState.phase = 'ended';
+  // FIX55: Mark inactive so floating panic, speech rec auto-restart, etc. stop
+  survivalState.active = false;
+  // FIX76: Always clear challenge state on session end (safety net)
+  survivalState.challengePending = false;
+
+  const score = Math.max(0, wavesOverleefd) * 10 + survivalState.challengesCompleted * 5;
+  const isNewBest = score > survivalState.bestScore;
+  if (isNewBest) {
+    survivalState.bestScore = score;
+    localStorage.setItem('survivalBestScore', '' + score);
+  }
+
+  // FIX30: session save removed (restore was never implemented)
+
+  document.getElementById('survival-end-waves').textContent = Math.max(0, wavesOverleefd);
+  document.getElementById('survival-end-challenges').textContent = survivalState.challengesCompleted;
+  document.getElementById('survival-end-score').textContent = score;
+  document.getElementById('survival-end-best').textContent = survivalState.bestScore;
+  if (isNewBest && score > 0) {
+    document.getElementById('survival-end-title').textContent = '🎉 Nieuw Record!';
+  } else {
+    document.getElementById('survival-end-title').textContent = 'Sessie Voorbij';
+  }
+
+  document.getElementById('survival-settings-panel').style.display = 'none';
+  document.getElementById('survival-panic-btn').style.display = 'none';
+  document.getElementById('survival-back-btn').style.display = 'block';
+  document.getElementById('survival-end-screen').style.display = 'block';
+  document.getElementById('survival-intensity-fill').style.width = '0%';
+
+  speak('Sessie voorbij. ' + Math.max(0, wavesOverleefd) + ' golven overleefd. ' +
+    survivalState.challengesCompleted + ' uitdagingen voltooid.' +
+    (isNewBest && score > 0 ? ' Nieuw record!' : ''));
+}
+
+function survivalGetWaveCost(wave) {
+  const idx = Math.min(wave - 1, WAVE_COSTS.length - 1);
+  if (idx < 0) return 0;
+  const baseCost = WAVE_COSTS[idx];
+  const multiplier = SURVIVAL_DIFFICULTIES[survivalState.difficulty].costMultiplier;
+  return Math.round(baseCost * multiplier);
+}
+
+// FIX10+39+51: Safeword handler — different behavior during calibration vs session
+function survivalHandleSafeword() {
+  // FIX51: Re-entry guard — interim results can fire this multiple times
+  if (survivalState.phase === 'paused' || survivalState.phase === 'ended' || survivalState.phase === 'idle') return;
+  const wasCalibrating = survivalState.phase === 'calibrating';
+  const wasStorm = survivalState.phase === 'storm';
+
+  survivalState.phase = 'paused';
+  survivalStopStormAudio();
+  survivalStopCalibrationAudio();
+  survivalClearRestTimers();
+
+  // FIX77: Refund storm cost — user will be re-charged when wave restarts on resume
+  if (wasStorm) {
+    survivalState.points += survivalGetWaveCost(survivalState.wave);
+    survivalUpdateUI();
+  }
+
+  // FIX78: Auto-decline any pending challenge (prevents stale challenge state after resume)
+  if (survivalState.challengePending) {
+    survivalState.challengePending = false;
+    survivalState.challengeType = null;
+  }
+
+  if (wasCalibrating) {
+    // FIX39: During calibration, safeword = abort, go back to settings
+    document.getElementById('survival-status-text').textContent = '🛡️ Gestopt — kies opnieuw';
+    survivalLog('🛡️ SAFEWORD tijdens ijking — gestopt');
+    speak('Gestopt. Je kunt opnieuw beginnen.', () => {
+      survivalState.phase = 'idle';
+      document.getElementById('survival-settings-panel').style.display = 'block';
+      document.getElementById('survival-back-btn').style.display = 'block';
+      document.getElementById('survival-panic-btn').style.display = 'none';
+    });
+    return;
+  }
+
+  document.getElementById('survival-status-text').textContent = '⏸️ GEPAUZEERD — zeg "hervat" of "stop"';
+  survivalLog('🛡️ SAFEWORD — sessie gepauzeerd');
+  speak('Safeword. Sessie gepauzeerd. Zeg hervat om door te gaan, of stop om te eindigen.');
+}
+
+// FIX10+25: Resume after safeword (with guard against double-call)
+function survivalResume() {
+  if (survivalState.phase !== 'paused') return; // Guard: already resuming
+  survivalState.phase = 'resuming'; // Prevent double-fire
+  survivalLog('▶️ Sessie hervat');
+  speak('Sessie hervat.', () => {
+    survivalState.phase = 'rest';
+    survivalStartRestHum();
+    const t = setTimeout(() => {
+      survivalCountdownAndNextStorm();
+    }, 3000);
+    survivalState.restTimers.push(t);
+  });
+}
+
+function survivalUpdateUI() {
+  document.getElementById('survival-wave-display').textContent = survivalState.wave;
+  document.getElementById('survival-points-display').textContent = survivalState.points;
+}
+
+// FIX30: survivalSaveSession removed — restore was never implemented
+
+function survivalClearRestTimers() {
+  survivalState.restTimers.forEach(t => clearTimeout(t));
+  survivalState.restTimers = [];
+}
+
+// FIX14+20: Proper cleanup without killing the whole AudioContext
+function survivalCleanup() {
+  survivalState.active = false;
+  survivalState.phase = 'ended';
+  survivalState.challengePending = false;
+
+  survivalStopStormAudio();
+  survivalStopCalibrationAudio();
+  survivalClearRestTimers();
+
+  if (survivalState.speechRec) {
+    try { survivalState.speechRec.stop(); } catch(e) {}
+    survivalState.speechRec = null;
+  }
+
+  // FIX14: Do NOT call stopAudioImmediately() — it closes the entire AudioContext
+  // FIX73: gainNode already disconnected + nulled by survivalStopStormAudio() above
+}
+
+// FIX20: Panic stops everything immediately, doesn't score
+function survivalPanic() {
+  survivalLog('🛑 PANIEK STOP');
+  survivalStopStormAudio();
+  survivalStopCalibrationAudio();
+  survivalClearRestTimers();
+  survivalState.challengePending = false;
+
+  // Stop speech immediately
+  try { speechSynthesis.cancel(); } catch(e) {}
+
+  survivalEndSession();
+}
+
+function survivalLog(msg) {
+  const logEl = document.getElementById('survival-log');
+  if (!logEl) return;
+
+  const timestamp = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  const line = document.createElement('div');
+  line.textContent = '[' + timestamp + '] ' + msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+
+  while (logEl.children.length > 10) {
+    logEl.removeChild(logEl.firstChild);
+  }
+}
+</script>
 
 <script>
 // Auto-detect audio devices on load — ONLY on desktop (not iPhone camera)
