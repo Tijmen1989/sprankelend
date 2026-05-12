@@ -18442,23 +18442,29 @@ function lisanneStartDictationTop() { lisanneStartDictationFrom('top'); }
 
 function lisanneDictationNext() {
   if (!dictState.active) return;
-  dictState.currentIndex++;
-  if (dictState.currentIndex >= dictState.sentences.length) {
-    // All done — loop back or end
-    lisanneStopDictation();
-    return;
-  }
 
-  const sentence = dictState.sentences[dictState.currentIndex];
+  // Pick a random sentence (avoid same as last if possible)
+  let idx;
+  if (dictState.sentences.length <= 1) {
+    idx = 0;
+  } else {
+    do {
+      idx = Math.floor(Math.random() * dictState.sentences.length);
+    } while (idx === dictState.currentIndex);
+  }
+  dictState.currentIndex = idx;
+  dictState._sentCount = (dictState._sentCount || 0) + 1;
+
+  const sentence = dictState.sentences[idx];
   dictState.waitingForJudge = false;
 
-  conn.send({ type: 'dict_next', sentence, index: dictState.currentIndex, total: dictState.sentences.length, ts: Date.now() });
+  conn.send({ type: 'dict_next', sentence, index: idx, total: dictState.sentences.length, ts: Date.now() });
 
   dictMonEl('dict-mon-current').textContent = '"' + sentence + '"';
   dictMonEl('dict-mon-heard').textContent = 'Wacht op Tim...';
   dictMonEl('dict-mon-result').textContent = '';
 
-  sendLog('📖 Zin ' + (dictState.currentIndex + 1) + '/' + dictState.sentences.length + ': ' + sentence);
+  sendLog('📖 Zin #' + dictState._sentCount + ': ' + sentence);
 }
 
 function lisanneDictationJudge(correct) {
@@ -18478,7 +18484,8 @@ function lisanneDictationJudge(correct) {
   if (dictState.config.timing === 'manual') {
     // Manual: wait for Lisanne to press "Volgende"
   } else {
-    setTimeout(() => lisanneDictationNext(), 3000);
+    const delay = (dictState.config.interval || 30) * 1000;
+    setTimeout(() => lisanneDictationNext(), delay);
   }
 }
 
@@ -18499,9 +18506,10 @@ function handleDictationResultSender(data) {
 
     sendLog((data.correct ? '✅' : '❌') + ' ' + Math.round((data.score || 0) * 100) + '% — "' + heard + '"');
 
-    // Auto-advance
+    // Auto-advance with configured interval
     if (dictState.config.timing === 'auto') {
-      setTimeout(() => lisanneDictationNext(), 3000);
+      const delay = (dictState.config.interval || 30) * 1000;
+      setTimeout(() => lisanneDictationNext(), delay);
     }
   } else {
     // Manual mode — wait for Lisanne to judge
