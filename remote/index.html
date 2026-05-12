@@ -18587,13 +18587,8 @@ function handleDictationNext(data) {
     }
   }, 500);
 
-  // Start speech recognition
+  // Start speech recognition (NO TTS here — mic would pick it up and cause false results)
   dictationStartListening(sentence);
-
-  // TTS: read sentence number
-  if (typeof speak === 'function') {
-    speak('Zin ' + (dictState.currentIndex + 1));
-  }
 }
 
 function dictationStartListening(expectedSentence) {
