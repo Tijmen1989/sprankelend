@@ -587,6 +587,89 @@
   .fs-main-text.pattern { color: #9b59b6; }
   .fs-main-text.tease { color: #e94560; }
   .fs-main-text.waiting { color: #444; font-size: clamp(1.2em, 4vw, 2em); }
+
+  /* ===== DICTATION / VOORLEES OVERLAY ===== */
+  .dictation-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: #000;
+    flex-direction: column;
+    font-family: inherit;
+  }
+  .dictation-overlay.visible { display: flex; }
+  .dictation-top {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(20,20,40,0.95);
+    border-bottom: 1px solid #333;
+  }
+  .dictation-score { font-size: 1.1em; color: #4caf50; font-weight: bold; }
+  .dictation-mic { font-size: 0.9em; color: #888; display: flex; align-items: center; gap: 6px; }
+  .dictation-mic .mic-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
+  .dictation-mic .mic-dot.active { background: #4caf50; animation: mic-pulse 1s infinite; }
+  @keyframes mic-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .dictation-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    text-align: center;
+    gap: 24px;
+  }
+  .dictation-sentence {
+    font-size: clamp(2em, 8vw, 5em);
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.3;
+    max-width: 90vw;
+    word-wrap: break-word;
+  }
+  .dictation-sentence.correct { color: #4caf50; }
+  .dictation-sentence.wrong { color: #e94560; }
+  .dictation-hint {
+    font-size: clamp(1em, 3vw, 1.5em);
+    color: #666;
+    font-style: italic;
+  }
+  .dictation-heard {
+    font-size: clamp(0.9em, 2.5vw, 1.3em);
+    color: #4488ff;
+    min-height: 1.5em;
+    max-width: 80vw;
+  }
+  .dictation-timer-bar {
+    width: 100%;
+    height: 6px;
+    background: #222;
+  }
+  .dictation-timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #ff9800, #e94560);
+    width: 100%;
+    transition: width 0.5s linear;
+  }
+  .dictation-bottom {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    background: rgba(20,20,40,0.95);
+    border-top: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dictation-feedback {
+    font-size: clamp(1.5em, 5vw, 3em);
+    font-weight: bold;
+    animation: dict-pop 0.3s ease-out;
+  }
+  @keyframes dict-pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   .fs-bottom {
     padding: 12px 16px;
     background: #111;
@@ -4624,6 +4707,87 @@
       </div>
     </div>
 
+    <!-- Voorlees / Dictation voor Lisanne -->
+    <div style="margin:12px 0;">
+      <button class="mood-btn" onclick="lisanneToggleDictation()" style="width:100%;background:#16213e;border-color:#e94560;">
+        <span class="mood-icon">📖</span>
+        <span class="mood-label">Voorlezen</span>
+        <span class="mood-desc">Tim moet zinnen exact voorlezen — fout = schok</span>
+      </button>
+    </div>
+    <div id="lisanne-dictation-setup" style="display:none;background:#111;border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px;">
+      <h4 style="color:#e94560;margin-bottom:10px;">📖 Voorlees-modus</h4>
+      <p style="color:#888;font-size:0.8em;margin-bottom:10px;">Typ zinnen die Tim moet voorlezen. Eén zin per regel. Fout of te laat = schok!</p>
+
+      <textarea id="dict-sentences" rows="5" placeholder="Typ zinnen, één per regel...&#10;Ik ben van jou.&#10;Ik doe alles wat je zegt.&#10;Mag ik alsjeblieft harder?" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.9em;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+        <div>
+          <label style="font-size:0.8em;color:#bbb;">Timing</label>
+          <select id="dict-timing" onchange="dictTimingChanged()" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+            <option value="manual">Handmatig (jij stuurt)</option>
+            <option value="auto">Automatisch interval</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.8em;color:#bbb;">Controle</label>
+          <select id="dict-control" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+            <option value="auto">Spraakherkenning</option>
+            <option value="manual">Jij beoordeelt</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="dict-auto-settings" style="display:none;margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Interval: <span id="dict-interval-val" style="color:#e94560;">30s</span></label>
+        <input type="range" id="dict-interval" min="10" max="120" value="30" step="5" oninput="document.getElementById('dict-interval-val').textContent=this.value+'s'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Leestijd per zin: <span id="dict-readtime-val" style="color:#e94560;">15s</span></label>
+        <input type="range" id="dict-readtime" min="5" max="60" value="15" step="5" oninput="document.getElementById('dict-readtime-val').textContent=this.value+'s'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Schok bij fout: <span id="dict-shock-val" style="color:#e94560;">40%</span></label>
+        <input type="range" id="dict-shock" min="0" max="90" value="40" step="5" oninput="document.getElementById('dict-shock-val').textContent=this.value+'%'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Schokduur: <span id="dict-shockdur-val" style="color:#e94560;">500ms</span></label>
+        <input type="range" id="dict-shockdur" min="100" max="3000" value="500" step="100" oninput="document.getElementById('dict-shockdur-val').textContent=this.value+'ms'" style="width:100%;">
+      </div>
+
+      <div class="toggle-row" style="margin-top:10px;">
+        <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
+        <div id="dict-shuffle" class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <button onclick="lisanneStartDictation()" style="width:100%;margin-top:12px;padding:12px;font-size:1em;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">📖 Start Voorlezen</button>
+
+      <!-- Live monitor -->
+      <div id="dict-monitor" style="display:none;margin-top:12px;padding:12px;background:#0d1117;border-radius:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div id="dict-mon-status" style="color:#4caf50;font-weight:bold;">Voorlezen actief</div>
+          <div id="dict-mon-score" style="color:#888;font-size:0.85em;">0/0 goed</div>
+        </div>
+        <div id="dict-mon-current" style="color:#fff;font-size:0.95em;margin-bottom:4px;padding:8px;background:#1a1a2e;border-radius:6px;min-height:40px;"></div>
+        <div id="dict-mon-heard" style="color:#4488ff;font-size:0.85em;margin-bottom:4px;">Tim zei: ...</div>
+        <div id="dict-mon-result" style="font-size:0.9em;margin-bottom:8px;"></div>
+
+        <!-- Manual judge buttons (hidden in auto mode) -->
+        <div id="dict-judge-btns" style="display:none;gap:8px;margin-bottom:8px;">
+          <button onclick="lisanneDictationJudge(true)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#4caf50;color:#fff;font-weight:bold;cursor:pointer;font-size:0.95em;">✅ Goed</button>
+          <button onclick="lisanneDictationJudge(false)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;font-size:0.95em;">❌ Fout</button>
+        </div>
+
+        <div style="display:flex;gap:6px;">
+          <button id="dict-next-btn" onclick="lisanneDictationNext()" style="flex:1;padding:10px;border-radius:6px;border:none;background:#ff9800;color:#000;font-weight:bold;cursor:pointer;font-size:0.9em;">▶ Volgende zin</button>
+          <button onclick="lisanneStopDictation()" style="padding:10px 16px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;font-size:0.9em;">Stop</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 2D Hold Ball Lisanne -->
     <div class="card" style="margin-top:12px;">
       <div class="card-header" onclick="var s=this.nextElementSibling;if(s)s.style.display=s.style.display==='none'?'block':'none'">🎯 Hold Ball (2D)</div>
@@ -6852,7 +7016,7 @@ function handleReceiverData(data) {
   if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
 
   // Bug #500 + D8/S5 SAFETY FIX: Block ALL stimulation AND game commands while safeword is paused
-  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'hold_update', 'stereo_tone', 'timer_start', 'sched_shock_start', 'reaction_start', 'countdown', 'vq_start', 'continuous_start', 'tease', 'tease_fakeout'].includes(data.type)) {
+  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'hold_update', 'stereo_tone', 'timer_start', 'sched_shock_start', 'reaction_start', 'countdown', 'vq_start', 'continuous_start', 'tease', 'tease_fakeout', 'dict_start', 'dict_next'].includes(data.type)) {
     recvLog('🛡️ Geblokkeerd (safeword actief): ' + data.type);
     return;
   }
@@ -7011,6 +7175,14 @@ function handleReceiverData(data) {
     }
   } else if (data.type === 'vq_start' || data.type === 'vq_stop') {
     handleVoiceQuizMessage(data);
+  } else if (data.type === 'dict_start') {
+    handleDictationStart(data);
+  } else if (data.type === 'dict_next') {
+    handleDictationNext(data);
+  } else if (data.type === 'dict_judge') {
+    handleDictationJudge(data);
+  } else if (data.type === 'dict_stop') {
+    handleDictationStop();
   } else if (data.type === 'stereo_tone') {
     const safeData = Object.assign({}, data, {
       freqL: safeNum(data.freqL, 20, 1000, 200),
@@ -8340,6 +8512,8 @@ function connectToReceiver() {
         handleCamDisconnected();
       } else if (data.type === 'cam_battery') {
         handleCamBattery(data);
+      } else if (data.type === 'dict_result') {
+        handleDictationResultSender(data);
       }
     });
 
@@ -18017,6 +18191,501 @@ function makeDraggable(el) {
   document.addEventListener('touchmove', onMove, { passive: true });
   document.addEventListener('touchend', onEnd);
 }
+
+// ===== VOORLEES / DICTATION MODE =====
+
+const dictState = {
+  active: false,
+  sentences: [],
+  currentIndex: -1,
+  correct: 0,
+  total: 0,
+  config: null,
+  speechRec: null,
+  timerInterval: null,
+  autoInterval: null,
+  timeLeft: 0,
+  waitingForJudge: false,
+  _evaluated: false,   // guard: prevent double-counting from timer+speech race
+  _resultSent: false    // guard: prevent duplicate dict_result on stop
+};
+
+// --- SENDER (Lisanne) FUNCTIONS ---
+
+function lisanneToggleDictation() {
+  const el = document.getElementById('lisanne-dictation-setup');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function dictTimingChanged() {
+  const v = document.getElementById('dict-timing').value;
+  document.getElementById('dict-auto-settings').style.display = v === 'auto' ? 'block' : 'none';
+}
+
+function lisanneStartDictation() {
+  const raw = document.getElementById('dict-sentences').value.trim();
+  if (!raw) { alert('Voer zinnen in!'); return; }
+  if (!conn || conn.open !== true) { alert('Geen verbinding met ontvanger!'); return; }
+
+  const sentences = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+  if (sentences.length === 0) { alert('Geen geldige zinnen gevonden!'); return; }
+
+  const shuffle = document.getElementById('dict-shuffle').classList.contains('on');
+  if (shuffle) {
+    for (let i = sentences.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [sentences[i], sentences[j]] = [sentences[j], sentences[i]];
+    }
+  }
+
+  const config = {
+    timing: document.getElementById('dict-timing').value,
+    control: document.getElementById('dict-control').value,
+    interval: parseInt(document.getElementById('dict-interval').value) || 30,
+    readTime: parseInt(document.getElementById('dict-readtime').value) || 15,
+    shockVol: parseInt(document.getElementById('dict-shock').value) || 40,
+    shockDur: parseInt(document.getElementById('dict-shockdur').value) || 500
+  };
+
+  dictState.active = true;
+  dictState.sentences = sentences;
+  dictState.currentIndex = -1;
+  dictState.correct = 0;
+  dictState.total = 0;
+  dictState.config = config;
+
+  conn.send({ type: 'dict_start', sentences, config, ts: Date.now() });
+
+  // Show monitor
+  document.getElementById('dict-monitor').style.display = 'block';
+  document.getElementById('dict-mon-status').textContent = 'Voorlezen actief';
+  document.getElementById('dict-mon-status').style.color = '#4caf50';
+  document.getElementById('dict-mon-score').textContent = '0/0 goed';
+  document.getElementById('dict-mon-current').textContent = 'Wacht...';
+  document.getElementById('dict-mon-heard').textContent = '';
+  document.getElementById('dict-mon-result').textContent = '';
+
+  // Show/hide judge buttons based on control mode
+  const judgeBtns = document.getElementById('dict-judge-btns');
+  judgeBtns.style.display = config.control === 'manual' ? 'flex' : 'none';
+
+  // Show/hide next button based on timing
+  document.getElementById('dict-next-btn').style.display = config.timing === 'manual' ? 'inline-block' : 'none';
+
+  sendLog('📖 Voorlezen gestart: ' + sentences.length + ' zinnen');
+
+  // Send first sentence after short delay
+  setTimeout(() => lisanneDictationNext(), 1500);
+}
+
+function lisanneDictationNext() {
+  if (!dictState.active) return;
+  dictState.currentIndex++;
+  if (dictState.currentIndex >= dictState.sentences.length) {
+    // All done — loop back or end
+    lisanneStopDictation();
+    return;
+  }
+
+  const sentence = dictState.sentences[dictState.currentIndex];
+  dictState.waitingForJudge = false;
+
+  conn.send({ type: 'dict_next', sentence, index: dictState.currentIndex, total: dictState.sentences.length, ts: Date.now() });
+
+  document.getElementById('dict-mon-current').textContent = '"' + sentence + '"';
+  document.getElementById('dict-mon-heard').textContent = 'Wacht op Tim...';
+  document.getElementById('dict-mon-result').textContent = '';
+
+  sendLog('📖 Zin ' + (dictState.currentIndex + 1) + '/' + dictState.sentences.length + ': ' + sentence);
+}
+
+function lisanneDictationJudge(correct) {
+  if (!dictState.active || !dictState.waitingForJudge) return;
+  dictState.waitingForJudge = false;
+
+  dictState.total++;
+  if (correct) dictState.correct++;
+  document.getElementById('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
+  document.getElementById('dict-mon-result').innerHTML = correct
+    ? '<span style="color:#4caf50;">✅ Goed!</span>'
+    : '<span style="color:#e94560;">❌ Fout!</span>';
+
+  conn.send({ type: 'dict_judge', correct, ts: Date.now() });
+
+  // Auto-advance after judgment
+  if (dictState.config.timing === 'manual') {
+    // Manual: wait for Lisanne to press "Volgende"
+  } else {
+    setTimeout(() => lisanneDictationNext(), 3000);
+  }
+}
+
+function handleDictationResultSender(data) {
+  if (!dictState.active) return;
+
+  const heard = typeof data.transcript === 'string' ? data.transcript.slice(0, 500) : '';
+  document.getElementById('dict-mon-heard').textContent = 'Tim zei: "' + heard + '"';
+
+  if (dictState.config.control === 'auto') {
+    // Auto mode — receiver already judged
+    dictState.total++;
+    if (data.correct) dictState.correct++;
+    document.getElementById('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
+    document.getElementById('dict-mon-result').innerHTML = data.correct
+      ? '<span style="color:#4caf50;">✅ Goed! (' + Math.round((data.score || 0) * 100) + '% match)</span>'
+      : '<span style="color:#e94560;">❌ Fout! (' + Math.round((data.score || 0) * 100) + '% match)</span>';
+
+    sendLog((data.correct ? '✅' : '❌') + ' ' + Math.round((data.score || 0) * 100) + '% — "' + heard + '"');
+
+    // Auto-advance
+    if (dictState.config.timing === 'auto') {
+      setTimeout(() => lisanneDictationNext(), 3000);
+    }
+  } else {
+    // Manual mode — wait for Lisanne to judge
+    dictState.waitingForJudge = true;
+    document.getElementById('dict-mon-result').innerHTML = '<span style="color:#ff9800;">⏳ Beoordeel: goed of fout?</span>';
+  }
+}
+
+function lisanneStopDictation() {
+  if (!dictState.active) return;
+  dictState.active = false;
+
+  if (conn && conn.open) {
+    conn.send({ type: 'dict_stop', ts: Date.now() });
+  }
+
+  document.getElementById('dict-mon-status').textContent = 'Voorlezen gestopt';
+  document.getElementById('dict-mon-status').style.color = '#888';
+  sendLog('📖 Voorlezen gestopt: ' + dictState.correct + '/' + dictState.total + ' goed');
+}
+
+// --- RECEIVER (Tim) FUNCTIONS ---
+
+function handleDictationStart(data) {
+  dictState.active = true;
+  dictState.sentences = data.sentences || [];
+  dictState.currentIndex = -1;
+  dictState.correct = 0;
+  dictState.total = 0;
+  dictState.config = data.config || {};
+  dictState.waitingForJudge = false;
+
+  // Open overlay
+  const overlay = document.getElementById('dictation-overlay');
+  if (overlay) overlay.classList.add('visible');
+
+  document.getElementById('dict-ov-score').textContent = '0 / 0 goed';
+  document.getElementById('dict-ov-sentence').textContent = '';
+  document.getElementById('dict-ov-hint').textContent = 'Voorlees-modus gestart...';
+  document.getElementById('dict-ov-heard').textContent = '';
+  document.getElementById('dict-ov-feedback').textContent = '';
+  document.getElementById('dict-ov-progress').textContent = dictState.sentences.length + ' zinnen';
+
+  recvLog('📖 Voorlees-modus gestart: ' + dictState.sentences.length + ' zinnen');
+}
+
+function handleDictationNext(data) {
+  if (!dictState.active) return;
+
+  const sentence = data.sentence || '';
+  dictState.currentIndex = data.index || 0;
+  dictState.waitingForJudge = false;
+  dictState._evaluated = false;
+  dictState._resultSent = false;
+
+  // Show sentence
+  const sentEl = document.getElementById('dict-ov-sentence');
+  sentEl.textContent = sentence;
+  sentEl.className = 'dictation-sentence';
+  document.getElementById('dict-ov-hint').textContent = 'Lees hardop voor:';
+  document.getElementById('dict-ov-heard').textContent = '';
+  document.getElementById('dict-ov-feedback').textContent = '';
+  document.getElementById('dict-ov-progress').textContent = 'Zin ' + (dictState.currentIndex + 1) + ' / ' + (data.total || dictState.sentences.length);
+
+  // Start timer
+  dictState.timeLeft = dictState.config.readTime || 15;
+  const timerFill = document.getElementById('dict-ov-timer-fill');
+  timerFill.style.width = '100%';
+
+  if (dictState.timerInterval) clearInterval(dictState.timerInterval);
+  const totalTime = dictState.timeLeft;
+
+  dictState.timerInterval = setInterval(() => {
+    dictState.timeLeft -= 0.5;
+    const pct = Math.max(0, (dictState.timeLeft / totalTime) * 100);
+    timerFill.style.width = pct + '%';
+
+    if (dictState.timeLeft <= 0) {
+      clearInterval(dictState.timerInterval);
+      dictState.timerInterval = null;
+      // Time's up!
+      dictationTimeUp();
+    }
+  }, 500);
+
+  // Start speech recognition
+  dictationStartListening(sentence);
+
+  // TTS: read sentence number
+  if (typeof speak === 'function') {
+    speak('Zin ' + (dictState.currentIndex + 1));
+  }
+}
+
+function dictationStartListening(expectedSentence) {
+  dictationStopListening();
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('dict-ov-mic-label').textContent = 'Geen mic';
+    return;
+  }
+
+  const rec = new SR();
+  rec.lang = 'nl-NL';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+
+  let bestTranscript = '';
+  let finalReceived = false;
+
+  const micDot = document.getElementById('dict-ov-mic-dot');
+  const micLabel = document.getElementById('dict-ov-mic-label');
+  const heardEl = document.getElementById('dict-ov-heard');
+
+  rec.onstart = () => {
+    micDot.classList.add('active');
+    micLabel.textContent = 'Luistert...';
+  };
+
+  rec.onresult = (e) => {
+    let fullTranscript = '';
+    for (let i = 0; i < e.results.length; i++) {
+      fullTranscript += e.results[i][0].transcript;
+    }
+    bestTranscript = fullTranscript;
+    heardEl.textContent = '"' + bestTranscript + '"';
+
+    // Check if we have a final result
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        finalReceived = true;
+      }
+    }
+
+    // In auto-control mode, check match on final results
+    if (finalReceived && dictState.config.control === 'auto') {
+      dictationEvaluate(expectedSentence, bestTranscript);
+    }
+  };
+
+  rec.onerror = (e) => {
+    if (e.error !== 'no-speech' && e.error !== 'aborted') {
+      recvLog('⚠️ Spraak: ' + e.error);
+    }
+  };
+
+  rec.onend = () => {
+    micDot.classList.remove('active');
+    micLabel.textContent = 'Mic uit';
+
+    // If in manual control mode, send what was heard to sender (guard against duplicate)
+    if (dictState.config.control === 'manual' && bestTranscript && dictState.active && !dictState.waitingForJudge && !dictState._resultSent) {
+      dictState.waitingForJudge = true;
+      dictState._resultSent = true;
+      if (conn && conn.open) {
+        conn.send({ type: 'dict_result', transcript: bestTranscript, ts: Date.now() });
+      }
+      heardEl.textContent = '"' + bestTranscript + '" — wacht op beoordeling...';
+    }
+
+    // Auto-restart if still listening and no evaluation yet
+    // Use captured 'rec' reference (dictState.speechRec may be null if dictationStopListening was called)
+    if (dictState.active && !dictState._evaluated && !finalReceived && dictState.timeLeft > 1) {
+      setTimeout(() => {
+        if (dictState.active && dictState.speechRec === rec) {
+          try { rec.start(); } catch(e) {}
+        }
+      }, 200);
+    }
+  };
+
+  dictState.speechRec = rec;
+  try { rec.start(); } catch(e) {
+    recvLog('⚠️ Kon spraakherkenning niet starten');
+  }
+}
+
+function dictationStopListening() {
+  if (dictState.speechRec) {
+    try { dictState.speechRec.stop(); } catch(e) {}
+    dictState.speechRec = null;
+  }
+  const micDot = document.getElementById('dict-ov-mic-dot');
+  const micLabel = document.getElementById('dict-ov-mic-label');
+  if (micDot) micDot.classList.remove('active');
+  if (micLabel) micLabel.textContent = 'Mic uit';
+}
+
+function dictationEvaluate(expected, spoken) {
+  if (dictState._evaluated) return; // guard: timer may have already fired
+  dictState._evaluated = true;
+  dictState._resultSent = true;
+
+  dictationStopListening();
+  if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
+
+  const result = dictationCompareTexts(expected, spoken);
+  const correct = result.score >= 0.7; // 70% match threshold
+
+  dictState.total++;
+  if (correct) dictState.correct++;
+
+  // Show feedback on overlay
+  const sentEl = document.getElementById('dict-ov-sentence');
+  const feedbackEl = document.getElementById('dict-ov-feedback');
+  const scoreEl = document.getElementById('dict-ov-score');
+
+  sentEl.className = 'dictation-sentence ' + (correct ? 'correct' : 'wrong');
+  feedbackEl.textContent = correct ? '✅ Goed!' : '❌ Fout!';
+  feedbackEl.style.color = correct ? '#4caf50' : '#e94560';
+  scoreEl.textContent = dictState.correct + ' / ' + dictState.total + ' goed';
+
+  // Shock on wrong
+  if (!correct && dictState.config.shockVol > 0) {
+    doReceiverShock(200, dictState.config.shockVol, dictState.config.shockDur);
+  }
+
+  // Send result to sender
+  if (conn && conn.open) {
+    conn.send({ type: 'dict_result', transcript: spoken, correct, score: result.score, ts: Date.now() });
+  }
+
+  recvLog((correct ? '✅' : '❌') + ' ' + Math.round(result.score * 100) + '% match');
+
+  // Auto-advance in auto timing after 3 seconds (sender handles this via dict_result)
+}
+
+function dictationTimeUp() {
+  if (dictState._evaluated) return; // guard: speech rec may have already evaluated
+  dictState._evaluated = true;
+  dictState._resultSent = true;
+
+  dictationStopListening();
+
+  if (dictState.config.control === 'auto') {
+    // Time's up = fail
+    dictState.total++;
+    const sentEl = document.getElementById('dict-ov-sentence');
+    const feedbackEl = document.getElementById('dict-ov-feedback');
+    const scoreEl = document.getElementById('dict-ov-score');
+
+    sentEl.className = 'dictation-sentence wrong';
+    feedbackEl.textContent = '⏰ Te laat!';
+    feedbackEl.style.color = '#e94560';
+    scoreEl.textContent = dictState.correct + ' / ' + dictState.total + ' goed';
+
+    if (dictState.config.shockVol > 0) {
+      doReceiverShock(200, dictState.config.shockVol, dictState.config.shockDur);
+    }
+
+    if (conn && conn.open) {
+      conn.send({ type: 'dict_result', transcript: '', correct: false, score: 0, timeout: true, ts: Date.now() });
+    }
+
+    recvLog('⏰ Te laat!');
+  } else {
+    // Manual control: send empty result, let Lisanne decide
+    const heardEl = document.getElementById('dict-ov-heard');
+    if (heardEl) heardEl.textContent = '⏰ Tijd om — wacht op beoordeling...';
+
+    if (conn && conn.open) {
+      conn.send({ type: 'dict_result', transcript: '', timeout: true, ts: Date.now() });
+    }
+  }
+}
+
+function handleDictationJudge(data) {
+  // Lisanne judged (manual control mode)
+  if (!dictState.active) return;
+
+  const correct = !!data.correct;
+  dictState.total++;
+  if (correct) dictState.correct++;
+
+  const sentEl = document.getElementById('dict-ov-sentence');
+  const feedbackEl = document.getElementById('dict-ov-feedback');
+  const scoreEl = document.getElementById('dict-ov-score');
+
+  sentEl.className = 'dictation-sentence ' + (correct ? 'correct' : 'wrong');
+  feedbackEl.textContent = correct ? '✅ Goed!' : '❌ Fout!';
+  feedbackEl.style.color = correct ? '#4caf50' : '#e94560';
+  scoreEl.textContent = dictState.correct + ' / ' + dictState.total + ' goed';
+
+  if (!correct && dictState.config.shockVol > 0) {
+    doReceiverShock(200, dictState.config.shockVol, dictState.config.shockDur);
+  }
+
+  recvLog(correct ? '✅ Lisanne: goed' : '❌ Lisanne: fout');
+}
+
+function handleDictationStop() {
+  dictationStopListening();
+  if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
+  if (dictState.autoInterval) { clearInterval(dictState.autoInterval); dictState.autoInterval = null; }
+
+  dictState.active = false;
+
+  // Show end state
+  const sentEl = document.getElementById('dict-ov-sentence');
+  const feedbackEl = document.getElementById('dict-ov-feedback');
+  const hintEl = document.getElementById('dict-ov-hint');
+
+  if (sentEl) sentEl.textContent = dictState.correct + ' / ' + dictState.total + ' goed';
+  if (sentEl) sentEl.className = 'dictation-sentence';
+  if (feedbackEl) feedbackEl.textContent = '';
+  if (hintEl) hintEl.textContent = 'Voorlezen klaar!';
+
+  recvLog('📖 Voorlezen klaar: ' + dictState.correct + '/' + dictState.total + ' goed');
+
+  // Close overlay after 4 seconds
+  setTimeout(() => {
+    const overlay = document.getElementById('dictation-overlay');
+    if (overlay) overlay.classList.remove('visible');
+  }, 4000);
+}
+
+function dictationCompareTexts(expected, spoken) {
+  const normalize = (s) => s.toLowerCase()
+    .replace(/[^a-zà-ÿ0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(w => w.length > 0);
+
+  const expectedWords = normalize(expected);
+  const spokenWords = normalize(spoken);
+
+  if (expectedWords.length === 0) return { score: 0, matched: 0, total: 0 };
+  if (spokenWords.length === 0) return { score: 0, matched: 0, total: expectedWords.length };
+
+  let matched = 0;
+  const used = new Set();
+
+  for (const ew of expectedWords) {
+    for (let i = 0; i < spokenWords.length; i++) {
+      if (!used.has(i) && spokenWords[i] === ew) {
+        matched++;
+        used.add(i);
+        break;
+      }
+    }
+  }
+
+  return { score: matched / expectedWords.length, matched, total: expectedWords.length };
+}
 </script>
 
 <div id="floating-panic-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;gap:8px;padding:12px;z-index:9999;background:rgba(10,10,26,0.95);">
@@ -18114,6 +18783,30 @@ function makeDraggable(el) {
   <div class="tv-bottom-bar">
     <button class="tv-safeword-btn" onclick="triggerSafewordFromReceiver()">🛑 SAFEWORD</button>
     <button class="tv-back-btn" onclick="receiverToggleTv()">← Terug</button>
+  </div>
+</div>
+
+<!-- Dictation / Voorlees overlay for receiver -->
+<div id="dictation-overlay" class="dictation-overlay">
+  <div class="dictation-top">
+    <div class="dictation-score" id="dict-ov-score">0 / 0 goed</div>
+    <div class="dictation-mic">
+      <div class="mic-dot" id="dict-ov-mic-dot"></div>
+      <span id="dict-ov-mic-label">Mic uit</span>
+    </div>
+  </div>
+  <div class="dictation-timer-bar">
+    <div class="dictation-timer-fill" id="dict-ov-timer-fill"></div>
+  </div>
+  <div class="dictation-main">
+    <div class="dictation-hint" id="dict-ov-hint">Lees de zin hardop voor:</div>
+    <div class="dictation-sentence" id="dict-ov-sentence"></div>
+    <div class="dictation-heard" id="dict-ov-heard"></div>
+    <div class="dictation-feedback" id="dict-ov-feedback"></div>
+  </div>
+  <div class="dictation-bottom">
+    <button onclick="triggerSafewordFromReceiver()" style="padding:12px 24px;border-radius:8px;border:2px solid #e94560;background:transparent;color:#e94560;font-weight:bold;cursor:pointer;font-size:1em;">🛑 SAFEWORD</button>
+    <div id="dict-ov-progress" style="color:#888;font-size:0.9em;">Zin 0 / 0</div>
   </div>
 </div>
 
