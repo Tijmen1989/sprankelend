@@ -4442,6 +4442,74 @@
     </div>
   </div>
 
+  <!-- Voorlees-modus (sender geavanceerd) -->
+  <div class="control-card" style="border-color:#e94560;">
+    <h3 style="color:#e94560;">📖 Voorlees-modus</h3>
+    <div style="font-size:0.78em;color:#888;margin-bottom:8px;">Tim moet zinnen exact voorlezen — fout = schok</div>
+
+    <textarea id="dict-sentences-adv" rows="4" placeholder="Typ zinnen, één per regel...&#10;Ik ben van jou.&#10;Ik doe alles wat je zegt." style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.9em;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Timing</label>
+        <select id="dict-timing-adv" onchange="document.getElementById('dict-auto-settings-adv').style.display=this.value==='auto'?'block':'none'" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="manual">Handmatig (jij stuurt)</option>
+          <option value="auto">Automatisch interval</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.8em;color:#bbb;">Controle</label>
+        <select id="dict-control-adv" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+          <option value="auto">Spraakherkenning</option>
+          <option value="manual">Jij beoordeelt</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="dict-auto-settings-adv" style="display:none;margin-top:8px;">
+      <label style="font-size:0.8em;color:#bbb;">Interval: <span id="dict-interval-val-adv" style="color:#e94560;">30s</span></label>
+      <input type="range" id="dict-interval-adv" min="10" max="120" value="30" step="5" oninput="document.getElementById('dict-interval-val-adv').textContent=this.value+'s'" style="width:100%;">
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="font-size:0.8em;color:#bbb;">Leestijd: <span id="dict-readtime-val-adv" style="color:#e94560;">15s</span></label>
+      <input type="range" id="dict-readtime-adv" min="5" max="60" value="15" step="5" oninput="document.getElementById('dict-readtime-val-adv').textContent=this.value+'s'" style="width:100%;">
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="font-size:0.8em;color:#bbb;">Schok: <span id="dict-shock-val-adv" style="color:#e94560;">40%</span> / <span id="dict-shockdur-val-adv">500ms</span></label>
+      <div style="display:flex;gap:8px;">
+        <input type="range" id="dict-shock-adv" min="0" max="90" value="40" step="5" oninput="document.getElementById('dict-shock-val-adv').textContent=this.value+'%'" style="flex:1;">
+        <input type="range" id="dict-shockdur-adv" min="100" max="3000" value="500" step="100" oninput="document.getElementById('dict-shockdur-val-adv').textContent=this.value+'ms'" style="flex:1;">
+      </div>
+    </div>
+
+    <div class="toggle-row" style="margin-top:8px;">
+      <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
+      <div id="dict-shuffle-adv" class="toggle" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <button onclick="lisanneStartDictationAdv()" id="dict-start-btn-adv" style="width:100%;margin-top:10px;padding:12px;font-size:1em;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">📖 Start Voorlezen</button>
+
+    <div id="dict-monitor-adv" style="display:none;margin-top:10px;padding:12px;background:#0d1117;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div id="dict-mon-status-adv" style="color:#4caf50;font-weight:bold;">Voorlezen actief</div>
+        <div id="dict-mon-score-adv" style="color:#888;font-size:0.85em;">0/0 goed</div>
+      </div>
+      <div id="dict-mon-current-adv" style="color:#fff;font-size:0.95em;margin-bottom:4px;padding:8px;background:#1a1a2e;border-radius:6px;min-height:36px;"></div>
+      <div id="dict-mon-heard-adv" style="color:#4488ff;font-size:0.85em;margin-bottom:4px;"></div>
+      <div id="dict-mon-result-adv" style="font-size:0.9em;margin-bottom:8px;"></div>
+      <div id="dict-judge-btns-adv" style="display:none;gap:8px;margin-bottom:8px;">
+        <button onclick="lisanneDictationJudge(true)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#4caf50;color:#fff;font-weight:bold;cursor:pointer;">✅ Goed</button>
+        <button onclick="lisanneDictationJudge(false)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;">❌ Fout</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button id="dict-next-btn-adv" onclick="lisanneDictationNext()" style="flex:1;padding:10px;border-radius:6px;border:none;background:#ff9800;color:#000;font-weight:bold;cursor:pointer;">▶ Volgende zin</button>
+        <button onclick="lisanneStopDictation()" style="padding:10px 16px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;">Stop</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Safeword Settings (sender) -->
   <div class="control-card" id="safeword-control">
     <h3>🛡️ Safeword Spraakdetectie</h3>
@@ -4639,6 +4707,84 @@
       <button class="quick-action-btn" style="border-color:#666;color:#666;" onclick="lisanneStopAll()">
         🛑<br>Stop
       </button>
+    </div>
+
+    <!-- Voorlezen — direct zichtbaar (niet in Extra tools) -->
+    <div style="margin:12px 0;">
+      <button class="mood-btn" onclick="lisanneToggleDictation()" style="width:100%;background:#16213e;border-color:#e94560;">
+        <span class="mood-icon">📖</span>
+        <span class="mood-label">Voorlezen</span>
+        <span class="mood-desc">Tim moet zinnen exact voorlezen — fout = schok</span>
+      </button>
+    </div>
+    <div id="lisanne-dictation-setup-top" style="display:none;background:#111;border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px;">
+      <h4 style="color:#e94560;margin-bottom:10px;">📖 Voorlees-modus</h4>
+      <p style="color:#888;font-size:0.8em;margin-bottom:10px;">Typ zinnen die Tim moet voorlezen. Eén zin per regel. Fout of te laat = schok!</p>
+
+      <textarea id="dict-sentences-top" rows="5" placeholder="Typ zinnen, één per regel...&#10;Ik ben van jou.&#10;Ik doe alles wat je zegt.&#10;Mag ik alsjeblieft harder?" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#0a0a1a;color:#e0e0e0;font-size:0.9em;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+        <div>
+          <label style="font-size:0.8em;color:#bbb;">Timing</label>
+          <select id="dict-timing-top" onchange="document.getElementById('dict-auto-settings-top').style.display=this.value==='auto'?'block':'none'" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+            <option value="manual">Handmatig (jij stuurt)</option>
+            <option value="auto">Automatisch interval</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.8em;color:#bbb;">Controle</label>
+          <select id="dict-control-top" style="width:100%;padding:6px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;">
+            <option value="auto">Spraakherkenning</option>
+            <option value="manual">Jij beoordeelt</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="dict-auto-settings-top" style="display:none;margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Interval: <span id="dict-interval-val-top" style="color:#e94560;">30s</span></label>
+        <input type="range" id="dict-interval-top" min="10" max="120" value="30" step="5" oninput="document.getElementById('dict-interval-val-top').textContent=this.value+'s'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Leestijd per zin: <span id="dict-readtime-val-top" style="color:#e94560;">15s</span></label>
+        <input type="range" id="dict-readtime-top" min="5" max="60" value="15" step="5" oninput="document.getElementById('dict-readtime-val-top').textContent=this.value+'s'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Schok bij fout: <span id="dict-shock-val-top" style="color:#e94560;">40%</span></label>
+        <input type="range" id="dict-shock-top" min="0" max="90" value="40" step="5" oninput="document.getElementById('dict-shock-val-top').textContent=this.value+'%'" style="width:100%;">
+      </div>
+
+      <div style="margin-top:8px;">
+        <label style="font-size:0.8em;color:#bbb;">Schokduur: <span id="dict-shockdur-val-top" style="color:#e94560;">500ms</span></label>
+        <input type="range" id="dict-shockdur-top" min="100" max="3000" value="500" step="100" oninput="document.getElementById('dict-shockdur-val-top').textContent=this.value+'ms'" style="width:100%;">
+      </div>
+
+      <div class="toggle-row" style="margin-top:10px;">
+        <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
+        <div id="dict-shuffle-top" class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <button onclick="lisanneStartDictationTop()" style="width:100%;margin-top:12px;padding:12px;font-size:1em;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">📖 Start Voorlezen</button>
+
+      <!-- Live monitor -->
+      <div id="dict-monitor-top" style="display:none;margin-top:12px;padding:12px;background:#0d1117;border-radius:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div id="dict-mon-status-top" style="color:#4caf50;font-weight:bold;">Voorlezen actief</div>
+          <div id="dict-mon-score-top" style="color:#888;font-size:0.85em;">0/0 goed</div>
+        </div>
+        <div id="dict-mon-current-top" style="color:#fff;font-size:0.95em;margin-bottom:4px;padding:8px;background:#1a1a2e;border-radius:6px;min-height:40px;"></div>
+        <div id="dict-mon-heard-top" style="color:#4488ff;font-size:0.85em;margin-bottom:4px;">Tim zei: ...</div>
+        <div id="dict-mon-result-top" style="font-size:0.9em;margin-bottom:8px;"></div>
+        <div id="dict-judge-btns-top" style="display:none;gap:8px;margin-bottom:8px;">
+          <button onclick="lisanneDictationJudge(true)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#4caf50;color:#fff;font-weight:bold;cursor:pointer;font-size:0.95em;">✅ Goed</button>
+          <button onclick="lisanneDictationJudge(false)" style="flex:1;padding:10px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;font-size:0.95em;">❌ Fout</button>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button id="dict-next-btn-top" onclick="lisanneDictationNext()" style="flex:1;padding:10px;border-radius:6px;border:none;background:#ff9800;color:#000;font-weight:bold;cursor:pointer;font-size:0.9em;">▶ Volgende zin</button>
+          <button onclick="lisanneStopDictation()" style="padding:10px 16px;border-radius:6px;border:none;background:#e94560;color:#fff;font-weight:bold;cursor:pointer;font-size:0.9em;">Stop</button>
+        </div>
+      </div>
     </div>
 
     <!-- v1.0082: Mic button for sender -->
@@ -18207,7 +18353,8 @@ const dictState = {
   timeLeft: 0,
   waitingForJudge: false,
   _evaluated: false,   // guard: prevent double-counting from timer+speech race
-  _resultSent: false    // guard: prevent duplicate dict_result on stop
+  _resultSent: false,   // guard: prevent duplicate dict_result on stop
+  _uiSuffix: ''         // which sender panel is active: '', '-adv', or '-top'
 };
 
 // --- SENDER (Lisanne) FUNCTIONS ---
@@ -18222,16 +18369,18 @@ function dictTimingChanged() {
   document.getElementById('dict-auto-settings').style.display = v === 'auto' ? 'block' : 'none';
 }
 
-function lisanneStartDictation() {
-  const raw = document.getElementById('dict-sentences').value.trim();
+// Generic start function that reads from suffixed elements
+function lisanneStartDictationFrom(suffix) {
+  const sfx = suffix ? '-' + suffix : '';
+  const raw = document.getElementById('dict-sentences' + sfx).value.trim();
   if (!raw) { alert('Voer zinnen in!'); return; }
   if (!conn || conn.open !== true) { alert('Geen verbinding met ontvanger!'); return; }
 
   const sentences = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
   if (sentences.length === 0) { alert('Geen geldige zinnen gevonden!'); return; }
 
-  const shuffle = document.getElementById('dict-shuffle').classList.contains('on');
-  if (shuffle) {
+  const shuffleEl = document.getElementById('dict-shuffle' + sfx);
+  if (shuffleEl && shuffleEl.classList.contains('on')) {
     for (let i = sentences.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [sentences[i], sentences[j]] = [sentences[j], sentences[i]];
@@ -18239,12 +18388,12 @@ function lisanneStartDictation() {
   }
 
   const config = {
-    timing: document.getElementById('dict-timing').value,
-    control: document.getElementById('dict-control').value,
-    interval: parseInt(document.getElementById('dict-interval').value) || 30,
-    readTime: parseInt(document.getElementById('dict-readtime').value) || 15,
-    shockVol: parseInt(document.getElementById('dict-shock').value) || 40,
-    shockDur: parseInt(document.getElementById('dict-shockdur').value) || 500
+    timing: document.getElementById('dict-timing' + sfx).value,
+    control: document.getElementById('dict-control' + sfx).value,
+    interval: parseInt(document.getElementById('dict-interval' + sfx).value) || 30,
+    readTime: parseInt(document.getElementById('dict-readtime' + sfx).value) || 15,
+    shockVol: parseInt(document.getElementById('dict-shock' + sfx).value) || 40,
+    shockDur: parseInt(document.getElementById('dict-shockdur' + sfx).value) || 500
   };
 
   dictState.active = true;
@@ -18253,30 +18402,43 @@ function lisanneStartDictation() {
   dictState.correct = 0;
   dictState.total = 0;
   dictState.config = config;
+  dictState._uiSuffix = sfx; // Track which panel to update
 
   conn.send({ type: 'dict_start', sentences, config, ts: Date.now() });
 
-  // Show monitor
-  document.getElementById('dict-monitor').style.display = 'block';
-  document.getElementById('dict-mon-status').textContent = 'Voorlezen actief';
-  document.getElementById('dict-mon-status').style.color = '#4caf50';
-  document.getElementById('dict-mon-score').textContent = '0/0 goed';
-  document.getElementById('dict-mon-current').textContent = 'Wacht...';
-  document.getElementById('dict-mon-heard').textContent = '';
-  document.getElementById('dict-mon-result').textContent = '';
+  // Show monitor on the active panel
+  dictMonEl('dict-monitor').style.display = 'block';
+  dictMonEl('dict-mon-status').textContent = 'Voorlezen actief';
+  dictMonEl('dict-mon-status').style.color = '#4caf50';
+  dictMonEl('dict-mon-score').textContent = '0/0 goed';
+  dictMonEl('dict-mon-current').textContent = 'Wacht...';
+  dictMonEl('dict-mon-heard').textContent = '';
+  dictMonEl('dict-mon-result').textContent = '';
 
   // Show/hide judge buttons based on control mode
-  const judgeBtns = document.getElementById('dict-judge-btns');
-  judgeBtns.style.display = config.control === 'manual' ? 'flex' : 'none';
+  const judgeBtns = dictMonEl('dict-judge-btns');
+  if (judgeBtns) judgeBtns.style.display = config.control === 'manual' ? 'flex' : 'none';
 
   // Show/hide next button based on timing
-  document.getElementById('dict-next-btn').style.display = config.timing === 'manual' ? 'inline-block' : 'none';
+  const nextBtn = dictMonEl('dict-next-btn');
+  if (nextBtn) nextBtn.style.display = config.timing === 'manual' ? 'inline-block' : 'none';
 
   sendLog('📖 Voorlezen gestart: ' + sentences.length + ' zinnen');
 
   // Send first sentence after short delay
   setTimeout(() => lisanneDictationNext(), 1500);
 }
+
+// Helper: get monitor element using the active suffix
+function dictMonEl(baseId) {
+  const sfx = dictState._uiSuffix || '';
+  return document.getElementById(baseId + sfx);
+}
+
+// Wrapper functions for each panel
+function lisanneStartDictation() { lisanneStartDictationFrom(''); }
+function lisanneStartDictationAdv() { lisanneStartDictationFrom('adv'); }
+function lisanneStartDictationTop() { lisanneStartDictationFrom('top'); }
 
 function lisanneDictationNext() {
   if (!dictState.active) return;
@@ -18292,9 +18454,9 @@ function lisanneDictationNext() {
 
   conn.send({ type: 'dict_next', sentence, index: dictState.currentIndex, total: dictState.sentences.length, ts: Date.now() });
 
-  document.getElementById('dict-mon-current').textContent = '"' + sentence + '"';
-  document.getElementById('dict-mon-heard').textContent = 'Wacht op Tim...';
-  document.getElementById('dict-mon-result').textContent = '';
+  dictMonEl('dict-mon-current').textContent = '"' + sentence + '"';
+  dictMonEl('dict-mon-heard').textContent = 'Wacht op Tim...';
+  dictMonEl('dict-mon-result').textContent = '';
 
   sendLog('📖 Zin ' + (dictState.currentIndex + 1) + '/' + dictState.sentences.length + ': ' + sentence);
 }
@@ -18305,8 +18467,8 @@ function lisanneDictationJudge(correct) {
 
   dictState.total++;
   if (correct) dictState.correct++;
-  document.getElementById('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
-  document.getElementById('dict-mon-result').innerHTML = correct
+  dictMonEl('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
+  dictMonEl('dict-mon-result').innerHTML = correct
     ? '<span style="color:#4caf50;">✅ Goed!</span>'
     : '<span style="color:#e94560;">❌ Fout!</span>';
 
@@ -18324,14 +18486,14 @@ function handleDictationResultSender(data) {
   if (!dictState.active) return;
 
   const heard = typeof data.transcript === 'string' ? data.transcript.slice(0, 500) : '';
-  document.getElementById('dict-mon-heard').textContent = 'Tim zei: "' + heard + '"';
+  dictMonEl('dict-mon-heard').textContent = 'Tim zei: "' + heard + '"';
 
   if (dictState.config.control === 'auto') {
     // Auto mode — receiver already judged
     dictState.total++;
     if (data.correct) dictState.correct++;
-    document.getElementById('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
-    document.getElementById('dict-mon-result').innerHTML = data.correct
+    dictMonEl('dict-mon-score').textContent = dictState.correct + '/' + dictState.total + ' goed';
+    dictMonEl('dict-mon-result').innerHTML = data.correct
       ? '<span style="color:#4caf50;">✅ Goed! (' + Math.round((data.score || 0) * 100) + '% match)</span>'
       : '<span style="color:#e94560;">❌ Fout! (' + Math.round((data.score || 0) * 100) + '% match)</span>';
 
@@ -18344,7 +18506,7 @@ function handleDictationResultSender(data) {
   } else {
     // Manual mode — wait for Lisanne to judge
     dictState.waitingForJudge = true;
-    document.getElementById('dict-mon-result').innerHTML = '<span style="color:#ff9800;">⏳ Beoordeel: goed of fout?</span>';
+    dictMonEl('dict-mon-result').innerHTML = '<span style="color:#ff9800;">⏳ Beoordeel: goed of fout?</span>';
   }
 }
 
@@ -18356,8 +18518,8 @@ function lisanneStopDictation() {
     conn.send({ type: 'dict_stop', ts: Date.now() });
   }
 
-  document.getElementById('dict-mon-status').textContent = 'Voorlezen gestopt';
-  document.getElementById('dict-mon-status').style.color = '#888';
+  const statusEl = dictMonEl('dict-mon-status');
+  if (statusEl) { statusEl.textContent = 'Voorlezen gestopt'; statusEl.style.color = '#888'; }
   sendLog('📖 Voorlezen gestopt: ' + dictState.correct + '/' + dictState.total + ' goed');
 }
 
