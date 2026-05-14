@@ -16701,6 +16701,11 @@ function handleSenderConnectionLost() {
   stopIntensityReporting();
   stopHeartbeatMonitor(); // SK10 fix: stop heartbeat check on disconnect
 
+  // Stop dictation mode if active
+  if (typeof dictState !== 'undefined' && dictState.active) {
+    handleDictationStop();
+  }
+
   // 2. Update status
   setRecvStatus('error', 'Verbinding met zender verloren — e-stim gestopt');
   document.getElementById('recv-connected-indicator').style.display = 'none';
@@ -17504,6 +17509,11 @@ function triggerSafewordReceiver() {
   stopCarrier();
   stopContinuousMode('send');
   if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
+
+  // Stop dictation provocation + speech recognition + TTS
+  if (typeof dictStopProvocation === 'function') dictStopProvocation();
+  if (typeof dictationStopListening === 'function') dictationStopListening();
+  if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} }
 
   // Show calming pause screen
   const pauseScreen = document.getElementById('tv-safeword-paused');
@@ -18420,7 +18430,8 @@ const dictState = {
   _consecutiveCorrect: 0,
   _consecutiveWrong: 0,
   _provocationInterval: null, // provocation pulse timer
-  _countdownInterval: null    // countdown timer on receiver
+  _countdownInterval: null,   // countdown timer on receiver
+  _autoAdvanceTimeout: null   // sender: pending setTimeout for next sentence
 };
 
 // --- SENDER (Lisanne) FUNCTIONS ---
@@ -18580,7 +18591,8 @@ function lisanneDictationNext() {
 // Compute random delay between min and max
 function dictRandomDelay() {
   const min = (dictState.config.intervalMin || 10) * 1000;
-  const max = (dictState.config.intervalMax || 60) * 1000;
+  const max = Math.max(min, (dictState.config.intervalMax || 60) * 1000);
+  if (max <= min) return min;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -18608,7 +18620,8 @@ function lisanneDictationJudge(correct) {
     const delay = dictRandomDelay();
     // Send countdown to receiver
     if (conn && conn.open) conn.send({ type: 'dict_wait', delay: Math.round(delay / 1000), ts: Date.now() });
-    setTimeout(() => lisanneDictationNext(), delay);
+    if (dictState._autoAdvanceTimeout) clearTimeout(dictState._autoAdvanceTimeout);
+    dictState._autoAdvanceTimeout = setTimeout(() => { dictState._autoAdvanceTimeout = null; lisanneDictationNext(); }, delay);
   }
 }
 
@@ -18665,7 +18678,8 @@ function handleDictationResultSender(data) {
       const delay = dictRandomDelay();
       // Send countdown to receiver
       if (conn && conn.open) conn.send({ type: 'dict_wait', delay: Math.round(delay / 1000), ts: Date.now() });
-      setTimeout(() => lisanneDictationNext(), delay);
+      if (dictState._autoAdvanceTimeout) clearTimeout(dictState._autoAdvanceTimeout);
+      dictState._autoAdvanceTimeout = setTimeout(() => { dictState._autoAdvanceTimeout = null; lisanneDictationNext(); }, delay);
     }
   } else {
     // Manual mode — wait for Lisanne to judge
@@ -18677,6 +18691,9 @@ function handleDictationResultSender(data) {
 function lisanneStopDictation() {
   if (!dictState.active) return;
   dictState.active = false;
+
+  // Cancel pending auto-advance
+  if (dictState._autoAdvanceTimeout) { clearTimeout(dictState._autoAdvanceTimeout); dictState._autoAdvanceTimeout = null; }
 
   if (conn && conn.open) {
     conn.send({ type: 'dict_stop', ts: Date.now() });
@@ -18826,6 +18843,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- RECEIVER (Tim) FUNCTIONS ---
 
 function handleDictationStart(data) {
+  // Clean up any previous dictation session
+  dictationStopListening();
+  dictStopProvocation();
+  if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} }
+  if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
+  if (dictState._countdownInterval) { clearInterval(dictState._countdownInterval); dictState._countdownInterval = null; }
+
   dictState.active = true;
   dictState.sentences = data.sentences || [];
   dictState.currentIndex = -1;
@@ -18835,6 +18859,11 @@ function handleDictationStart(data) {
   dictState.waitingForJudge = false;
   dictState._currentShockVol = dictState.config.shockVol || 40;
   dictState._consecutiveCorrect = 0;
+  dictState._consecutiveWrong = 0;
+
+  // Stop safeword speech listener — dictation uses SpeechRecognition exclusively
+  // (Manual safeword button on overlay remains available)
+  if (typeof stopSafewordListening === 'function') stopSafewordListening();
   dictState._consecutiveWrong = 0;
 
   // Open overlay
@@ -18882,21 +18911,37 @@ function handleDictationNext(data) {
 
   // TTS mode: speak sentence first, then start timer + mic
   if (dictState.config.ttsMode) {
+    // Cancel any ongoing TTS first
+    if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} }
+
     sentEl.textContent = 'Luister...';
     sentEl.className = 'dictation-sentence';
     document.getElementById('dict-ov-hint').textContent = 'Luister goed...';
 
-    // Hide timer until TTS done
+    // Reset timer bar until TTS done
     const timerFill = document.getElementById('dict-ov-timer-fill');
     timerFill.style.width = '100%';
 
-    speak(sentence, function() {
+    // Track whether callback fired (fallback if TTS fails)
+    let ttsCallbackFired = false;
+    const ttsCallback = function() {
+      if (ttsCallbackFired) return;
+      ttsCallbackFired = true;
       if (!dictState.active || dictState._evaluated) return;
       sentEl.textContent = 'Herhaal wat je hoorde';
       document.getElementById('dict-ov-hint').textContent = 'Herhaal wat je hoorde:';
-      // Now start timer and mic
       dictStartTimerAndMic(sentence);
-    });
+    };
+
+    speak(sentence, ttsCallback);
+
+    // Fallback: if TTS doesn't fire callback within 10 seconds, start anyway
+    setTimeout(function() {
+      if (!ttsCallbackFired) {
+        recvLog('⚠️ TTS timeout — start alsnog');
+        ttsCallback();
+      }
+    }, 10000);
   } else {
     // Normal mode: show sentence, start timer + mic immediately
     sentEl.textContent = sentence;
@@ -18934,16 +18979,16 @@ function dictStartTimerAndMic(sentence) {
 function dictStartProvocation() {
   dictStopProvocation();
   if (!dictState.config.provocation || !dictState.active) return;
-  var baseVol = dictState._currentShockVol || dictState.config.shockVol || 40;
 
   function scheduleNext() {
     if (!dictState.active || !dictState.config.provocation) return;
     var wait = (3 + Math.random() * 5) * 1000; // 3-8 seconds
     dictState._provocationInterval = setTimeout(function() {
       if (!dictState.active) return;
-      // 30% chance of a pulse
+      // 30% chance of a pulse — read CURRENT shock level each time (not stale)
       if (Math.random() < 0.3) {
-        var pulseVol = Math.round(Math.min(baseVol * 0.5, 90));
+        var currentVol = dictState._currentShockVol || dictState.config.shockVol || 40;
+        var pulseVol = Math.round(Math.min(currentVol * 0.5, 90));
         if (pulseVol > 0) {
           doReceiverShock(200, pulseVol, 200);
           recvLog('⚡ Provocatie-puls: ' + pulseVol + '%');
@@ -19111,6 +19156,25 @@ function dictationEvaluate(expected, spoken) {
   feedbackEl.style.color = correct ? '#4caf50' : '#e94560';
   scoreEl.textContent = dictState.correct + ' / ' + dictState.total + ' goed';
 
+  // Receiver-side escalation tracking (mirrors sender logic)
+  if (dictState.config.escalate) {
+    if (correct) {
+      dictState._consecutiveCorrect++;
+      dictState._consecutiveWrong = 0;
+      if (dictState._consecutiveCorrect >= dictState.config.escalateReset) {
+        dictState._currentShockVol = dictState.config.shockVol;
+        dictState._consecutiveCorrect = 0;
+      }
+    } else {
+      dictState._consecutiveWrong++;
+      dictState._consecutiveCorrect = 0;
+      dictState._currentShockVol = Math.min(
+        dictState._currentShockVol + dictState.config.escalateStep,
+        dictState.config.escalateCap
+      );
+    }
+  }
+
   // Shock on wrong — use escalated shock level
   var shockVol = dictState._currentShockVol || dictState.config.shockVol || 0;
   if (!correct && shockVol > 0) {
@@ -19133,15 +19197,28 @@ function dictationTimeUp() {
   dictState._resultSent = true;
 
   // Check if any speech was detected (for Silent Fail)
+  // Use speechRec bestTranscript via heardEl — if it contains actual spoken text (between quotes) it's not silent
   var heardEl = document.getElementById('dict-ov-heard');
   var heardText = heardEl ? heardEl.textContent : '';
-  var silentFail = !heardText || heardText === '' || heardText === '""';
+  // Silent if: no text, empty quotes, or still showing TTS/wait text (not a quoted transcript)
+  var silentFail = !heardText || heardText === '' || heardText === '""' || !heardText.startsWith('"');
 
   dictationStopListening();
 
   if (dictState.config.control === 'auto') {
     // Time's up = fail
     dictState.total++;
+
+    // Receiver-side escalation tracking (timeout = wrong)
+    if (dictState.config.escalate) {
+      dictState._consecutiveWrong++;
+      dictState._consecutiveCorrect = 0;
+      dictState._currentShockVol = Math.min(
+        dictState._currentShockVol + dictState.config.escalateStep,
+        dictState.config.escalateCap
+      );
+    }
+
     var sentEl = document.getElementById('dict-ov-sentence');
     var feedbackEl = document.getElementById('dict-ov-feedback');
     var scoreEl = document.getElementById('dict-ov-score');
@@ -19153,8 +19230,9 @@ function dictationTimeUp() {
 
     var shockVol = dictState._currentShockVol || dictState.config.shockVol || 0;
     if (shockVol > 0) {
-      // Silent fail: 1.5x shock, capped at 90
-      var actualVol = silentFail ? Math.min(Math.round(shockVol * 1.5), 90) : shockVol;
+      // Silent fail: 1.5x shock, capped at escalation cap (or 90)
+      var cap = Math.min(dictState.config.escalateCap || 90, 90);
+      var actualVol = silentFail ? Math.min(Math.round(shockVol * 1.5), cap) : shockVol;
       doReceiverShock(200, actualVol, dictState.config.shockDur);
       if (silentFail) recvLog('🔇 Stilte: zwaardere schok ' + actualVol + '%');
     }
@@ -19207,6 +19285,7 @@ function handleDictationJudge(data) {
 function handleDictationStop() {
   dictationStopListening();
   dictStopProvocation();
+  if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} } // Stop TTS
   if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
   if (dictState.autoInterval) { clearInterval(dictState.autoInterval); dictState.autoInterval = null; }
   if (dictState._countdownInterval) { clearInterval(dictState._countdownInterval); dictState._countdownInterval = null; }
@@ -19226,6 +19305,11 @@ function handleDictationStop() {
   if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
 
   recvLog('📖 Voorlezen klaar: ' + dictState.correct + '/' + dictState.total + ' goed');
+
+  // Restart safeword speech listener (was stopped at dictation start)
+  if (typeof safewordState !== 'undefined' && safewordState.enabled && safewordState.word) {
+    setTimeout(() => { if (typeof startSafewordListening === 'function') startSafewordListening(safewordState.word); }, 500);
+  }
 
   // Close overlay after 4 seconds
   setTimeout(() => {
