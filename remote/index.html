@@ -4530,11 +4530,6 @@
       </div>
     </div>
 
-    <div class="toggle-row" style="margin-top:8px;">
-      <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
-      <div id="dict-shuffle-adv" class="toggle" onclick="this.classList.toggle('on')"></div>
-    </div>
-
     <!-- TTS Mode -->
     <div class="toggle-row" style="margin-top:8px;">
       <label style="flex:1;font-size:0.85em;">🔇 TTS-modus (geblinddoekt)</label>
@@ -7221,7 +7216,7 @@ function handleReceiverData(data) {
   if (panicCooldown && data.type !== 'panic' && data.type !== 'heartbeat') return;
 
   // Bug #500 + D8/S5 SAFETY FIX: Block ALL stimulation AND game commands while safeword is paused
-  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'hold_update', 'stereo_tone', 'timer_start', 'sched_shock_start', 'reaction_start', 'countdown', 'vq_start', 'continuous_start', 'tease', 'tease_fakeout', 'dict_start', 'dict_next', 'dict_wait'].includes(data.type)) {
+  if (safewordState.paused && ['shock', 'pattern', 'hold_start', 'hold_update', 'stereo_tone', 'timer_start', 'sched_shock_start', 'reaction_start', 'countdown', 'vq_start', 'continuous_start', 'tease', 'tease_fakeout', 'dict_start', 'dict_next', 'dict_wait', 'dict_judge'].includes(data.type)) {
     recvLog('🛡️ Geblokkeerd (safeword actief): ' + data.type);
     return;
   }
@@ -18501,11 +18496,18 @@ function lisanneStartDictationFrom(suffix) {
     provocation: provocation
   };
 
+  // Cancel any previous dictation (prevent double-start)
+  if (dictState.active) {
+    if (dictState._autoAdvanceTimeout) { clearTimeout(dictState._autoAdvanceTimeout); dictState._autoAdvanceTimeout = null; }
+    if (dictState._startTimeout) { clearTimeout(dictState._startTimeout); dictState._startTimeout = null; }
+  }
+
   dictState.active = true;
   dictState.sentences = sentences;
   dictState.currentIndex = -1;
   dictState.correct = 0;
   dictState.total = 0;
+  dictState._sentCount = 0;
   dictState.config = config;
   dictState._uiSuffix = sfx; // Track which panel to update
   dictState._currentShockVol = config.shockVol;
@@ -18540,8 +18542,8 @@ function lisanneStartDictationFrom(suffix) {
 
   sendLog('📖 Voorlezen gestart: ' + sentences.length + ' zinnen' + (config.ttsMode ? ' (TTS)' : '') + (config.provocation ? ' (provocatie)' : '') + (config.escalate ? ' (escalatie)' : ''));
 
-  // Send first sentence after short delay
-  setTimeout(() => lisanneDictationNext(), 1500);
+  // Send first sentence after short delay (tracked for cancellation)
+  dictState._startTimeout = setTimeout(() => { dictState._startTimeout = null; lisanneDictationNext(); }, 1500);
 }
 
 // Helper: get monitor element using the active suffix
@@ -18573,6 +18575,7 @@ function lisanneDictationNext() {
   const sentence = dictState.sentences[idx];
   dictState.waitingForJudge = false;
 
+  if (!conn || !conn.open) { dictState.active = false; alert('Verbinding verloren!'); return; }
   conn.send({ type: 'dict_next', sentence, index: idx, total: dictState.sentences.length, shockVol: dictState._currentShockVol, ts: Date.now() });
 
   dictMonEl('dict-mon-current').textContent = '"' + sentence + '"';
@@ -18692,8 +18695,9 @@ function lisanneStopDictation() {
   if (!dictState.active) return;
   dictState.active = false;
 
-  // Cancel pending auto-advance
+  // Cancel pending timeouts
   if (dictState._autoAdvanceTimeout) { clearTimeout(dictState._autoAdvanceTimeout); dictState._autoAdvanceTimeout = null; }
+  if (dictState._startTimeout) { clearTimeout(dictState._startTimeout); dictState._startTimeout = null; }
 
   if (conn && conn.open) {
     conn.send({ type: 'dict_stop', ts: Date.now() });
@@ -18861,10 +18865,13 @@ function handleDictationStart(data) {
   dictState._consecutiveCorrect = 0;
   dictState._consecutiveWrong = 0;
 
-  // Stop safeword speech listener — dictation uses SpeechRecognition exclusively
+  // Stop conflicting SpeechRecognition users — only one can be active at a time
   // (Manual safeword button on overlay remains available)
   if (typeof stopSafewordListening === 'function') stopSafewordListening();
-  dictState._consecutiveWrong = 0;
+  if (typeof voiceQuizState !== 'undefined' && voiceQuizState.active && typeof stopVoiceQuiz === 'function') {
+    stopVoiceQuiz(voiceQuizState.mode);
+    recvLog('⚠️ Voice quiz gestopt — voorlees-modus heeft prioriteit');
+  }
 
   // Open overlay
   const overlay = document.getElementById('dictation-overlay');
@@ -18883,7 +18890,7 @@ function handleDictationStart(data) {
 }
 
 function handleDictationNext(data) {
-  if (!dictState.active) return;
+  if (!dictState.active || !dictState.config) return;
 
   const sentence = data.sentence || '';
   dictState.currentIndex = data.index || 0;
@@ -18935,13 +18942,16 @@ function handleDictationNext(data) {
 
     speak(sentence, ttsCallback);
 
-    // Fallback: if TTS doesn't fire callback within 10 seconds, start anyway
+    // Fallback: if TTS doesn't fire callback, start anyway
+    // Scale timeout with sentence length: ~500ms per word, minimum 5s, maximum 30s
+    var wordCount = sentence.split(/\s+/).length;
+    var ttsFallbackMs = Math.max(5000, Math.min(wordCount * 500, 30000));
     setTimeout(function() {
       if (!ttsCallbackFired) {
         recvLog('⚠️ TTS timeout — start alsnog');
         ttsCallback();
       }
-    }, 10000);
+    }, ttsFallbackMs);
   } else {
     // Normal mode: show sentence, start timer + mic immediately
     sentEl.textContent = sentence;
@@ -19188,7 +19198,15 @@ function dictationEvaluate(expected, spoken) {
 
   recvLog((correct ? '✅' : '❌') + ' ' + Math.round(result.score * 100) + '% match');
 
-  // Auto-advance in auto timing after 3 seconds (sender handles this via dict_result)
+  // Sender handles auto-advance via dict_result → dict_wait → dict_next
+  // Show hint after feedback in manual timing
+  if (dictState.config.timing === 'manual') {
+    setTimeout(function() {
+      var hint = document.getElementById('dict-ov-hint');
+      if (hint && dictState.active && !dictState._evaluated) return; // new sentence already
+      if (hint && dictState.active) hint.textContent = 'Wacht op volgende zin...';
+    }, 2000);
+  }
 }
 
 function dictationTimeUp() {
@@ -19331,12 +19349,31 @@ function dictationCompareTexts(expected, spoken) {
   if (expectedWords.length === 0) return { score: 0, matched: 0, total: 0 };
   if (spokenWords.length === 0) return { score: 0, matched: 0, total: expectedWords.length };
 
+  // Fuzzy word match: allow minor speech recognition errors
+  function wordSimilar(a, b) {
+    if (a === b) return true;
+    // Allow 1 character difference for words > 3 chars (handles "lisanne" vs "lissanne" etc)
+    if (a.length > 3 && b.length > 3 && Math.abs(a.length - b.length) <= 2) {
+      // Simple Levenshtein-like check: count matching chars
+      var shorter = a.length <= b.length ? a : b;
+      var longer = a.length <= b.length ? b : a;
+      var matches = 0;
+      var li = 0;
+      for (var si = 0; si < shorter.length; si++) {
+        while (li < longer.length && longer[li] !== shorter[si]) li++;
+        if (li < longer.length) { matches++; li++; }
+      }
+      return matches / longer.length >= 0.75;
+    }
+    return false;
+  }
+
   let matched = 0;
   const used = new Set();
 
   for (const ew of expectedWords) {
     for (let i = 0; i < spokenWords.length; i++) {
-      if (!used.has(i) && spokenWords[i] === ew) {
+      if (!used.has(i) && wordSimilar(spokenWords[i], ew)) {
         matched++;
         used.add(i);
         break;
