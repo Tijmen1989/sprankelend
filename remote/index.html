@@ -7420,17 +7420,14 @@ function startReceiver() {
   updateSafetyLimit();
   updateFloatingPanic();
 
-  // If electrode config was already set in wizard step 4, skip old electrode-setup screen
+  // Apply electrode config if set in wizard, then always show receiver screen
+  // (electrode-setup screen is disabled with display:none!important so we skip it)
   if (selectedElectrodeConfig) {
     const configMap = { loops_plug: 'loops_and_plug', loops_only: 'loops_only', plug_only: 'plug_only', custom: 'custom' };
     electrodeConfig.type = configMap[selectedElectrodeConfig] || selectedElectrodeConfig;
     applyElectrodeConfig();
-    showScreen('receiver');
-  } else {
-    pendingScreenAfterSetup = 'receiver';
-    showScreen('electrode-setup');
-    document.getElementById('setup-step-1').classList.add('active');
   }
+  showScreen('receiver');
 
   // Show audio activation gate
   const gate = document.getElementById('audio-activation-gate');
