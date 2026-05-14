@@ -19164,7 +19164,11 @@ function dictationEvaluate(expected, spoken) {
   if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
 
   const result = dictationCompareTexts(expected, spoken);
-  const correct = result.score >= 0.7; // 70% match threshold
+  // Dynamic threshold: short sentences need higher accuracy (every word counts!)
+  // ≤4 words: 85% (basically all words must match)
+  // >4 words: 70% (some tolerance for speech recognition errors)
+  const threshold = result.total <= 4 ? 0.85 : 0.7;
+  const correct = result.score >= threshold;
 
   dictState.total++;
   if (correct) dictState.correct++;
