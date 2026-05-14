@@ -8752,6 +8752,14 @@ function connectToReceiver() {
       // Clean up direct camera connection
       if (_camDirectCall) { try { _camDirectCall.close(); } catch(e) {} _camDirectCall = null; }
       _camConnecting = false;
+      // BUG21: Stop sender-side dictation on conn loss
+      if (typeof dictState !== 'undefined' && dictState.active) {
+        dictState.active = false;
+        if (dictState._autoAdvanceTimeout) { clearTimeout(dictState._autoAdvanceTimeout); dictState._autoAdvanceTimeout = null; }
+        if (dictState._startTimeout) { clearTimeout(dictState._startTimeout); dictState._startTimeout = null; }
+        var dms = dictMonEl('dict-mon-status');
+        if (dms) { dms.textContent = 'Verbinding verloren'; dms.style.color = '#e94560'; }
+      }
       sendLog('Verbinding verbroken — alles gestopt');
       conn = null; // Clean up reference
     });
@@ -17505,10 +17513,19 @@ function triggerSafewordReceiver() {
   stopContinuousMode('send');
   if (typeof stopAudioPlayback === 'function') stopAudioPlayback();
 
-  // Stop dictation provocation + speech recognition + TTS
+  // Stop dictation FULLY: provocation, speech rec, TTS, timer, countdown, overlay
   if (typeof dictStopProvocation === 'function') dictStopProvocation();
   if (typeof dictationStopListening === 'function') dictationStopListening();
   if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} }
+  // BUG17/19/23: Stop dictation timer (prevents shock during safeword!) + countdown + close overlay
+  if (dictState.active) {
+    dictState.active = false;
+    if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
+    if (dictState._countdownInterval) { clearInterval(dictState._countdownInterval); dictState._countdownInterval = null; }
+    var dictOv = document.getElementById('dictation-overlay');
+    if (dictOv) dictOv.classList.remove('visible');
+    recvLog('📖 Voorlees-modus gestopt door safeword');
+  }
 
   // Show calming pause screen
   const pauseScreen = document.getElementById('tv-safeword-paused');
@@ -18415,7 +18432,6 @@ const dictState = {
   config: null,
   speechRec: null,
   timerInterval: null,
-  autoInterval: null,
   timeLeft: 0,
   waitingForJudge: false,
   _evaluated: false,   // guard: prevent double-counting from timer+speech race
@@ -18426,7 +18442,9 @@ const dictState = {
   _consecutiveWrong: 0,
   _provocationInterval: null, // provocation pulse timer
   _countdownInterval: null,   // countdown timer on receiver
-  _autoAdvanceTimeout: null   // sender: pending setTimeout for next sentence
+  _autoAdvanceTimeout: null,  // sender: pending setTimeout for next sentence
+  _startTimeout: null,        // sender: initial delay before first sentence
+  _sentCount: 0               // sender: total sentences sent this session
 };
 
 // --- SENDER (Lisanne) FUNCTIONS ---
@@ -18450,14 +18468,6 @@ function lisanneStartDictationFrom(suffix) {
 
   const sentences = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
   if (sentences.length === 0) { alert('Geen geldige zinnen gevonden!'); return; }
-
-  const shuffleEl = document.getElementById('dict-shuffle' + sfx);
-  if (shuffleEl && shuffleEl.classList.contains('on')) {
-    for (let i = sentences.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [sentences[i], sentences[j]] = [sentences[j], sentences[i]];
-    }
-  }
 
   // Read interval as min/max (new) or fallback to single value
   const intervalMinEl = document.getElementById('dict-interval-min' + sfx);
@@ -18659,7 +18669,12 @@ function handleDictationResultSender(data) {
   if (!dictState.active) return;
 
   const heard = typeof data.transcript === 'string' ? data.transcript.slice(0, 500) : '';
-  dictMonEl('dict-mon-heard').textContent = 'Tim zei: "' + heard + '"';
+  // BUG26: Show meaningful text for timeout/silent fail instead of empty quotes
+  if (data.timeout) {
+    dictMonEl('dict-mon-heard').textContent = data.silentFail ? '🔇 Tim zei niets (stilte)' : '⏰ Tijd om' + (heard ? ' — "' + heard + '"' : '');
+  } else {
+    dictMonEl('dict-mon-heard').textContent = 'Tim zei: "' + heard + '"';
+  }
 
   if (dictState.config.control === 'auto') {
     // Auto mode — receiver already judged
@@ -19108,6 +19123,7 @@ function dictationStartListening(expectedSentence) {
     if (dictState.config.control === 'manual' && bestTranscript && dictState.active && !dictState.waitingForJudge && !dictState._resultSent) {
       dictState.waitingForJudge = true;
       dictState._resultSent = true;
+      dictState._evaluated = true; // BUG25: prevent dictationTimeUp from sending duplicate dict_result
       if (conn && conn.open) {
         conn.send({ type: 'dict_result', transcript: bestTranscript, ts: Date.now() });
       }
@@ -19305,7 +19321,6 @@ function handleDictationStop() {
   dictStopProvocation();
   if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} } // Stop TTS
   if (dictState.timerInterval) { clearInterval(dictState.timerInterval); dictState.timerInterval = null; }
-  if (dictState.autoInterval) { clearInterval(dictState.autoInterval); dictState.autoInterval = null; }
   if (dictState._countdownInterval) { clearInterval(dictState._countdownInterval); dictState._countdownInterval = null; }
 
   dictState.active = false;
@@ -19325,7 +19340,8 @@ function handleDictationStop() {
   recvLog('📖 Voorlezen klaar: ' + dictState.correct + '/' + dictState.total + ' goed');
 
   // Restart safeword speech listener (was stopped at dictation start)
-  if (typeof safewordState !== 'undefined' && safewordState.enabled && safewordState.word) {
+  // BUG22: Don't restart if safeword is currently paused (triggered during dictation)
+  if (typeof safewordState !== 'undefined' && safewordState.enabled && safewordState.word && !safewordState.paused) {
     setTimeout(() => { if (typeof startSafewordListening === 'function') startSafewordListening(safewordState.word); }, 500);
   }
 
