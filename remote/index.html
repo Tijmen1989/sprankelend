@@ -3647,7 +3647,7 @@
       <div class="safety-limit-bar">
         <div id="safety-limit-fill" class="safety-limit-fill"></div>
       </div>
-      <span id="safety-limit-text" class="safety-limit-text">80%</span>
+      <span id="safety-limit-text" class="safety-limit-text">50%</span>
     </div>
   </div>
 
@@ -4765,7 +4765,7 @@
 
     <!-- Voorlezen — direct zichtbaar (niet in Extra tools) -->
     <div style="margin:12px 0;">
-      <button class="mood-btn" onclick="lisanneToggleDictation()" style="width:100%;background:#16213e;border-color:#e94560;">
+      <button class="mood-btn" onclick="lisanneToggleDictation('top')" style="width:100%;background:#16213e;border-color:#e94560;">
         <span class="mood-icon">📖</span>
         <span class="mood-label">Voorlezen</span>
         <span class="mood-desc">Tim moet zinnen exact voorlezen — fout = schok</span>
@@ -4814,10 +4814,6 @@
         <input type="range" id="dict-shockdur-top" min="100" max="3000" value="500" step="100" oninput="document.getElementById('dict-shockdur-val-top').textContent=this.value+'ms'" style="width:100%;">
       </div>
 
-      <div class="toggle-row" style="margin-top:10px;">
-        <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
-        <div id="dict-shuffle-top" class="toggle" onclick="this.classList.toggle('on')"></div>
-      </div>
 
       <button onclick="lisanneStartDictationTop()" style="width:100%;margin-top:12px;padding:12px;font-size:1em;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">📖 Start Voorlezen</button>
 
@@ -4956,11 +4952,6 @@
       <div style="margin-top:8px;">
         <label style="font-size:0.8em;color:#bbb;">Schokduur: <span id="dict-shockdur-val" style="color:#e94560;">500ms</span></label>
         <input type="range" id="dict-shockdur" min="100" max="3000" value="500" step="100" oninput="document.getElementById('dict-shockdur-val').textContent=this.value+'ms'" style="width:100%;">
-      </div>
-
-      <div class="toggle-row" style="margin-top:10px;">
-        <label style="flex:1;font-size:0.85em;">🔀 Willekeurige volgorde</label>
-        <div id="dict-shuffle" class="toggle" onclick="this.classList.toggle('on')"></div>
       </div>
 
       <button onclick="lisanneStartDictation()" style="width:100%;margin-top:12px;padding:12px;font-size:1em;background:#e94560;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">📖 Start Voorlezen</button>
@@ -18446,8 +18437,10 @@ const dictState = {
 
 // --- SENDER (Lisanne) FUNCTIONS ---
 
-function lisanneToggleDictation() {
-  const el = document.getElementById('lisanne-dictation-setup');
+function lisanneToggleDictation(variant) {
+  // Support both 'top' and default (extra tools) variant
+  var id = variant === 'top' ? 'lisanne-dictation-setup-top' : 'lisanne-dictation-setup';
+  var el = document.getElementById(id);
   if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
@@ -18466,11 +18459,13 @@ function lisanneStartDictationFrom(suffix) {
   const sentences = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
   if (sentences.length === 0) { alert('Geen geldige zinnen gevonden!'); return; }
 
-  // Read interval as min/max (new) or fallback to single value
+  // Read interval: min/max fields (geavanceerd) or single slider (simpel)
   const intervalMinEl = document.getElementById('dict-interval-min' + sfx);
   const intervalMaxEl = document.getElementById('dict-interval-max' + sfx);
-  const intervalMin = intervalMinEl ? (parseInt(intervalMinEl.value) || 10) : 30;
-  const intervalMax = intervalMaxEl ? (parseInt(intervalMaxEl.value) || 60) : 30;
+  const singleIntervalEl = document.getElementById('dict-interval' + sfx);
+  const singleVal = singleIntervalEl ? (parseInt(singleIntervalEl.value) || 30) : 30;
+  const intervalMin = intervalMinEl ? (parseInt(intervalMinEl.value) || 10) : singleVal;
+  const intervalMax = intervalMaxEl ? (parseInt(intervalMaxEl.value) || 60) : singleVal;
 
   // Escalation settings
   const escalateEl = document.getElementById('dict-escalate' + sfx);
